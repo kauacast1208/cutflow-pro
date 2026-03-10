@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Check, Star } from "lucide-react";
+import { Check, Star, Shield, CreditCard, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -15,15 +15,35 @@ interface PlanRow {
 }
 
 const planHighlights: Record<string, string[]> = {
-  starter: ["1 profissional", "Agenda online", "Gestao de clientes", "Relatorios basicos", "Agendamento online"],
-  pro: ["Ate 5 profissionais", "Tudo do Starter", "Controle financeiro", "Campanhas simples", "Mala direta", "Relatorios avancados"],
-  premium: ["Profissionais ilimitados", "Tudo do Pro", "Campanhas completas", "Automacoes de marketing", "Suporte prioritario", "Integracoes e API"],
+  starter: [
+    "1 profissional",
+    "Agenda online",
+    "Gestao de clientes",
+    "Relatorios basicos",
+    "Agendamento online",
+  ],
+  pro: [
+    "Ate 5 profissionais",
+    "Tudo do Starter",
+    "Controle financeiro",
+    "Campanhas simples",
+    "Mala direta",
+    "Relatorios avancados",
+  ],
+  premium: [
+    "Profissionais ilimitados",
+    "Tudo do Pro",
+    "Campanhas completas",
+    "Automacoes de marketing",
+    "Suporte prioritario",
+    "Integracoes e API",
+  ],
 };
 
 const planDescriptions: Record<string, string> = {
-  starter: "Para barbearias pequenas",
+  starter: "Ideal para quem esta comecando",
   pro: "Para barbearias em crescimento",
-  premium: "Para barbearias profissionais",
+  premium: "Gestao completa e ilimitada",
 };
 
 const fallbackPlans: PlanRow[] = [
@@ -42,14 +62,16 @@ export function PricingSection() {
       .order("price", { ascending: true })
       .then(({ data }) => {
         if (data && data.length > 0) {
-          setPlans(data.map((p) => ({
-            id: p.id,
-            slug: p.slug,
-            label: p.label,
-            price: p.price,
-            max_professionals: p.max_professionals,
-            features: p.features || [],
-          })));
+          setPlans(
+            data.map((p) => ({
+              id: p.id,
+              slug: p.slug,
+              label: p.label,
+              price: p.price,
+              max_professionals: p.max_professionals,
+              features: p.features || [],
+            }))
+          );
         }
       });
   }, []);
@@ -58,14 +80,18 @@ export function PricingSection() {
     <section id="pricing" className="section-padding bg-secondary/30">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-14">
-          <span className="inline-block text-sm font-medium text-primary mb-3">Planos</span>
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">Escolha o plano ideal</h2>
+          <span className="inline-block text-sm font-medium text-primary mb-3">
+            Planos e precos
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+            Escolha o plano ideal para sua barbearia
+          </h2>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            Todos os planos incluem 7 dias grátis. Sem cartão de crédito.
+            Todos os planos incluem 7 dias gratis. Cancele quando quiser.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
           {plans.map((plan, i) => {
             const isPopular = plan.slug === "pro";
             const highlights = planHighlights[plan.slug] || [];
@@ -78,45 +104,79 @@ export function PricingSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className={`rounded-2xl border p-7 sm:p-8 flex flex-col relative transition-shadow ${
+                className={`rounded-2xl border flex flex-col relative transition-all duration-300 ${
                   isPopular
-                    ? "border-primary bg-card shadow-premium ring-2 ring-primary/20"
-                    : "border-border bg-card shadow-card"
+                    ? "border-primary bg-card shadow-lg ring-2 ring-primary/20 scale-[1.03] md:scale-105 z-10 p-8 sm:p-9"
+                    : "border-border bg-card shadow-sm hover:shadow-md p-7 sm:p-8"
                 }`}
               >
                 {isPopular && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground shadow-md">
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-primary px-5 py-1.5 text-xs font-semibold text-primary-foreground shadow-md">
                     <Star className="h-3 w-3 fill-current" />
-                    Mais popular
+                    Mais escolhido pelas barbearias
                   </div>
                 )}
+
                 <div className="mb-5">
-                  <h3 className="text-xl font-bold">{plan.label}</h3>
+                  <h3 className={`font-bold ${isPopular ? "text-2xl" : "text-xl"}`}>
+                    {plan.label}
+                  </h3>
                   <p className="text-sm text-muted-foreground mt-1">{desc}</p>
                 </div>
+
                 <div className="mb-6">
                   <div className="flex items-baseline gap-1">
                     <span className="text-sm text-muted-foreground">R$</span>
-                    <span className="text-4xl font-extrabold tracking-tight">{plan.price}</span>
-                    <span className="text-muted-foreground text-sm">/mês</span>
+                    <span className={`font-extrabold tracking-tight ${isPopular ? "text-5xl" : "text-4xl"}`}>
+                      {plan.price}
+                    </span>
+                    <span className="text-muted-foreground text-sm">/mes</span>
                   </div>
+                  <p className="text-xs text-primary mt-1.5 font-medium">
+                    7 dias gratis para testar
+                  </p>
                 </div>
+
                 <ul className="space-y-3 mb-8 flex-1">
                   {highlights.map((f) => (
                     <li key={f} className="flex items-start gap-2.5 text-sm">
-                      <Check className={`h-4 w-4 mt-0.5 shrink-0 ${isPopular ? "text-primary" : "text-primary/70"}`} />
+                      <Check
+                        className={`h-4 w-4 mt-0.5 shrink-0 ${
+                          isPopular ? "text-primary" : "text-primary/70"
+                        }`}
+                      />
                       <span>{f}</span>
                     </li>
                   ))}
                 </ul>
-                <Link to={`/checkout?plan=${plan.slug}`}>
-                  <Button variant={isPopular ? "hero" : "outline"} className="w-full h-11">
-                    Começar teste gratuito
+
+                <Link to={`/checkout?plan=${plan.slug}`} className="block">
+                  <Button
+                    variant={isPopular ? "hero" : "outline"}
+                    className={`w-full ${isPopular ? "h-12 text-base" : "h-11"}`}
+                  >
+                    Iniciar 7 dias gratis
                   </Button>
                 </Link>
               </motion.div>
             );
           })}
+        </div>
+
+        {/* Trust signals */}
+        <div className="flex flex-wrap items-center justify-center gap-6 mt-10 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <Shield className="h-4 w-4 text-primary" />
+            <span>Pagamento seguro via Stripe</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <CreditCard className="h-4 w-4 text-primary" />
+            <span>Nenhuma cobranca hoje</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <X className="h-4 w-4 text-primary" />
+            <span>Cancele quando quiser</span>
+          </div>
         </div>
       </div>
     </section>
