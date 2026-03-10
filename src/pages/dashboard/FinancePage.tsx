@@ -108,39 +108,10 @@ export default function FinancePage() {
 
   const ticket = completed.length > 0 ? totalRevenue / completed.length : 0;
 
-  // Revenue by professional
-  const proRevenue = useMemo(() => {
-    const map: Record<string, { name: string; revenue: number; count: number }> = {};
-    completed.forEach(a => {
-      const name = a.professionals?.name || "Sem profissional";
-      if (!map[name]) map[name] = { name, revenue: 0, count: 0 };
-      map[name].revenue += Number(a.price || 0);
-      map[name].count++;
-    });
-    return Object.values(map).sort((a, b) => b.revenue - a.revenue);
-  }, [completed]);
-
   // Revenue projection (based on daily average)
   const daysInPeriod = Math.min(period, Math.ceil((Date.now() - new Date(format(subDays(new Date(), period), "yyyy-MM-dd")).getTime()) / (1000 * 60 * 60 * 24)));
   const dailyAvg = daysInPeriod > 0 ? totalRevenue / daysInPeriod : 0;
   const monthProjection = dailyAvg * 30;
-
-  // Time series for chart
-  const timeSeriesData = useMemo(() => {
-    const days = eachDayOfInterval({
-      start: subDays(new Date(), Math.min(period, 30)),
-      end: new Date(),
-    });
-    return days.map(d => {
-      const dateStr = format(d, "yyyy-MM-dd");
-      const dayAppts = completed.filter(a => a.date === dateStr);
-      return {
-        date: format(d, "dd/MM"),
-        revenue: dayAppts.reduce((s, a) => s + Number(a.price || 0), 0),
-        count: dayAppts.length,
-      };
-    });
-  }, [completed, period]);
 
   const fmt = (v: number) => `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
