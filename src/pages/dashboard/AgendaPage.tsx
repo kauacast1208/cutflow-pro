@@ -877,6 +877,18 @@ export default function AgendaPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* New Appointment Dialog */}
+      <NewAppointmentDialog
+        open={showNewAppt}
+        onOpenChange={setShowNewAppt}
+        professionals={professionals}
+        services={services}
+        defaultDate={newApptDefaults.date}
+        defaultTime={newApptDefaults.time}
+        defaultProfessionalId={newApptDefaults.proId}
+        onCreated={fetchData}
+      />
     </div>
   );
 }
