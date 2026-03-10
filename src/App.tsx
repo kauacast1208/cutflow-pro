@@ -71,15 +71,15 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
  */
 function TenantGuard({ children }: { children: React.ReactNode }) {
   const { status } = useTenant();
-  const { isTrialExpired, loading: subLoading } = useSubscription();
+  const { isExpired, isActive, loading: subLoading } = useSubscription();
 
   if (status === "loading" || subLoading) return <FullScreenLoader />;
 
   // No barbershop → onboarding
   if (status === "no_barbershop") return <Navigate to="/onboarding" replace />;
 
-  // Trial expired → paywall
-  if (isTrialExpired) return <TrialExpiredPage />;
+  // Expired (trial expired, cancelled past period, or expired status) → paywall
+  if (isExpired && !isActive) return <TrialExpiredPage />;
 
   return <>{children}</>;
 }

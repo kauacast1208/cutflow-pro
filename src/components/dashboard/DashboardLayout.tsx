@@ -8,6 +8,7 @@ import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { UpgradePrompt } from "@/components/dashboard/UpgradePrompt";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminTopbar from "@/components/admin/AdminTopbar";
+import SubscriptionBanner from "@/components/billing/SubscriptionBanner";
 
 export default function DashboardLayout() {
   const { user } = useAuth();
@@ -28,14 +29,21 @@ export default function DashboardLayout() {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AdminSidebar />
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           <AdminTopbar />
-          <main className="flex-1 p-4 sm:p-6 bg-background overflow-auto">
-            <Outlet />
+          <main className="flex-1 p-4 sm:p-6 overflow-auto">
+            <SubscriptionBanner />
+            <div className="mt-2">
+              <Outlet />
+            </div>
           </main>
         </div>
       </div>
-      <UpgradePrompt feature={upgradeFeature} currentPlan={plan} onClose={hideUpgrade} />
+      <UpgradePrompt
+        feature={upgradeFeature}
+        onClose={hideUpgrade}
+        currentPlan={plan}
+      />
     </SidebarProvider>
   );
 }

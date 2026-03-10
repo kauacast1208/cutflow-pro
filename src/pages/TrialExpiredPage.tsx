@@ -5,6 +5,8 @@ import { Scissors, Check, AlertTriangle, ArrowRight, Shield, Users, Calendar, Ba
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useToast } from "@/hooks/use-toast";
+import { STRIPE_PLANS, type StripePlanKey } from "@/lib/stripe";
 import { motion } from "framer-motion";
 
 interface PlanData {
@@ -65,9 +67,11 @@ const planDescriptions: Record<string, string> = {
 
 export default function TrialExpiredPage() {
   const { signOut } = useAuth();
-  const { daysRemaining } = useSubscription();
+  const { daysRemaining, isCancelled, isTrialExpired } = useSubscription();
+  const { toast } = useToast();
   const [plans, setPlans] = useState<PlanData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -90,6 +94,30 @@ export default function TrialExpiredPage() {
     };
     fetchPlans();
   }, []);
+
+  const handleDirectCheckout = async (planSlug: string) => {
+    const stripePlan = STRIPE_PLANS[planSlug as StripePlanKey];
+    if (!stripePlan) return;
+
+    setCheckoutLoading(planSlug);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId: stripePlan.priceId },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      toast({
+        title: "Erro ao iniciar checkout",
+        description: err.message || "Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setCheckoutLoading(null);
+    }
+  };
 
   // Fallback plans if DB is empty
   const displayPlans = plans.length > 0 ? plans : [
@@ -130,10 +158,12 @@ export default function TrialExpiredPage() {
               <AlertTriangle className="h-8 w-8 text-destructive" />
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 tracking-tight">
-              Seu teste gratuito terminou
+              {isCancelled ? "Sua assinatura foi cancelada" : "Seu teste gratuito terminou"}
             </h1>
             <p className="text-muted-foreground max-w-lg mx-auto text-base sm:text-lg leading-relaxed">
-              Escolha um plano para continuar usando a CutFlow e manter sua agenda funcionando.
+              {isCancelled
+                ? "Reative seu plano para continuar gerenciando sua barbearia com a CutFlow."
+                : "Escolha um plano para continuar usando a CutFlow e manter sua agenda funcionando."}
             </p>
             <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm text-accent-foreground">
               <Shield className="h-4 w-4" />
@@ -202,18 +232,21 @@ export default function TrialExpiredPage() {
                       ))}
                     </ul>
 
-                    <Link to="/billing" className="mt-auto">
-                      <Button
-                        variant={isRecommended ? "default" : "outline"}
-                        size="lg"
-                        className={`w-full h-12 rounded-xl font-semibold text-base ${
-                          isRecommended ? "shadow-md" : ""
-                        }`}
-                      >
-                        Escolher {plan.label}
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </Button>
-                    </Link>
+                    <Button
+                      variant={isRecommended ? "default" : "outline"}
+                      size="lg"
+                      className={`w-full h-12 rounded-xl font-semibold text-base mt-auto ${
+                        isRecommended ? "shadow-md" : ""
+                      }`}
+                      onClick={() => handleDirectCheckout(plan.slug)}
+                      disabled={checkoutLoading !== null}
+                    >
+                      {checkoutLoading === plan.slug ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : null}
+                      Assinar {plan.label}
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
                   </motion.div>
                 );
               })}
