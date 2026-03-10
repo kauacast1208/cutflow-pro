@@ -5,7 +5,7 @@ import {
   ChevronLeft, ChevronRight, CalendarDays, MessageCircle,
   Clock, User, Scissors, DollarSign, XCircle, CheckCircle2, Star,
   LayoutGrid, CalendarRange, Users, AlertCircle, Phone, FileText,
-  Plus, Ban, CalendarOff, TrendingUp,
+  Plus, Ban, CalendarOff, TrendingUp, UserX,
 } from "lucide-react";
 import { useBarbershop } from "@/hooks/useBarbershop";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { motion, AnimatePresence } from "framer-motion";
+import NewAppointmentDialog from "@/components/agenda/NewAppointmentDialog";
 
 type ViewMode = "day" | "week" | "professional";
 
@@ -55,6 +56,18 @@ export default function AgendaPage() {
   const [selectedPro, setSelectedPro] = useState<string>("all");
   const [showBlockDialog, setShowBlockDialog] = useState(false);
   const [blockForm, setBlockForm] = useState({ date: "", start_time: "", end_time: "", reason: "", professional_id: "all", all_day: false });
+  const [showNewAppt, setShowNewAppt] = useState(false);
+  const [newApptDefaults, setNewApptDefaults] = useState<{ date?: Date; time?: string; proId?: string }>({});
+  const [currentMinute, setCurrentMinute] = useState(new Date().getHours() * 60 + new Date().getMinutes());
+
+  // Update current time indicator every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      setCurrentMinute(now.getHours() * 60 + now.getMinutes());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const hours = useMemo(() => {
     const open = barbershop?.opening_time ? parseInt(barbershop.opening_time) : 8;
@@ -298,19 +311,31 @@ export default function AgendaPage() {
             </div>
           </div>
 
-          {/* Block time button */}
+          {/* Action buttons */}
           {canViewFullAgenda && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="gap-1.5 rounded-xl text-xs hidden sm:flex"
-              onClick={() => {
-                setBlockForm(f => ({ ...f, date: format(selectedDate, "yyyy-MM-dd") }));
-                setShowBlockDialog(true);
-              }}
-            >
-              <Ban className="h-3.5 w-3.5" /> Bloquear horário
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                className="gap-1.5 rounded-xl text-xs hidden sm:flex"
+                onClick={() => {
+                  setNewApptDefaults({ date: selectedDate });
+                  setShowNewAppt(true);
+                }}
+              >
+                <Plus className="h-3.5 w-3.5" /> Novo agendamento
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 rounded-xl text-xs hidden sm:flex"
+                onClick={() => {
+                  setBlockForm(f => ({ ...f, date: format(selectedDate, "yyyy-MM-dd") }));
+                  setShowBlockDialog(true);
+                }}
+              >
+                <Ban className="h-3.5 w-3.5" /> Bloquear
+              </Button>
+            </div>
           )}
         </div>
 
@@ -366,19 +391,31 @@ export default function AgendaPage() {
             </Button>
           </div>
 
-          {/* Mobile block button */}
+          {/* Mobile action buttons */}
           {canViewFullAgenda && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="gap-1.5 rounded-xl text-xs sm:hidden h-9"
-              onClick={() => {
-                setBlockForm(f => ({ ...f, date: format(selectedDate, "yyyy-MM-dd") }));
-                setShowBlockDialog(true);
-              }}
-            >
-              <Ban className="h-3.5 w-3.5" />
-            </Button>
+            <div className="flex items-center gap-1.5 sm:hidden">
+              <Button
+                size="sm"
+                className="gap-1.5 rounded-xl text-xs h-9"
+                onClick={() => {
+                  setNewApptDefaults({ date: selectedDate });
+                  setShowNewAppt(true);
+                }}
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 rounded-xl text-xs h-9"
+                onClick={() => {
+                  setBlockForm(f => ({ ...f, date: format(selectedDate, "yyyy-MM-dd") }));
+                  setShowBlockDialog(true);
+                }}
+              >
+                <Ban className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           )}
         </div>
       </motion.div>
@@ -592,12 +629,33 @@ export default function AgendaPage() {
                         const proIds = slotAppts.map(a => a.professional_id);
                         const hasConflict = proIds.length !== new Set(proIds).size;
 
+                        const showTimeLine = isToday && currentMinute >= h * 60 && currentMinute < (h + 1) * 60;
+                        const timeLineTop = showTimeLine ? ((currentMinute - h * 60) / 60) * 100 : 0;
+
                         return (
                           <div key={dayIdx}
-                            className={`border-l border-border/20 p-1 min-h-[64px] relative transition-colors ${
+                            className={`border-l border-border/20 p-1 min-h-[64px] relative transition-colors group/cell ${
                               slotBlocks.length > 0 ? "bg-muted/10" : ""
                             } ${isToday ? "bg-primary/[0.02]" : ""}`}
+                            onClick={() => {
+                              if (slotAppts.length === 0 && slotBlocks.length === 0 && canViewFullAgenda) {
+                                setNewApptDefaults({ date: day, time: `${String(h).padStart(2, "0")}:00` });
+                                setShowNewAppt(true);
+                              }
+                            }}
                           >
+                            {/* Current time indicator */}
+                            {showTimeLine && (
+                              <div
+                                className="absolute left-0 right-0 z-20 pointer-events-none"
+                                style={{ top: `${timeLineTop}%` }}
+                              >
+                                <div className="flex items-center">
+                                  <div className="h-2 w-2 rounded-full bg-destructive -ml-1 shrink-0" />
+                                  <div className="h-[2px] flex-1 bg-destructive/60" />
+                                </div>
+                              </div>
+                            )}
                             {hasConflict && (
                               <div className="absolute top-0.5 right-0.5 z-10" title="Conflito de horário">
                                 <AlertCircle className="h-3 w-3 text-destructive" />
@@ -614,6 +672,12 @@ export default function AgendaPage() {
                                 <span className="text-[9px] text-muted-foreground">
                                   {slotBlocks[0]?.reason || "Bloqueado"}
                                 </span>
+                              </div>
+                            )}
+                            {/* Quick add hint on empty slots */}
+                            {slotAppts.length === 0 && slotBlocks.length === 0 && canViewFullAgenda && (
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/cell:opacity-100 transition-opacity cursor-pointer">
+                                <Plus className="h-4 w-4 text-muted-foreground/40" />
                               </div>
                             )}
                           </div>
@@ -698,7 +762,7 @@ export default function AgendaPage() {
               )}
 
               {/* Action buttons */}
-              {(canViewFullAgenda || !isProfessional) && (
+              {(canViewFullAgenda || !isProfessional) && selectedAppt.status !== "cancelled" && selectedAppt.status !== "completed" && (
                 <div className="flex flex-wrap gap-2">
                   {selectedAppt.status === "scheduled" && (
                     <>
@@ -711,9 +775,19 @@ export default function AgendaPage() {
                     </>
                   )}
                   {selectedAppt.status === "confirmed" && (
-                    <Button size="sm" className="gap-1.5 rounded-xl flex-1" onClick={() => handleAction(selectedAppt.id, "completed", "Atendimento concluído!")}>
-                      <CheckCircle2 className="h-3.5 w-3.5" /> Concluir atendimento
-                    </Button>
+                    <>
+                      <Button size="sm" className="gap-1.5 rounded-xl flex-1" onClick={() => handleAction(selectedAppt.id, "completed", "Atendimento concluído!")}>
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Concluir
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5 rounded-xl border-amber-500/30 text-amber-600 hover:bg-amber-500/10"
+                        onClick={() => handleAction(selectedAppt.id, "cancelled", "Marcado como não compareceu")}
+                      >
+                        <UserX className="h-3.5 w-3.5" /> No-show
+                      </Button>
+                    </>
                   )}
                 </div>
               )}
@@ -830,6 +904,18 @@ export default function AgendaPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* New Appointment Dialog */}
+      <NewAppointmentDialog
+        open={showNewAppt}
+        onOpenChange={setShowNewAppt}
+        professionals={professionals}
+        services={services}
+        defaultDate={newApptDefaults.date}
+        defaultTime={newApptDefaults.time}
+        defaultProfessionalId={newApptDefaults.proId}
+        onCreated={fetchData}
+      />
     </div>
   );
 }
