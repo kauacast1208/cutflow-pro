@@ -79,9 +79,15 @@ export function useSubscription() {
     subscription?.status === "trial" &&
     new Date(subscription.trial_ends_at) < new Date();
 
+  const isCancelledButStillActive =
+    subscription?.status === "cancelled" &&
+    subscription?.current_period_end &&
+    new Date(subscription.current_period_end) > new Date();
+
   const isActive =
     subscription?.status === "active" ||
-    (subscription?.status === "trial" && !isTrialExpired);
+    (subscription?.status === "trial" && !isTrialExpired) ||
+    isCancelledButStillActive;
 
   const daysRemaining =
     subscription?.status === "trial"
