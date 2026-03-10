@@ -88,6 +88,11 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function RedirectToAgendar() {
+  const { slug } = useParams();
+  return <Navigate to={`/agendar/${slug}`} replace />;
+}
+
 const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Index />} />
