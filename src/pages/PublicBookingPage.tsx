@@ -508,7 +508,7 @@ export default function PublicBookingPage() {
             {step === 2 && (
               <DateTimeStep
                 barbershop={barbershop}
-                service={service}
+                service={firstService}
                 professional={isAnyPro ? { name: "Qualquer profissional", role: "Primeiro disponivel" } : professional}
                 selectedDate={selectedDate}
                 selectedTime={selectedTime}
