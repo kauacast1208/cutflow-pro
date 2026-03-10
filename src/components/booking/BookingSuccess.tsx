@@ -1,4 +1,4 @@
-import { Check, CalendarPlus, CalendarDays, Sparkles } from "lucide-react";
+import { Check, CalendarPlus, CalendarDays, Sparkles, MessageCircle, Phone as PhoneIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { format, addMinutes, parse } from "date-fns";
@@ -44,6 +44,13 @@ export function BookingSuccess({
     window.open(url, "_blank");
   };
 
+  const whatsappNumber = barbershop.whatsapp || barbershop.phone;
+  const whatsappUrl = whatsappNumber
+    ? `https://wa.me/${whatsappNumber.replace(/\D/g, "")}?text=${encodeURIComponent(
+        `Ola! Acabei de agendar ${service.name} para ${format(selectedDate, "dd/MM")} as ${selectedTime} com ${professional.name}. Obrigado!`
+      )}`
+    : null;
+
   return (
     <div className="min-h-screen bg-background">
       <div className="flex items-center justify-center min-h-screen p-4">
@@ -81,7 +88,7 @@ export function BookingSuccess({
             </div>
 
             <div className="flex justify-between text-sm py-0.5">
-              <span className="text-muted-foreground">Serviço</span>
+              <span className="text-muted-foreground">Servico</span>
               <span className="font-semibold">{service.name}</span>
             </div>
             <div className="flex justify-between text-sm py-0.5">
@@ -89,11 +96,11 @@ export function BookingSuccess({
               <span className="font-semibold capitalize">{format(selectedDate, "EEEE, dd MMM", { locale: ptBR })}</span>
             </div>
             <div className="flex justify-between text-sm py-0.5">
-              <span className="text-muted-foreground">Horário</span>
+              <span className="text-muted-foreground">Horario</span>
               <span className="font-semibold">{selectedTime} - {endTimeStr}</span>
             </div>
             <div className="flex justify-between text-sm py-0.5">
-              <span className="text-muted-foreground">Duração</span>
+              <span className="text-muted-foreground">Duracao</span>
               <span className="font-semibold">{service.duration_minutes} min</span>
             </div>
             <div className="border-t border-border pt-4 flex justify-between items-center">
@@ -102,21 +109,31 @@ export function BookingSuccess({
             </div>
           </div>
 
-          <div className="flex gap-2.5 mb-4">
-            <Button variant="outline" className="flex-1 rounded-xl h-12 font-semibold" onClick={handleAddToCalendar}>
+          {/* Action buttons */}
+          <div className="space-y-2.5 mb-5">
+            {whatsappUrl && (
+              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="block">
+                <Button className="w-full rounded-xl h-12 font-semibold bg-[hsl(142,70%,45%)] hover:bg-[hsl(142,70%,40%)] text-white">
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  Falar no WhatsApp
+                </Button>
+              </a>
+            )}
+
+            <Button variant="outline" className="w-full rounded-xl h-12 font-semibold" onClick={handleAddToCalendar}>
               <CalendarPlus className="h-4 w-4 mr-2" />
               Salvar na agenda
             </Button>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-2.5 mb-5">
-            <Button variant="outline" className="flex-1 rounded-xl h-12 font-semibold" onClick={onReschedule}>
-              <CalendarDays className="h-4 w-4 mr-2" />
+          <div className="flex gap-2.5 mb-5">
+            <Button variant="outline" className="flex-1 rounded-xl h-11 font-semibold text-sm" onClick={onReschedule}>
+              <CalendarDays className="h-4 w-4 mr-1.5" />
               Remarcar
             </Button>
             <Button
               variant="outline"
-              className="flex-1 rounded-xl h-12 font-semibold text-destructive hover:text-destructive hover:bg-destructive/5 border-destructive/20"
+              className="flex-1 rounded-xl h-11 font-semibold text-sm text-destructive hover:text-destructive hover:bg-destructive/5 border-destructive/20"
               onClick={onCancel}
             >
               Cancelar
@@ -125,7 +142,7 @@ export function BookingSuccess({
 
           <Link to={`/agendar/${slug}`} onClick={() => window.location.reload()}>
             <Button variant="ghost" size="sm" className="text-muted-foreground font-medium">
-              Agendar outro horário
+              Agendar outro horario
             </Button>
           </Link>
         </div>
