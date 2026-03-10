@@ -101,8 +101,8 @@ const AppRoutes = () => (
     <Route path="/trial-expired" element={<ProtectedRoute><TrialExpiredPage /></ProtectedRoute>} />
     <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
     <Route path="/agendar/:slug" element={<PublicBookingPage />} />
-    <Route path="/book/:slug" element={<PublicBookingPage />} />
-    <Route path="/b/:slug" element={<PublicBookingPage />} />
+    <Route path="/book/:slug" element={<Navigate to={window.location.pathname.replace('/book/', '/agendar/')} replace />} />
+    <Route path="/b/:slug" element={<Navigate to={window.location.pathname.replace('/b/', '/agendar/')} replace />} />
     {/* Legacy booking route */}
     <Route path="/booking" element={<Navigate to="/signup" replace />} />
     <Route path="/dashboard" element={<ProtectedRoute><SubscriptionGuard><DashboardLayout /></SubscriptionGuard></ProtectedRoute>}>
