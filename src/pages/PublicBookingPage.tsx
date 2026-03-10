@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { format, addMinutes, parse } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { motion, AnimatePresence } from "framer-motion";
 import SupportBot from "@/components/booking/SupportBot";
 import { ServiceStep } from "@/components/booking/ServiceStep";
 import { ProfessionalStep, ANY_PRO_ID } from "@/components/booking/ProfessionalStep";
@@ -29,6 +30,13 @@ const stepsMeta = [
   { label: "Confirmar", icon: Check },
 ];
 
+const stepTransition = {
+  initial: { opacity: 0, x: 40 },
+  animate: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: -40 },
+  transition: { duration: 0.25, ease: "easeInOut" },
+};
+
 export default function PublicBookingPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -42,6 +50,7 @@ export default function PublicBookingPage() {
   const [notFound, setNotFound] = useState(false);
 
   const [step, setStep] = useState<Step>(0);
+  const [direction, setDirection] = useState(1); // 1 = forward, -1 = back
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [selectedPro, setSelectedPro] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -53,7 +62,6 @@ export default function PublicBookingPage() {
   const [submitting, setSubmitting] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [appointmentId, setAppointmentId] = useState<string | null>(null);
-  // When "any professional" is selected, store the resolved pro for the booking
   const [resolvedProId, setResolvedProId] = useState<string | null>(null);
 
   const service = services.find((s) => s.id === selectedService);
@@ -107,7 +115,7 @@ export default function PublicBookingPage() {
     });
   }, [selectedDate, barbershop]);
 
-  // For "any professional": compute slots across all pros and pick the best
+  // For "any professional": compute slots across all pros
   const anyProSlots = useMemo(() => {
     if (!isAnyPro || !selectedDate || !barbershop || !service) return [];
     const config = {
@@ -119,8 +127,7 @@ export default function PublicBookingPage() {
       minAdvanceHours: barbershop.min_advance_hours || 1,
     };
 
-    // Collect slots from all professionals
-    const slotMap = new Map<string, string>(); // time -> first available pro id
+    const slotMap = new Map<string, string>();
     professionals.forEach((pro) => {
       const slots = generateTimeSlots(selectedDate, pro.id, config, appointments, blockedTimes, availability);
       slots.forEach((t) => {
@@ -130,9 +137,6 @@ export default function PublicBookingPage() {
 
     return Array.from(slotMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
   }, [isAnyPro, selectedDate, barbershop, service, professionals, appointments, blockedTimes, availability]);
-
-  // Use first pro for slot generation when specific pro selected
-  const slotsProId = isAnyPro ? (professionals[0]?.id || null) : selectedPro;
 
   const { timeSlots, groupedSlots, dayStatusMap } = useBookingSlots({
     barbershop,
@@ -144,7 +148,6 @@ export default function PublicBookingPage() {
     availability,
   });
 
-  // Override slots when "any pro" is selected
   const finalTimeSlots = isAnyPro ? anyProSlots.map(([t]) => t) : timeSlots;
   const finalGroupedSlots = useMemo(() => {
     const morning: string[] = [];
@@ -167,16 +170,39 @@ export default function PublicBookingPage() {
     }
   };
 
+  // Validation
+  const isValidPhone = clientPhone.replace(/\D/g, "").length >= 10;
+  const isValidName = clientName.trim().length >= 2 && clientName.trim().length <= 100;
+  const isValidEmail = !clientEmail || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail);
+
   const canNext =
     (step === 0 && selectedService !== null) ||
     (step === 1 && selectedPro !== null) ||
     (step === 2 && selectedDate !== undefined && selectedTime !== null) ||
-    (step === 3 && clientName.trim() !== "" && clientPhone.trim() !== "") ||
+    (step === 3 && isValidName && isValidPhone && isValidEmail) ||
     step === 4;
+
+  const goNext = () => {
+    if (!canNext || step >= 4) return;
+    setDirection(1);
+    setStep((step + 1) as Step);
+  };
+
+  const goBack = () => {
+    if (step <= 0) return;
+    setDirection(-1);
+    setStep((step - 1) as Step);
+  };
 
   const handleConfirm = async () => {
     if (!barbershop || !service || !professional || !selectedDate || !selectedTime) return;
+    if (!isValidName || !isValidPhone) return;
     setSubmitting(true);
+
+    const sanitizedName = clientName.trim().slice(0, 100);
+    const sanitizedPhone = clientPhone.trim().slice(0, 20);
+    const sanitizedEmail = clientEmail.trim().slice(0, 255);
+    const sanitizedNotes = clientNotes.trim().slice(0, 500);
 
     const endTime = format(
       addMinutes(parse(selectedTime, "HH:mm", selectedDate), service.duration_minutes),
@@ -184,25 +210,25 @@ export default function PublicBookingPage() {
     );
 
     // Upsert client
-    if (clientName.trim()) {
+    if (sanitizedName) {
       const { data: existingClients } = await supabase
         .from("clients")
         .select("id")
         .eq("barbershop_id", barbershop.id)
-        .eq("phone", clientPhone)
+        .eq("phone", sanitizedPhone)
         .limit(1);
 
       if (existingClients && existingClients.length > 0) {
         await supabase.from("clients").update({
-          name: clientName,
-          email: clientEmail || null,
+          name: sanitizedName,
+          email: sanitizedEmail || null,
         }).eq("id", existingClients[0].id);
       } else {
         await supabase.from("clients").insert({
           barbershop_id: barbershop.id,
-          name: clientName,
-          phone: clientPhone,
-          email: clientEmail || null,
+          name: sanitizedName,
+          phone: sanitizedPhone,
+          email: sanitizedEmail || null,
         });
       }
     }
@@ -211,10 +237,10 @@ export default function PublicBookingPage() {
       barbershop_id: barbershop.id,
       service_id: service.id,
       professional_id: professional.id,
-      client_name: clientName,
-      client_phone: clientPhone,
-      client_email: clientEmail,
-      notes: clientNotes || null,
+      client_name: sanitizedName,
+      client_phone: sanitizedPhone,
+      client_email: sanitizedEmail,
+      notes: sanitizedNotes || null,
       date: format(selectedDate, "yyyy-MM-dd"),
       start_time: selectedTime,
       end_time: endTime,
@@ -228,8 +254,8 @@ export default function PublicBookingPage() {
       setConfirmed(true);
       sendBookingEmail({
         type: "confirmed",
-        clientName,
-        clientEmail,
+        clientName: sanitizedName,
+        clientEmail: sanitizedEmail,
         service,
         professional,
         selectedDate,
@@ -238,13 +264,14 @@ export default function PublicBookingPage() {
       });
       supabase.functions.invoke("send-booking-confirmation", {
         body: { appointmentId: data.id },
-      }).catch(console.error);
+      }).catch(() => {});
     }
   };
 
   const resetForm = () => {
     setConfirmed(false);
     setStep(0);
+    setDirection(1);
     setSelectedService(null);
     setSelectedPro(null);
     setSelectedDate(undefined);
@@ -279,6 +306,7 @@ export default function PublicBookingPage() {
     if (!appointmentId) return;
     supabase.from("appointments").update({ status: "rescheduled" }).eq("id", appointmentId);
     setConfirmed(false);
+    setDirection(-1);
     setStep(2);
     setSelectedDate(undefined);
     setSelectedTime(null);
@@ -288,12 +316,16 @@ export default function PublicBookingPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center gap-4"
+        >
+          <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <Loader2 className="h-7 w-7 animate-spin text-primary" />
           </div>
           <p className="text-sm text-muted-foreground font-medium">Carregando...</p>
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -301,14 +333,18 @@ export default function PublicBookingPage() {
   if (notFound) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="text-center max-w-md">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center max-w-md"
+        >
           <div className="h-16 w-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-5">
             <AlertCircle className="h-8 w-8 text-muted-foreground" />
           </div>
           <h1 className="text-2xl font-extrabold mb-2">Barbearia nao encontrada</h1>
           <p className="text-muted-foreground mb-8">O link que voce acessou nao corresponde a nenhuma barbearia cadastrada.</p>
           <Link to="/"><Button variant="outline" className="rounded-xl h-11 px-6">Voltar ao inicio</Button></Link>
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -332,9 +368,9 @@ export default function PublicBookingPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-xl">
-        <div className="max-w-2xl mx-auto flex h-16 items-center px-4 gap-3">
+        <div className="max-w-2xl mx-auto flex h-14 sm:h-16 items-center px-4 gap-3">
           <button
-            onClick={() => step > 0 ? setStep((step - 1) as Step) : navigate(-1)}
+            onClick={() => step > 0 ? goBack() : navigate(-1)}
             className="flex h-10 w-10 items-center justify-center rounded-xl border border-border hover:bg-accent transition-colors shrink-0"
             aria-label="Voltar"
           >
@@ -359,43 +395,52 @@ export default function PublicBookingPage() {
       </header>
 
       {/* Barbershop info banner (step 0 only) */}
-      {step === 0 && (
-        <div className="max-w-2xl mx-auto px-4 pt-5">
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-card mb-2">
-            <div className="flex items-start gap-4">
-              {barbershop.logo_url ? (
-                <img src={barbershop.logo_url} className="h-16 w-16 rounded-2xl object-cover border border-border shrink-0" alt="" />
-              ) : (
-                <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <Scissors className="h-7 w-7 text-primary" />
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <h1 className="font-extrabold text-lg tracking-tight">{barbershop.name}</h1>
-                {barbershop.description && (
-                  <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{barbershop.description}</p>
-                )}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2.5 text-xs text-muted-foreground">
-                  {barbershop.address && (
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3 shrink-0" />{barbershop.address}
-                    </span>
+      <AnimatePresence>
+        {step === 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="max-w-2xl mx-auto px-4 pt-5">
+              <div className="rounded-2xl border border-border bg-card p-5 shadow-sm mb-2">
+                <div className="flex items-start gap-4">
+                  {barbershop.logo_url ? (
+                    <img src={barbershop.logo_url} className="h-16 w-16 rounded-2xl object-cover border border-border shrink-0" alt="" />
+                  ) : (
+                    <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Scissors className="h-7 w-7 text-primary" />
+                    </div>
                   )}
-                  {(barbershop.phone || barbershop.whatsapp) && (
-                    <span className="flex items-center gap-1">
-                      <Phone className="h-3 w-3 shrink-0" />{barbershop.whatsapp || barbershop.phone}
-                    </span>
-                  )}
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-3 w-3 shrink-0" />
-                    {barbershop.opening_time?.slice(0, 5)} - {barbershop.closing_time?.slice(0, 5)}
-                  </span>
+                  <div className="flex-1 min-w-0">
+                    <h1 className="font-extrabold text-lg tracking-tight">{barbershop.name}</h1>
+                    {barbershop.description && (
+                      <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{barbershop.description}</p>
+                    )}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2.5 text-xs text-muted-foreground">
+                      {barbershop.address && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3 shrink-0" />{barbershop.address}
+                        </span>
+                      )}
+                      {(barbershop.phone || barbershop.whatsapp) && (
+                        <span className="flex items-center gap-1">
+                          <Phone className="h-3 w-3 shrink-0" />{barbershop.whatsapp || barbershop.phone}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3 shrink-0" />
+                        {barbershop.opening_time?.slice(0, 5)} - {barbershop.closing_time?.slice(0, 5)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="max-w-2xl mx-auto px-4 py-6 sm:py-8">
         {/* Progress steps */}
@@ -419,67 +464,78 @@ export default function PublicBookingPage() {
           })}
         </div>
 
-        {/* Step content */}
-        {step === 0 && (
-          <ServiceStep services={services} selectedService={selectedService} onSelect={setSelectedService} />
-        )}
-        {step === 1 && (
-          <ProfessionalStep
-            professionals={professionals}
-            selectedPro={selectedPro}
-            onSelect={(id) => { setSelectedPro(id); setSelectedTime(null); setResolvedProId(null); }}
-          />
-        )}
-        {step === 2 && (
-          <DateTimeStep
-            barbershop={barbershop}
-            service={service}
-            professional={isAnyPro ? { name: "Qualquer profissional", role: "Primeiro disponivel" } : professional}
-            selectedDate={selectedDate}
-            selectedTime={selectedTime}
-            timeSlots={finalTimeSlots}
-            groupedSlots={finalGroupedSlots}
-            dayStatusMap={dayStatusMap}
-            availability={availability}
-            onSelectDate={(d) => { setSelectedDate(d); setSelectedTime(null); }}
-            onSelectTime={handleTimeSelect}
-            resolvedProfessional={isAnyPro && resolvedProId ? professionals.find((p) => p.id === resolvedProId) : undefined}
-          />
-        )}
-        {step === 3 && (
-          <ClientInfoStep
-            service={service}
-            professional={professional || (isAnyPro ? { name: "Qualquer profissional" } : null)}
-            selectedDate={selectedDate}
-            selectedTime={selectedTime}
-            clientName={clientName}
-            clientPhone={clientPhone}
-            clientEmail={clientEmail}
-            clientNotes={clientNotes}
-            onChangeName={setClientName}
-            onChangePhone={setClientPhone}
-            onChangeEmail={setClientEmail}
-            onChangeNotes={setClientNotes}
-          />
-        )}
-        {step === 4 && (
-          <ConfirmStep
-            service={service}
-            professional={professional || (isAnyPro ? { name: "Qualquer profissional" } : null)}
-            selectedDate={selectedDate}
-            selectedTime={selectedTime}
-            clientName={clientName}
-            clientPhone={clientPhone}
-            clientNotes={clientNotes}
-          />
-        )}
+        {/* Step content with animation */}
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div
+            key={step}
+            custom={direction}
+            initial={{ opacity: 0, x: direction * 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction * -40 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+          >
+            {step === 0 && (
+              <ServiceStep services={services} selectedService={selectedService} onSelect={setSelectedService} />
+            )}
+            {step === 1 && (
+              <ProfessionalStep
+                professionals={professionals}
+                selectedPro={selectedPro}
+                onSelect={(id) => { setSelectedPro(id); setSelectedTime(null); setResolvedProId(null); }}
+              />
+            )}
+            {step === 2 && (
+              <DateTimeStep
+                barbershop={barbershop}
+                service={service}
+                professional={isAnyPro ? { name: "Qualquer profissional", role: "Primeiro disponivel" } : professional}
+                selectedDate={selectedDate}
+                selectedTime={selectedTime}
+                timeSlots={finalTimeSlots}
+                groupedSlots={finalGroupedSlots}
+                dayStatusMap={dayStatusMap}
+                availability={availability}
+                onSelectDate={(d) => { setSelectedDate(d); setSelectedTime(null); }}
+                onSelectTime={handleTimeSelect}
+                resolvedProfessional={isAnyPro && resolvedProId ? professionals.find((p) => p.id === resolvedProId) : undefined}
+              />
+            )}
+            {step === 3 && (
+              <ClientInfoStep
+                service={service}
+                professional={professional || (isAnyPro ? { name: "Qualquer profissional" } : null)}
+                selectedDate={selectedDate}
+                selectedTime={selectedTime}
+                clientName={clientName}
+                clientPhone={clientPhone}
+                clientEmail={clientEmail}
+                clientNotes={clientNotes}
+                onChangeName={(v) => setClientName(v.slice(0, 100))}
+                onChangePhone={setClientPhone}
+                onChangeEmail={(v) => setClientEmail(v.slice(0, 255))}
+                onChangeNotes={(v) => setClientNotes(v.slice(0, 500))}
+              />
+            )}
+            {step === 4 && (
+              <ConfirmStep
+                service={service}
+                professional={professional || (isAnyPro ? { name: "Qualquer profissional" } : null)}
+                selectedDate={selectedDate}
+                selectedTime={selectedTime}
+                clientName={clientName}
+                clientPhone={clientPhone}
+                clientNotes={clientNotes}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
 
         {/* Navigation */}
         <div className="flex justify-between mt-8 sm:mt-10 pb-24 sm:pb-8">
           <Button
             variant="outline"
             size="lg"
-            onClick={() => setStep((step - 1) as Step)}
+            onClick={goBack}
             disabled={step === 0}
             className="rounded-xl h-12 px-6 font-semibold"
           >
@@ -488,7 +544,7 @@ export default function PublicBookingPage() {
           {step < 4 ? (
             <Button
               size="lg"
-              onClick={() => setStep((step + 1) as Step)}
+              onClick={goNext}
               disabled={!canNext}
               className="rounded-xl h-12 px-6 font-semibold shadow-sm"
             >
