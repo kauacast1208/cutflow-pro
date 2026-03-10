@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
-import { Calendar, DollarSign, Users, TrendingUp, Copy, ExternalLink, Plus, AlertTriangle, Trophy } from "lucide-react";
+import { Calendar, DollarSign, Users, TrendingUp, Copy, ExternalLink, Plus, AlertTriangle, Trophy, Clock, Zap, Bell } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { useBarbershop } from "@/hooks/useBarbershop";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format, subDays, startOfWeek, addDays, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -14,12 +15,19 @@ import { ProfessionalRanking } from "@/components/dashboard/ProfessionalRanking"
 import { useNavigate } from "react-router-dom";
 import MetricsCards from "@/components/admin/MetricsCards";
 import WeeklySchedule from "@/components/admin/WeeklySchedule";
+import { motion } from "framer-motion";
 
 const periodOptions = [
   { label: "7 dias", value: 7 },
   { label: "30 dias", value: 30 },
   { label: "90 dias", value: 90 },
 ] as const;
+
+const statusLabels: Record<string, { label: string; className: string }> = {
+  scheduled: { label: "Agendado", className: "bg-amber-500/10 text-amber-600" },
+  confirmed: { label: "Confirmado", className: "bg-primary/10 text-primary" },
+  completed: { label: "Concluído", className: "bg-muted text-muted-foreground" },
+};
 
 export default function DashboardHome() {
   const { barbershop } = useBarbershop();
@@ -34,6 +42,7 @@ export default function DashboardHome() {
   const [prevPeriodAppts, setPrevPeriodAppts] = useState<any[]>([]);
   const [weekAppts, setWeekAppts] = useState<any[]>([]);
   const [clientCount, setClientCount] = useState(0);
+  const [pendingCount, setPendingCount] = useState(0);
 
   const greeting = (() => {
     const h = new Date().getHours();
@@ -72,6 +81,7 @@ export default function DashboardHome() {
       setPrevPeriodAppts(prevRes.data || []);
       setClientCount(clientRes.count || 0);
       setWeekAppts(weekRes.data || []);
+      setPendingCount((apptRes.data || []).filter(a => a.status === "scheduled").length);
     });
   }, [barbershop, period]);
 
@@ -81,7 +91,6 @@ export default function DashboardHome() {
     toast({ title: "Link copiado!" });
   };
 
-  // Computed metrics
   const completed = useMemo(() => periodAppts.filter(a => a.status !== "cancelled"), [periodAppts]);
   const prevCompleted = useMemo(() => prevPeriodAppts.filter(a => a.status !== "cancelled"), [prevPeriodAppts]);
 
@@ -90,6 +99,7 @@ export default function DashboardHome() {
 
   const revenueChange = prevRevenue > 0 ? ((revenue - prevRevenue) / prevRevenue * 100).toFixed(1) : null;
   const ticket = completed.length > 0 ? revenue / completed.length : 0;
+  const todayRevenue = todayAppts.reduce((s, a) => s + Number(a.price || 0), 0);
 
   const metricsData = [
     {
@@ -140,6 +150,26 @@ export default function DashboardHome() {
     return days.map((day, i) => ({ day, value: Math.round(totals[i] / weeks) }));
   }, [completed, period]);
 
+  // Next upcoming appointments (not completed)
+  const upcomingToday = useMemo(() => {
+    const now = format(new Date(), "HH:mm");
+    return todayAppts
+      .filter(a => a.start_time?.slice(0, 5) >= now && a.status !== "completed")
+      .slice(0, 5);
+  }, [todayAppts]);
+
+  // Top professional today
+  const topProToday = useMemo(() => {
+    const counts: Record<string, { name: string; count: number; revenue: number }> = {};
+    todayAppts.forEach(a => {
+      const name = a.professionals?.name || "—";
+      if (!counts[name]) counts[name] = { name, count: 0, revenue: 0 };
+      counts[name].count++;
+      counts[name].revenue += Number(a.price || 0);
+    });
+    return Object.values(counts).sort((a, b) => b.revenue - a.revenue)[0] || null;
+  }, [todayAppts]);
+
   const PeriodFilter = () => (
     <div className="flex items-center gap-1 rounded-xl bg-muted/50 p-1">
       {periodOptions.map((opt) => (
@@ -162,7 +192,9 @@ export default function DashboardHome() {
     <div className="space-y-6">
       {/* Trial Banner */}
       {subscription?.status === "trial" && daysRemaining !== null && daysRemaining <= 3 && (
-        <div className="flex items-center gap-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-4">
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-4"
+        >
           <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
           <div className="flex-1">
             <p className="text-sm font-medium text-foreground">
@@ -172,10 +204,10 @@ export default function DashboardHome() {
             </p>
             <p className="text-xs text-muted-foreground">Escolha um plano para continuar usando o CutFlow.</p>
           </div>
-          <Button size="sm" variant="default" onClick={() => navigate("/checkout?plan=" + (subscription?.plan || "pro"))}>
+          <Button size="sm" variant="default" onClick={() => navigate("/billing")}>
             Ver planos
           </Button>
-        </div>
+        </motion.div>
       )}
 
       <OnboardingChecklist />
@@ -204,7 +236,97 @@ export default function DashboardHome() {
         </div>
       </div>
 
+      {/* Alerts */}
+      {pendingCount > 0 && (
+        <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
+          className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-3"
+        >
+          <Bell className="h-4 w-4 text-amber-600 shrink-0" />
+          <p className="text-sm text-foreground flex-1">
+            <span className="font-medium">{pendingCount} agendamento{pendingCount > 1 ? "s" : ""}</span>{" "}
+            aguardando confirmação hoje.
+          </p>
+          <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={() => navigate("/dashboard/agenda")}>
+            Ver agenda
+          </Button>
+        </motion.div>
+      )}
+
       <MetricsCards metrics={metricsData} />
+
+      {/* Today summary + Upcoming */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Today summary card */}
+        <div className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow">
+          <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <Zap className="h-4 w-4 text-primary" />
+            Resumo de hoje
+          </h3>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Agendamentos</span>
+              <span className="text-sm font-bold text-foreground">{todayAppts.length}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Faturamento</span>
+              <span className="text-sm font-bold text-foreground">R$ {todayRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Confirmados</span>
+              <span className="text-sm font-bold text-foreground">{todayAppts.filter(a => a.status === "confirmed").length}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Pendentes</span>
+              <span className="text-sm font-bold text-amber-600">{pendingCount}</span>
+            </div>
+            {topProToday && (
+              <div className="border-t border-border/40 pt-3 mt-3">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Barbeiro destaque</span>
+                <p className="text-sm font-medium text-foreground mt-0.5">{topProToday.name}</p>
+                <p className="text-xs text-muted-foreground">{topProToday.count} atend. · R$ {topProToday.revenue.toFixed(2)}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Upcoming */}
+        <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              <Clock className="h-4 w-4 text-primary" />
+              Próximos atendimentos
+            </h3>
+            <span className="text-xs font-medium text-primary">{upcomingToday.length} restantes</span>
+          </div>
+          {upcomingToday.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Calendar className="h-10 w-10 mx-auto mb-3 opacity-20" />
+              <p className="text-sm font-medium">Sem atendimentos restantes</p>
+              <p className="text-xs mt-1">Sua agenda está livre pelo resto do dia.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {upcomingToday.map(a => {
+                const st = statusLabels[a.status] || statusLabels.scheduled;
+                return (
+                  <div key={a.id} className="flex items-center gap-3 p-3 rounded-xl border border-border/50 hover:border-primary/20 transition-colors">
+                    <span className="text-sm font-mono font-bold text-primary shrink-0 w-12">
+                      {a.start_time?.slice(0, 5)}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate text-foreground">{a.client_name}</p>
+                      <p className="text-xs text-muted-foreground">{a.services?.name} · {a.professionals?.name}</p>
+                    </div>
+                    <Badge variant="secondary" className={`text-[10px] rounded-full border-0 ${st.className}`}>
+                      {st.label}
+                    </Badge>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
 
       <WeeklySchedule
         appointments={weeklyAppointments}
@@ -215,10 +337,7 @@ export default function DashboardHome() {
         {/* Chart */}
         <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow duration-300">
           <div className="flex items-center justify-between mb-4">
-            <h3
-              className="text-base font-semibold text-foreground"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-            >
+            <h3 className="text-base font-semibold text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               Faturamento médio por dia da semana
             </h3>
             <span className="text-xs text-muted-foreground">Últimos {period} dias</span>
@@ -239,42 +358,34 @@ export default function DashboardHome() {
           </div>
         </div>
 
-        {/* Today's agenda */}
+        {/* Today's full agenda */}
         <div className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow duration-300">
           <div className="flex items-center justify-between mb-4">
-            <h3
-              className="text-base font-semibold text-foreground"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-            >
-              Agenda de hoje
+            <h3 className="text-base font-semibold text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Agenda completa
             </h3>
-            <span className="text-xs font-medium text-primary">{todayAppts.length} agendamentos</span>
+            <span className="text-xs font-medium text-primary">{todayAppts.length} hoje</span>
           </div>
           {todayAppts.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Calendar className="h-10 w-10 mx-auto mb-3 opacity-20" />
               <p className="text-sm font-medium">Nenhum agendamento</p>
-              <p className="text-xs mt-1">Sua agenda está livre para hoje.</p>
             </div>
           ) : (
             <div className="space-y-2 max-h-[280px] overflow-y-auto">
-              {todayAppts.map((a) => (
+              {todayAppts.map(a => (
                 <div key={a.id} className="flex items-start gap-3 p-3 rounded-xl border border-border/50 hover:border-primary/20 transition-colors">
                   <span className="text-xs font-mono font-medium text-primary mt-0.5 shrink-0 w-10">
                     {a.start_time?.slice(0, 5)}
                   </span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate text-foreground">{a.client_name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {a.services?.name} · {a.professionals?.name}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{a.services?.name} · {a.professionals?.name}</p>
                   </div>
                   <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
-                    a.status === "confirmed" ? "bg-primary/10 text-primary" :
-                    a.status === "completed" ? "bg-muted text-muted-foreground" :
-                    "bg-accent text-accent-foreground"
+                    (statusLabels[a.status] || statusLabels.scheduled).className
                   }`}>
-                    {a.status === "confirmed" ? "Confirmado" : a.status === "completed" ? "Concluído" : "Agendado"}
+                    {(statusLabels[a.status] || statusLabels.scheduled).label}
                   </span>
                 </div>
               ))}
@@ -288,10 +399,7 @@ export default function DashboardHome() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Trophy className="h-5 w-5 text-primary" />
-            <h3
-              className="text-base font-semibold text-foreground"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-            >
+            <h3 className="text-base font-semibold text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               Ranking de Barbeiros
             </h3>
           </div>
@@ -302,10 +410,7 @@ export default function DashboardHome() {
 
       {/* Quick actions */}
       <div className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow duration-300">
-        <h3
-          className="text-base font-semibold text-foreground mb-4"
-          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-        >
+        <h3 className="text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Ações rápidas
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -314,12 +419,12 @@ export default function DashboardHome() {
             <span className="text-xs">Ver agenda</span>
           </Button>
           <Button variant="outline" className="h-auto py-4 flex-col gap-2 rounded-xl" onClick={() => navigate("/dashboard/clients")}>
-            <Users className="h-5 w-5 text-accent-foreground" />
+            <Users className="h-5 w-5 text-muted-foreground" />
             <span className="text-xs">Clientes</span>
           </Button>
-          <Button variant="outline" className="h-auto py-4 flex-col gap-2 rounded-xl" onClick={() => navigate("/dashboard/settings")}>
+          <Button variant="outline" className="h-auto py-4 flex-col gap-2 rounded-xl" onClick={() => navigate("/dashboard/finance")}>
             <DollarSign className="h-5 w-5 text-primary" />
-            <span className="text-xs">Serviços</span>
+            <span className="text-xs">Financeiro</span>
           </Button>
           <Button variant="outline" className="h-auto py-4 flex-col gap-2 rounded-xl" onClick={copyLink}>
             <ExternalLink className="h-5 w-5 text-muted-foreground" />
