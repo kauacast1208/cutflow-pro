@@ -202,7 +202,7 @@ export default function TrialExpiredPage() {
                       ))}
                     </ul>
 
-                    <Link to={`/checkout?plan=${plan.slug}`} className="mt-auto">
+                    <Link to="/billing" className="mt-auto">
                       <Button
                         variant={isRecommended ? "default" : "outline"}
                         size="lg"
