@@ -56,6 +56,18 @@ export default function AgendaPage() {
   const [selectedPro, setSelectedPro] = useState<string>("all");
   const [showBlockDialog, setShowBlockDialog] = useState(false);
   const [blockForm, setBlockForm] = useState({ date: "", start_time: "", end_time: "", reason: "", professional_id: "all", all_day: false });
+  const [showNewAppt, setShowNewAppt] = useState(false);
+  const [newApptDefaults, setNewApptDefaults] = useState<{ date?: Date; time?: string; proId?: string }>({});
+  const [currentMinute, setCurrentMinute] = useState(new Date().getHours() * 60 + new Date().getMinutes());
+
+  // Update current time indicator every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      setCurrentMinute(now.getHours() * 60 + now.getMinutes());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const hours = useMemo(() => {
     const open = barbershop?.opening_time ? parseInt(barbershop.opening_time) : 8;
