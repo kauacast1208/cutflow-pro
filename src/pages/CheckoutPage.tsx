@@ -1,35 +1,55 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
-import { Scissors, ArrowLeft, Check, CreditCard, QrCode, Shield, Loader2 } from "lucide-react";
+import { Scissors, ArrowLeft, Check, Shield, Loader2, Crown, Sparkles, Zap } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { STRIPE_PLANS, type StripePlanKey } from "@/lib/stripe";
+import { motion } from "framer-motion";
 
-const plans = [
-  { id: "starter", name: "Starter", price: "79", desc: "Para barbearias pequenas" },
-  { id: "pro", name: "Pro", price: "149", desc: "Para barbearias em crescimento" },
-  { id: "premium", name: "Premium", price: "249", desc: "Para barbearias profissionais" },
-];
+const planIcons: Record<StripePlanKey, React.ReactNode> = {
+  starter: <Zap className="h-5 w-5" />,
+  pro: <Sparkles className="h-5 w-5" />,
+  premium: <Crown className="h-5 w-5" />,
+};
 
 export default function CheckoutPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const planParam = params.get("plan") || "pro";
-  const selectedPlan = plans.find((p) => p.id === planParam) || plans[1];
-
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "pix">("card");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [barbershopName, setBarbershopName] = useState("");
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const planParam = (params.get("plan") || "pro") as StripePlanKey;
+  const [selectedPlan, setSelectedPlan] = useState<StripePlanKey>(planParam);
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const plan = STRIPE_PLANS[selectedPlan];
+
+  const handleCheckout = async () => {
+    if (!user) {
+      navigate("/login?redirect=/checkout?plan=" + selectedPlan);
+      return;
+    }
+
     setSubmitting(true);
-    // Simulate processing
-    await new Promise((r) => setTimeout(r, 1500));
-    setSubmitting(false);
-    navigate("/signup");
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId: plan.priceId },
+      });
+
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      toast({
+        title: "Erro ao iniciar checkout",
+        description: err.message || "Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -49,45 +69,61 @@ export default function CheckoutPage() {
       </header>
 
       <div className="max-w-4xl mx-auto px-4 py-10 sm:py-16">
-        <div className="text-center mb-10">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Iniciar teste grátis</h1>
-          <p className="text-muted-foreground">7 dias grátis, sem compromisso. Cancele quando quiser.</p>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-10"
+        >
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Iniciar teste gratuito</h1>
+          <p className="text-muted-foreground">7 dias gratis, sem compromisso. Cancele quando quiser.</p>
+        </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* Plan summary */}
-          <div className="lg:col-span-2 order-2 lg:order-1">
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-card sticky top-24">
-              <h3 className="text-sm font-medium text-muted-foreground mb-4">Resumo do plano</h3>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="lg:col-span-2 order-2 lg:order-1"
+          >
+            <div className="rounded-2xl border border-border bg-card p-6 shadow-sm sticky top-24">
+              <h3 className="text-sm font-medium text-muted-foreground mb-4">Escolha seu plano</h3>
 
               <div className="space-y-2 mb-6">
-                {plans.map((p) => (
+                {(Object.entries(STRIPE_PLANS) as [StripePlanKey, typeof STRIPE_PLANS[StripePlanKey]][]).map(([key, p]) => (
                   <button
-                    key={p.id}
-                    onClick={() => navigate(`/checkout?plan=${p.id}`, { replace: true })}
+                    key={key}
+                    onClick={() => setSelectedPlan(key)}
                     className={`w-full flex items-center justify-between rounded-xl border p-3 text-left transition-all ${
-                      selectedPlan.id === p.id
+                      selectedPlan === key
                         ? "border-primary bg-accent ring-2 ring-primary/20"
                         : "border-border hover:border-primary/30"
                     }`}
                   >
-                    <div>
-                      <p className="font-semibold text-sm">{p.name}</p>
-                      <p className="text-xs text-muted-foreground">{p.desc}</p>
+                    <div className="flex items-center gap-2.5">
+                      <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
+                        selectedPlan === key ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      }`}>
+                        {planIcons[key]}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm">{p.name}</p>
+                        <p className="text-xs text-muted-foreground">{p.features[0]}</p>
+                      </div>
                     </div>
-                    <span className="font-bold text-sm">R${p.price}<span className="text-xs font-normal text-muted-foreground">/mês</span></span>
+                    <span className="font-bold text-sm">R${p.price}<span className="text-xs font-normal text-muted-foreground">/mes</span></span>
                   </button>
                 ))}
               </div>
 
               <div className="border-t border-border pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Plano {selectedPlan.name}</span>
-                  <span>R$ {selectedPlan.price}/mês</span>
+                  <span className="text-muted-foreground">Plano {plan.name}</span>
+                  <span>R$ {plan.price}/mes</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Desconto (7 dias grátis)</span>
-                  <span className="text-primary font-medium">- R$ {selectedPlan.price}</span>
+                  <span className="text-muted-foreground">Trial (7 dias gratis)</span>
+                  <span className="text-primary font-medium">- R$ {plan.price}</span>
                 </div>
                 <div className="border-t border-border pt-3 flex justify-between font-bold">
                   <span>Total hoje</span>
@@ -97,110 +133,57 @@ export default function CheckoutPage() {
 
               <div className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
                 <Shield className="h-4 w-4 shrink-0 text-primary" />
-                <span>Pagamento seguro • Cancele a qualquer momento</span>
+                <span>Pagamento seguro via Stripe. Cancele a qualquer momento.</span>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Form */}
-          <div className="lg:col-span-3 order-1 lg:order-2">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="rounded-2xl border border-border bg-card p-6 shadow-card space-y-5">
-                <h3 className="font-semibold text-lg">Seus dados</h3>
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nome completo</Label>
-                  <Input id="name" placeholder="Seu nome" value={name} onChange={(e) => setName(e.target.value)} className="h-12 rounded-xl" required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">E-mail</Label>
-                  <Input id="email" type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="h-12 rounded-xl" required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="barbershop">Nome da barbearia</Label>
-                  <Input id="barbershop" placeholder="Nome da sua barbearia" value={barbershopName} onChange={(e) => setBarbershopName(e.target.value)} className="h-12 rounded-xl" required />
-                </div>
+          {/* CTA section */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="lg:col-span-3 order-1 lg:order-2"
+          >
+            <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-sm">
+              <h3 className="font-semibold text-lg mb-2">Comece agora</h3>
+              <p className="text-sm text-muted-foreground mb-6">
+                Ao clicar no botao abaixo, voce sera redirecionado para o checkout seguro do Stripe.
+                Seus 7 dias gratuitos comecam imediatamente.
+              </p>
+
+              <div className="rounded-xl bg-accent/50 border border-border p-4 mb-6">
+                <h4 className="text-sm font-semibold mb-3">O que esta incluso no {plan.name}:</h4>
+                <ul className="space-y-2">
+                  {plan.features.map((f) => (
+                    <li key={f} className="flex items-center gap-2 text-sm">
+                      <Check className="h-4 w-4 text-primary shrink-0" />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
 
-              {/* Payment method */}
-              <div className="rounded-2xl border border-border bg-card p-6 shadow-card space-y-5">
-                <h3 className="font-semibold text-lg">Método de pagamento</h3>
-                <p className="text-xs text-muted-foreground -mt-3">Cobrança inicia apenas após os 7 dias de teste.</p>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("card")}
-                    className={`flex items-center gap-3 rounded-xl border p-4 transition-all ${
-                      paymentMethod === "card"
-                        ? "border-primary bg-accent ring-2 ring-primary/20"
-                        : "border-border hover:border-primary/30"
-                    }`}
-                  >
-                    <CreditCard className="h-5 w-5 text-primary" />
-                    <div className="text-left">
-                      <p className="font-medium text-sm">Cartão</p>
-                      <p className="text-xs text-muted-foreground">Crédito ou débito</p>
-                    </div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("pix")}
-                    className={`flex items-center gap-3 rounded-xl border p-4 transition-all ${
-                      paymentMethod === "pix"
-                        ? "border-primary bg-accent ring-2 ring-primary/20"
-                        : "border-border hover:border-primary/30"
-                    }`}
-                  >
-                    <QrCode className="h-5 w-5 text-primary" />
-                    <div className="text-left">
-                      <p className="font-medium text-sm">PIX</p>
-                      <p className="text-xs text-muted-foreground">Pagamento instantâneo</p>
-                    </div>
-                  </button>
-                </div>
-
-                {paymentMethod === "card" ? (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Número do cartão</Label>
-                      <Input placeholder="0000 0000 0000 0000" className="h-12 rounded-xl" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label>Validade</Label>
-                        <Input placeholder="MM/AA" className="h-12 rounded-xl" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>CVV</Label>
-                        <Input placeholder="123" className="h-12 rounded-xl" />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Nome no cartão</Label>
-                      <Input placeholder="Como está no cartão" className="h-12 rounded-xl" />
-                    </div>
-                  </div>
+              <Button
+                variant="hero"
+                size="lg"
+                className="w-full h-13 rounded-xl text-base"
+                onClick={handleCheckout}
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 ) : (
-                  <div className="rounded-xl border border-dashed border-border bg-secondary/50 p-8 text-center">
-                    <QrCode className="h-16 w-16 mx-auto mb-4 text-muted-foreground/40" />
-                    <p className="text-sm font-medium mb-1">QR Code PIX</p>
-                    <p className="text-xs text-muted-foreground">O código PIX será gerado após confirmar o teste gratuito.</p>
-                  </div>
+                  <Check className="h-4 w-4 mr-2" />
                 )}
-              </div>
-
-              <Button type="submit" variant="hero" size="lg" className="w-full h-13 rounded-xl text-base" disabled={submitting}>
-                {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
-                Iniciar teste grátis
+                Iniciar teste gratuito de 7 dias
               </Button>
 
-              <p className="text-center text-xs text-muted-foreground">
-                Ao continuar, você concorda com os{" "}
-                <a href="#" className="underline">Termos de Uso</a> e{" "}
-                <a href="#" className="underline">Política de Privacidade</a>.
+              <p className="text-center text-xs text-muted-foreground mt-4">
+                Ao continuar, voce concorda com os Termos de Uso e Politica de Privacidade.
               </p>
-            </form>
-          </div>
+            </div>
+          </motion.div>
         </div>
       </div>
     </div>
