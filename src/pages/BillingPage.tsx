@@ -1,13 +1,19 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Check, Crown, Loader2, Sparkles, Zap } from "lucide-react";
+import {
+  Check, Crown, Loader2, Sparkles, Zap, Shield, CreditCard,
+  X, ExternalLink, Calendar, Star,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { STRIPE_PLANS, type StripePlanKey } from "@/lib/stripe";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const planIcons: Record<StripePlanKey, React.ReactNode> = {
   starter: <Zap className="h-6 w-6" />,
@@ -15,15 +21,24 @@ const planIcons: Record<StripePlanKey, React.ReactNode> = {
   premium: <Crown className="h-6 w-6" />,
 };
 
+const statusLabels: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+  trial: { label: "Periodo de teste", variant: "secondary" },
+  active: { label: "Ativo", variant: "default" },
+  past_due: { label: "Pagamento pendente", variant: "destructive" },
+  cancelled: { label: "Cancelado", variant: "destructive" },
+  expired: { label: "Expirado", variant: "destructive" },
+};
+
 export default function BillingPage() {
   const { user } = useAuth();
-  const { subscription, loading } = useSubscription();
+  const { subscription, loading, isActive, daysRemaining, refreshSubscription } = useSubscription();
   const { toast } = useToast();
   const [loadingPlan, setLoadingPlan] = useState<StripePlanKey | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
 
   const handleSubscribe = async (planKey: StripePlanKey) => {
     if (!user) {
-      toast({ title: "Faça login primeiro", variant: "destructive" });
+      toast({ title: "Faca login primeiro", variant: "destructive" });
       return;
     }
 
@@ -35,7 +50,7 @@ export default function BillingPage() {
 
       if (error) throw error;
       if (data?.url) {
-        window.open(data.url, "_blank");
+        window.location.href = data.url;
       }
     } catch (err: any) {
       toast({
@@ -48,8 +63,28 @@ export default function BillingPage() {
     }
   };
 
-  const currentPlan = subscription?.plan || "starter";
-  const isActive = subscription?.status === "active";
+  const handleOpenPortal = async () => {
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal");
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err: any) {
+      toast({
+        title: "Erro ao abrir portal",
+        description: err.message || "Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
+  const currentPlan = (subscription?.plan || "starter") as StripePlanKey;
+  const hasStripeSubscription = !!subscription?.stripe_subscription_id;
+  const statusInfo = statusLabels[subscription?.status || "trial"] || statusLabels.trial;
 
   if (loading) {
     return (
@@ -61,113 +96,233 @@ export default function BillingPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-5xl mx-auto px-4 py-16">
+      <div className="max-w-5xl mx-auto px-4 py-10 sm:py-16">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
+          className="mb-10"
         >
-          <h1
-            className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-          >
-            Escolha seu plano
-          </h1>
-          <p className="text-muted-foreground mt-3 text-lg max-w-xl mx-auto">
-            Escale sua barbearia com o plano ideal. Todos incluem 7 dias de teste grátis.
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Assinatura</h1>
+          <p className="text-muted-foreground text-lg">
+            Gerencie seu plano e forma de pagamento.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {(Object.entries(STRIPE_PLANS) as [StripePlanKey, typeof STRIPE_PLANS[StripePlanKey]][]).map(
-            ([key, plan], i) => {
-              const isCurrent = isActive && currentPlan === key;
-              const isRecommended = "recommended" in plan && plan.recommended;
-
-              return (
-                <motion.div
-                  key={key}
-                  initial={{ opacity: 0, y: 24 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                >
-                  <Card
-                    className={`relative h-full flex flex-col transition-all duration-300 hover:shadow-lg ${
-                      isRecommended
-                        ? "border-primary shadow-md ring-2 ring-primary/20"
-                        : "border-border"
-                    } ${isCurrent ? "ring-2 ring-primary/40" : ""}`}
-                  >
-                    {isRecommended && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <span className="bg-primary text-primary-foreground text-xs font-semibold px-4 py-1 rounded-full shadow-sm">
-                          Recomendado
-                        </span>
+        {/* Current subscription card */}
+        {subscription && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mb-10"
+          >
+            <Card className="border-primary/20">
+              <CardContent className="p-6 sm:p-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                      {planIcons[currentPlan]}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold">
+                          Plano {STRIPE_PLANS[currentPlan].name}
+                        </h3>
+                        <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
                       </div>
-                    )}
-                    {isCurrent && (
-                      <div className="absolute -top-3 right-4">
-                        <span className="bg-accent text-accent-foreground text-xs font-semibold px-3 py-1 rounded-full border">
-                          Plano atual
-                        </span>
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        R$ {STRIPE_PLANS[currentPlan].price}/mes
+                      </p>
+                    </div>
+                  </div>
+
+                  {hasStripeSubscription && (
+                    <Button
+                      variant="outline"
+                      onClick={handleOpenPortal}
+                      disabled={portalLoading}
+                      className="shrink-0"
+                    >
+                      {portalLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                      )}
+                      Gerenciar assinatura
+                    </Button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                  {subscription.status === "trial" && daysRemaining !== null && (
+                    <div className="rounded-lg bg-accent/50 p-3">
+                      <p className="text-muted-foreground mb-0.5">Dias restantes do trial</p>
+                      <p className="font-semibold text-lg">{daysRemaining} dias</p>
+                    </div>
+                  )}
+                  {subscription.trial_ends_at && (
+                    <div className="rounded-lg bg-accent/50 p-3">
+                      <p className="text-muted-foreground mb-0.5">
+                        {subscription.status === "trial" ? "Trial expira em" : "Trial expirou em"}
+                      </p>
+                      <p className="font-semibold">
+                        {format(new Date(subscription.trial_ends_at), "dd MMM yyyy", { locale: ptBR })}
+                      </p>
+                    </div>
+                  )}
+                  {subscription.current_period_end && (
+                    <div className="rounded-lg bg-accent/50 p-3">
+                      <p className="text-muted-foreground mb-0.5">Proxima cobranca</p>
+                      <p className="font-semibold">
+                        {format(new Date(subscription.current_period_end), "dd MMM yyyy", { locale: ptBR })}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Features */}
+                <div className="mt-6 pt-5 border-t border-border">
+                  <p className="text-sm font-medium text-muted-foreground mb-3">Recursos do seu plano</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {STRIPE_PLANS[currentPlan].features.map((f) => (
+                      <div key={f} className="flex items-center gap-2 text-sm">
+                        <Check className="h-4 w-4 text-primary shrink-0" />
+                        <span>{f}</span>
                       </div>
-                    )}
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
-                    <CardHeader className="pb-4">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                          {planIcons[key]}
-                        </div>
-                        <CardTitle className="text-xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                          {plan.name}
-                        </CardTitle>
-                      </div>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-4xl font-bold text-foreground">
-                          R${plan.price}
-                        </span>
-                        <span className="text-muted-foreground text-sm">/mês</span>
-                      </div>
-                    </CardHeader>
-
-                    <CardContent className="flex-1 flex flex-col">
-                      <ul className="space-y-3 flex-1 mb-6">
-                        {plan.features.map((feature) => (
-                          <li key={feature} className="flex items-start gap-2.5">
-                            <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                            <span className="text-sm text-foreground/80">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      <Button
-                        className="w-full rounded-xl"
-                        variant={isRecommended ? "default" : "outline"}
-                        size="lg"
-                        disabled={isCurrent || loadingPlan !== null}
-                        onClick={() => handleSubscribe(key)}
-                      >
-                        {loadingPlan === key ? (
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        ) : null}
-                        {isCurrent ? "Plano atual" : "Começar teste gratuito"}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            }
-          )}
-        </div>
-
-        <motion.p
+        {/* Plans grid */}
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-center text-xs text-muted-foreground mt-8"
+          transition={{ delay: 0.2 }}
         >
-          Pagamento seguro via Stripe. Cancele a qualquer momento.
-        </motion.p>
+          <h2 className="text-xl font-bold mb-6">
+            {hasStripeSubscription ? "Alterar plano" : "Escolha seu plano"}
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {(Object.entries(STRIPE_PLANS) as [StripePlanKey, typeof STRIPE_PLANS[StripePlanKey]][]).map(
+              ([key, plan], i) => {
+                const isCurrent = isActive && currentPlan === key;
+                const isRecommended = key === "pro";
+
+                return (
+                  <motion.div
+                    key={key}
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 + i * 0.1 }}
+                  >
+                    <Card
+                      className={`relative h-full flex flex-col transition-all duration-300 hover:shadow-lg ${
+                        isRecommended
+                          ? "border-primary shadow-md ring-2 ring-primary/20"
+                          : "border-border"
+                      } ${isCurrent ? "ring-2 ring-primary/40" : ""}`}
+                    >
+                      {isRecommended && !isCurrent && (
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                          <span className="bg-primary text-primary-foreground text-xs font-semibold px-4 py-1 rounded-full shadow-sm flex items-center gap-1">
+                            <Star className="h-3 w-3 fill-current" />
+                            Mais escolhido
+                          </span>
+                        </div>
+                      )}
+                      {isCurrent && (
+                        <div className="absolute -top-3 right-4">
+                          <span className="bg-accent text-accent-foreground text-xs font-semibold px-3 py-1 rounded-full border">
+                            Plano atual
+                          </span>
+                        </div>
+                      )}
+
+                      <CardHeader className="pb-4">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                            {planIcons[key]}
+                          </div>
+                          <CardTitle className="text-xl">{plan.name}</CardTitle>
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-4xl font-bold">R${plan.price}</span>
+                          <span className="text-muted-foreground text-sm">/mes</span>
+                        </div>
+                        {!hasStripeSubscription && (
+                          <p className="text-xs text-primary mt-1 font-medium">7 dias gratis</p>
+                        )}
+                      </CardHeader>
+
+                      <CardContent className="flex-1 flex flex-col">
+                        <ul className="space-y-3 flex-1 mb-6">
+                          {plan.features.map((feature) => (
+                            <li key={feature} className="flex items-start gap-2.5">
+                              <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <span className="text-sm">{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+
+                        {isCurrent ? (
+                          <Button className="w-full rounded-xl" variant="outline" size="lg" disabled>
+                            Plano atual
+                          </Button>
+                        ) : hasStripeSubscription ? (
+                          <Button
+                            className="w-full rounded-xl"
+                            variant={isRecommended ? "default" : "outline"}
+                            size="lg"
+                            onClick={handleOpenPortal}
+                            disabled={portalLoading}
+                          >
+                            {portalLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                            {STRIPE_PLANS[key].price > STRIPE_PLANS[currentPlan].price
+                              ? "Fazer upgrade"
+                              : "Alterar plano"}
+                          </Button>
+                        ) : (
+                          <Button
+                            className="w-full rounded-xl"
+                            variant={isRecommended ? "default" : "outline"}
+                            size="lg"
+                            disabled={loadingPlan !== null}
+                            onClick={() => handleSubscribe(key)}
+                          >
+                            {loadingPlan === key ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                            Iniciar 7 dias gratis
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              }
+            )}
+          </div>
+
+          {/* Trust signals */}
+          <div className="flex flex-wrap items-center justify-center gap-6 mt-8 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-primary" />
+              <span>Pagamento seguro via Stripe</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CreditCard className="h-4 w-4 text-primary" />
+              <span>Nenhuma cobranca hoje</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <X className="h-4 w-4 text-primary" />
+              <span>Cancele quando quiser</span>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );
