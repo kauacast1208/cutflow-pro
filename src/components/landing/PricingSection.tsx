@@ -111,7 +111,7 @@ export function PricingSection() {
                 </ul>
                 <Link to={`/checkout?plan=${plan.slug}`}>
                   <Button variant={isPopular ? "hero" : "outline"} className="w-full h-11">
-                    Começar agora
+                    Começar teste gratuito
                   </Button>
                 </Link>
               </motion.div>

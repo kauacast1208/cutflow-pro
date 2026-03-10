@@ -150,7 +150,7 @@ export default function BillingPage() {
                         {loadingPlan === key ? (
                           <Loader2 className="h-4 w-4 animate-spin mr-2" />
                         ) : null}
-                        {isCurrent ? "Plano atual" : "Assinar plano"}
+                        {isCurrent ? "Plano atual" : "Começar teste gratuito"}
                       </Button>
                     </CardContent>
                   </Card>

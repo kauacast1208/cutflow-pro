@@ -70,7 +70,7 @@ export const planConfig: Record<PlanTier, PlanConfig> = {
   },
   premium: {
     label: "Premium",
-    price: 149,
+    price: 189,
     features: [
       "agenda",
       "clients",

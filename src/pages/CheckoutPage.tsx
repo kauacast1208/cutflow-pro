@@ -176,7 +176,7 @@ export default function CheckoutPage() {
                 ) : (
                   <Check className="h-4 w-4 mr-2" />
                 )}
-                Iniciar teste gratuito de 7 dias
+                Começar teste gratuito
               </Button>
 
               <p className="text-center text-xs text-muted-foreground mt-4">
