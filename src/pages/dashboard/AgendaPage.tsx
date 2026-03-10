@@ -5,7 +5,7 @@ import {
   ChevronLeft, ChevronRight, CalendarDays, MessageCircle,
   Clock, User, Scissors, DollarSign, XCircle, CheckCircle2, Star,
   LayoutGrid, CalendarRange, Users, AlertCircle, Phone, FileText,
-  Plus, Ban, CalendarOff, TrendingUp,
+  Plus, Ban, CalendarOff, TrendingUp, UserX,
 } from "lucide-react";
 import { useBarbershop } from "@/hooks/useBarbershop";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { motion, AnimatePresence } from "framer-motion";
+import NewAppointmentDialog from "@/components/agenda/NewAppointmentDialog";
 
 type ViewMode = "day" | "week" | "professional";
 
