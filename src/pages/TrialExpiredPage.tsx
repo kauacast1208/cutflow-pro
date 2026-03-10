@@ -158,10 +158,12 @@ export default function TrialExpiredPage() {
               <AlertTriangle className="h-8 w-8 text-destructive" />
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 tracking-tight">
-              Seu teste gratuito terminou
+              {isCancelled ? "Sua assinatura foi cancelada" : "Seu teste gratuito terminou"}
             </h1>
             <p className="text-muted-foreground max-w-lg mx-auto text-base sm:text-lg leading-relaxed">
-              Escolha um plano para continuar usando a CutFlow e manter sua agenda funcionando.
+              {isCancelled
+                ? "Reative seu plano para continuar gerenciando sua barbearia com a CutFlow."
+                : "Escolha um plano para continuar usando a CutFlow e manter sua agenda funcionando."}
             </p>
             <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm text-accent-foreground">
               <Shield className="h-4 w-4" />
