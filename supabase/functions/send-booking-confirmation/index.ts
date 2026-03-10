@@ -58,7 +58,7 @@ serve(async (req) => {
       .from("automations")
       .select("type, enabled, config")
       .eq("barbershop_id", appointment.barbershop_id)
-      .in("type", ["appointment_reminder_24h", "appointment_reminder_2h"]);
+      .in("type", ["appointment_confirmation", "appointment_reminder_24h", "appointment_reminder_2h"]);
 
     const autoMap = new Map<string, any>();
     (automations || []).forEach((a: any) => autoMap.set(a.type, a));

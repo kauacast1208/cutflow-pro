@@ -19,8 +19,12 @@ const statusConfig: Record<string, { label: string; icon: typeof CheckCircle2; c
 
 const typeLabels: Record<string, string> = {
   appointment_created: "Confirmação",
+  appointment_confirmation: "Confirmação",
   appointment_reminder_24h: "Lembrete 24h",
   appointment_reminder_2h: "Lembrete 2h",
+  reactivation_inactive_client: "Reativação 30d",
+  reactivation_inactive_client_60: "Reativação 60d",
+  reactivation_inactive_client_90: "Reativação 90d",
   reactivation_campaign: "Reativação",
   birthday_campaign: "Aniversário",
   referral_reward: "Indicação",
