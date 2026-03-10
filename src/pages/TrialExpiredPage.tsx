@@ -95,6 +95,30 @@ export default function TrialExpiredPage() {
     fetchPlans();
   }, []);
 
+  const handleDirectCheckout = async (planSlug: string) => {
+    const stripePlan = STRIPE_PLANS[planSlug as StripePlanKey];
+    if (!stripePlan) return;
+
+    setCheckoutLoading(planSlug);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId: stripePlan.priceId },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      toast({
+        title: "Erro ao iniciar checkout",
+        description: err.message || "Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setCheckoutLoading(null);
+    }
+  };
+
   // Fallback plans if DB is empty
   const displayPlans = plans.length > 0 ? plans : [
     { id: "1", slug: "starter", label: "Starter", price: 79, max_professionals: 1, features: ["agenda", "clients", "services", "basic_reports"] },
