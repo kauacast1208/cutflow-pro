@@ -162,7 +162,7 @@ export default function FinancePage() {
       ) : (
         <>
           {/* Metric cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {cards.map((card, i) => {
               const Icon = card.icon;
               return (
