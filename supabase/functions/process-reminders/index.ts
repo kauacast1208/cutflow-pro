@@ -24,7 +24,14 @@ serve(async (req) => {
       .select("*")
       .eq("status", "pending")
       .lte("scheduled_for", new Date().toISOString())
-      .in("type", ["appointment_reminder_24h", "appointment_reminder_2h", "post_service", "birthday_campaign", "reactivation_campaign", "referral_reward"])
+      .in("type", [
+        "appointment_reminder_24h",
+        "appointment_reminder_2h",
+        "post_service",
+        "birthday_campaign",
+        "reactivation_campaign",
+        "referral_reward",
+      ])
       .limit(50);
 
     if (error) throw error;
@@ -38,18 +45,21 @@ serve(async (req) => {
       if (notif.appointment_id) {
         const { data: appt } = await supabase
           .from("appointments")
-          .select("status, barbershops(name)")
+          .select("status")
           .eq("id", notif.appointment_id)
           .single();
 
         if (!appt || appt.status === "cancelled") {
-          await supabase.from("notifications").update({ status: "cancelled" }).eq("id", notif.id);
+          await supabase
+            .from("notifications")
+            .update({ status: "cancelled" })
+            .eq("id", notif.id);
           skipped++;
           continue;
         }
       }
 
-      // Send email reminder
+      // Send email
       if (notif.channel === "email" && notif.recipient_email && resendKey) {
         const isReminder24 = notif.type === "appointment_reminder_24h";
 
@@ -80,33 +90,52 @@ serve(async (req) => {
         });
 
         if (emailRes.ok) {
-          await supabase.from("notifications").update({
-            status: "sent",
-            sent_at: new Date().toISOString(),
-          }).eq("id", notif.id);
+          await supabase
+            .from("notifications")
+            .update({ status: "sent", sent_at: new Date().toISOString() })
+            .eq("id", notif.id);
           sent++;
         } else {
-          await supabase.from("notifications").update({
-            status: "failed",
-            error_message: `HTTP ${emailRes.status}`,
-          }).eq("id", notif.id);
+          await supabase
+            .from("notifications")
+            .update({ status: "failed", error_message: `HTTP ${emailRes.status}` })
+            .eq("id", notif.id);
           failed++;
         }
       }
 
-      // WhatsApp placeholder
+      // WhatsApp — prepared for provider integration
       if (notif.channel === "whatsapp" && notif.recipient_phone) {
-        console.log(`[WhatsApp Ready] ${notif.type} to ${notif.recipient_phone}: ${notif.body}`);
-        await supabase.from("notifications").update({
-          status: "skipped",
-          error_message: "WhatsApp integration pending",
-        }).eq("id", notif.id);
+        // TODO: Replace with actual WhatsApp Cloud API / Twilio / Z-API call
+        // Example structure:
+        // const whatsappRes = await fetch("https://graph.facebook.com/v18.0/PHONE_ID/messages", {
+        //   method: "POST",
+        //   headers: { Authorization: `Bearer ${whatsappToken}`, "Content-Type": "application/json" },
+        //   body: JSON.stringify({ messaging_product: "whatsapp", to: notif.recipient_phone, type: "text", text: { body: notif.body } }),
+        // });
+
+        console.log(`[WhatsApp Ready] ${notif.type} to ${notif.recipient_phone}: ${notif.body?.slice(0, 60)}...`);
+
+        // For now, mark as skipped with clear message
+        await supabase
+          .from("notifications")
+          .update({
+            status: "skipped",
+            error_message: "Integração WhatsApp pendente — mensagem preparada",
+          })
+          .eq("id", notif.id);
         skipped++;
       }
     }
 
     return new Response(
-      JSON.stringify({ success: true, processed: (notifications || []).length, sent, failed, skipped }),
+      JSON.stringify({
+        success: true,
+        processed: (notifications || []).length,
+        sent,
+        failed,
+        skipped,
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
