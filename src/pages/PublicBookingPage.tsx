@@ -523,7 +523,7 @@ export default function PublicBookingPage() {
             )}
             {step === 3 && (
               <ClientInfoStep
-                service={service}
+                service={firstService}
                 professional={professional || (isAnyPro ? { name: "Qualquer profissional" } : null)}
                 selectedDate={selectedDate}
                 selectedTime={selectedTime}
