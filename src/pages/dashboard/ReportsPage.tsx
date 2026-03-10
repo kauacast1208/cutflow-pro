@@ -151,7 +151,7 @@ export default function ReportsPage() {
         icon: Users,
         colorKey: "info",
       },
-    ];
+    ], serviceDistribution };
   }, [appointments, clients, period]);
 
   if (!barbershop) {
