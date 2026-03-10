@@ -6,12 +6,13 @@ import {
 } from "@/components/ui/accordion";
 
 const faqs = [
-  { q: "Como funciona o CutFlow?", a: "O CutFlow é uma plataforma completa de gestão para barbearias. Você cria sua conta, configura seus serviços e profissionais, e compartilha um link de agendamento online com seus clientes. Tudo é gerenciado pelo painel administrativo." },
-  { q: "Preciso pagar para testar?", a: "Não! Você tem 7 dias grátis com acesso total a todas as funcionalidades. Não pedimos cartão de crédito para iniciar o teste." },
-  { q: "Meus clientes podem agendar sozinhos?", a: "Sim! Cada barbearia recebe um link único de agendamento. Seus clientes escolhem serviço, profissional, data e horário sem precisar baixar app ou criar conta." },
-  { q: "Posso cancelar agendamentos?", a: "Sim. Tanto você quanto seus clientes podem cancelar ou remarcar agendamentos. Você configura as regras de cancelamento nas configurações." },
-  { q: "Funciona no celular?", a: "100%! O CutFlow funciona perfeitamente em qualquer dispositivo — celular, tablet ou computador. A experiência é otimizada para mobile." },
-  { q: "Vocês oferecem suporte?", a: "Sim! Todos os planos incluem suporte por chat. O plano Premium conta com suporte prioritário." },
+  { q: "Como funciona o CutFlow?", a: "O CutFlow e uma plataforma completa de gestao para barbearias. Voce cria sua conta, configura seus servicos e profissionais, e compartilha um link de agendamento online com seus clientes. Tudo e gerenciado pelo painel administrativo." },
+  { q: "Preciso instalar algo?", a: "Nao! O CutFlow funciona 100% no navegador. Basta acessar pelo celular, tablet ou computador. Nao precisa baixar nenhum aplicativo." },
+  { q: "Posso cancelar quando quiser?", a: "Sim! Voce pode cancelar sua assinatura a qualquer momento, sem multa ou fidelidade. Seu acesso continua ate o final do periodo pago." },
+  { q: "O sistema funciona no celular?", a: "100%! O CutFlow foi pensado mobile first. Funciona perfeitamente em qualquer dispositivo — celular, tablet ou computador." },
+  { q: "Posso testar antes de pagar?", a: "Sim! Voce tem 7 dias gratis com acesso total a todas as funcionalidades. Nao pedimos cartao de credito para iniciar o teste." },
+  { q: "Meus clientes precisam criar conta?", a: "Nao! Seus clientes agendam diretamente pelo link publico sem precisar criar conta ou baixar app. Simples e rapido." },
+  { q: "Voces oferecem suporte?", a: "Sim! Todos os planos incluem suporte por chat. O plano Premium conta com suporte prioritario." },
 ];
 
 export function FAQSection() {

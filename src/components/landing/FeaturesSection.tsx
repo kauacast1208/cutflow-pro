@@ -1,26 +1,36 @@
 import { motion } from "framer-motion";
-import { Calendar, Users, Globe, BarChart3, ArrowUpRight } from "lucide-react";
+import { Calendar, Users, Globe, BarChart3, UserCheck, Zap, ArrowUpRight } from "lucide-react";
 
 const features = [
   {
     icon: Calendar,
     title: "Agenda inteligente",
-    description: "Calendário visual com controle completo de horários, profissionais e bloqueios automáticos.",
+    description: "Controle total da agenda da barbearia com visualizacao por dia, semana e profissional.",
   },
   {
     icon: Users,
-    title: "Clientes organizados",
-    description: "Cadastro com histórico completo, contatos, preferências e aniversários.",
+    title: "Gestao de clientes",
+    description: "Historico completo de clientes e atendimentos com tags, preferencias e CRM integrado.",
+  },
+  {
+    icon: BarChart3,
+    title: "Relatorios e financeiro",
+    description: "Acompanhe faturamento, ticket medio, ranking de profissionais e desempenho da barbearia.",
+  },
+  {
+    icon: UserCheck,
+    title: "Controle de profissionais",
+    description: "Gerencie barbeiros, produtividade da equipe, escalas e comissoes com facilidade.",
+  },
+  {
+    icon: Zap,
+    title: "Automacao de marketing",
+    description: "Reative clientes inativos, envie lembretes automaticos e mensagens de aniversario.",
   },
   {
     icon: Globe,
     title: "Agendamento online",
     description: "Link exclusivo para seus clientes agendarem 24h por dia, direto pelo celular.",
-  },
-  {
-    icon: BarChart3,
-    title: "Relatórios e controle",
-    description: "Faturamento, comissões, ranking de profissionais e métricas em tempo real.",
   },
 ];
 
@@ -36,7 +46,7 @@ export function FeaturesSection() {
             viewport={{ once: true }}
             className="inline-flex items-center gap-2 rounded-full bg-primary/8 border border-primary/15 px-4 py-1.5 text-sm font-medium text-primary mb-5"
           >
-            A solução
+            Beneficios
           </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -57,7 +67,7 @@ export function FeaturesSection() {
           </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {features.map((feature, i) => (
             <motion.div
               key={feature.title}
