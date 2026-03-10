@@ -103,7 +103,12 @@ export default function ReportsPage() {
     const totalRevenue = completed.reduce((sum, a) => sum + Number(a.price || 0), 0);
     const avgTicket = completed.length > 0 ? (totalRevenue / completed.length).toFixed(0) : "0";
 
-    return [
+    const serviceDistribution = Object.entries(serviceCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([name, count]) => ({ name, value: count }));
+
+    return { cards: [
       {
         label: "Servico mais popular",
         value: topService ? topService[0] : "-",
