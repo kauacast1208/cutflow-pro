@@ -29,6 +29,8 @@ const typeLabels: Record<string, string> = {
   birthday_campaign: "Aniversário",
   referral_reward: "Indicação",
   post_service: "Pós-atendimento",
+  loyalty_earned: "Fidelidade",
+  loyalty_near: "Fidelidade (quase lá)",
 };
 
 function EmptyState() {

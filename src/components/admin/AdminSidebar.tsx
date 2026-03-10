@@ -8,7 +8,7 @@ import {
 import {
   LayoutDashboard, Calendar, Users, UserCog, DollarSign, BarChart3,
   Settings, Scissors, LogOut, ExternalLink, Copy, Lock, Megaphone,
-  Mail, UserPlus, Gift, Zap, UserX, Cake,
+  Mail, UserPlus, Gift, Zap, UserX, Cake, Trophy,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useBarbershop } from "@/hooks/useBarbershop";
@@ -42,6 +42,7 @@ const items: MenuItem[] = [
   { title: "Clientes Inativos", url: "/dashboard/inactive-clients", icon: UserX, roles: ["owner", "admin"], group: "marketing" },
   { title: "Aniversariantes", url: "/dashboard/birthdays", icon: Cake, roles: ["owner", "admin"], group: "marketing" },
   { title: "Indicações", url: "/dashboard/referrals", icon: Gift, roles: ["owner", "admin"], group: "marketing" },
+  { title: "Fidelidade", url: "/dashboard/loyalty", icon: Trophy, roles: ["owner", "admin"], group: "marketing" },
   { title: "Equipe", url: "/dashboard/team", icon: UserPlus, roles: ["owner", "admin"], group: "admin" },
   { title: "Configurações", url: "/dashboard/settings", icon: Settings, roles: ["owner", "admin"], group: "admin" },
 ];

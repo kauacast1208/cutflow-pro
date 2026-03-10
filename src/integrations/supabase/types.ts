@@ -417,6 +417,142 @@ export type Database = {
           },
         ]
       }
+      loyalty_programs: {
+        Row: {
+          barbershop_id: string
+          created_at: string
+          enabled: boolean
+          id: string
+          near_threshold: number
+          notification_message: string | null
+          notification_near_message: string | null
+          reward_description: string
+          reward_validity_days: number
+          specific_service_id: string | null
+          target: number
+          type: Database["public"]["Enums"]["loyalty_type"]
+          updated_at: string
+        }
+        Insert: {
+          barbershop_id: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          near_threshold?: number
+          notification_message?: string | null
+          notification_near_message?: string | null
+          reward_description?: string
+          reward_validity_days?: number
+          specific_service_id?: string | null
+          target?: number
+          type?: Database["public"]["Enums"]["loyalty_type"]
+          updated_at?: string
+        }
+        Update: {
+          barbershop_id?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          near_threshold?: number
+          notification_message?: string | null
+          notification_near_message?: string | null
+          reward_description?: string
+          reward_validity_days?: number
+          specific_service_id?: string | null
+          target?: number
+          type?: Database["public"]["Enums"]["loyalty_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_programs_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: true
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_programs_specific_service_id_fkey"
+            columns: ["specific_service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_rewards: {
+        Row: {
+          barbershop_id: string
+          client_id: string
+          created_at: string
+          earned_at: string | null
+          expires_at: string | null
+          id: string
+          program_id: string
+          progress: number
+          redeemed_at: string | null
+          reward_description: string
+          status: Database["public"]["Enums"]["loyalty_reward_status"]
+          target: number
+          total_spent: number
+          updated_at: string
+        }
+        Insert: {
+          barbershop_id: string
+          client_id: string
+          created_at?: string
+          earned_at?: string | null
+          expires_at?: string | null
+          id?: string
+          program_id: string
+          progress?: number
+          redeemed_at?: string | null
+          reward_description: string
+          status?: Database["public"]["Enums"]["loyalty_reward_status"]
+          target: number
+          total_spent?: number
+          updated_at?: string
+        }
+        Update: {
+          barbershop_id?: string
+          client_id?: string
+          created_at?: string
+          earned_at?: string | null
+          expires_at?: string | null
+          id?: string
+          program_id?: string
+          progress?: number
+          redeemed_at?: string | null
+          reward_description?: string
+          status?: Database["public"]["Enums"]["loyalty_reward_status"]
+          target?: number
+          total_spent?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_rewards_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_rewards_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_rewards_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           appointment_id: string | null
@@ -874,6 +1010,8 @@ export type Database = {
         | "cancelled"
         | "completed"
         | "rescheduled"
+      loyalty_reward_status: "in_progress" | "earned" | "redeemed" | "expired"
+      loyalty_type: "visits" | "spending" | "specific_service"
       subscription_plan: "starter" | "pro" | "premium"
       subscription_status:
         | "trial"
@@ -1016,6 +1154,8 @@ export const Constants = {
         "completed",
         "rescheduled",
       ],
+      loyalty_reward_status: ["in_progress", "earned", "redeemed", "expired"],
+      loyalty_type: ["visits", "spending", "specific_service"],
       subscription_plan: ["starter", "pro", "premium"],
       subscription_status: [
         "trial",
