@@ -51,7 +51,7 @@ export default function PublicBookingPage() {
 
   const [step, setStep] = useState<Step>(0);
   const [direction, setDirection] = useState(1); // 1 = forward, -1 = back
-  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [selectedPro, setSelectedPro] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
