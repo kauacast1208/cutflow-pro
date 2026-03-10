@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { Scissors, ArrowRight, Loader2, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useTenant } from "@/hooks/useTenant";
 import { useToast } from "@/hooks/use-toast";
 
 function slugify(text: string) {
@@ -25,6 +26,7 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { refresh } = useTenant();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,6 +50,9 @@ export default function OnboardingPage() {
       setLoading(false);
       return;
     }
+
+    // Refresh tenant context so TenantGuard picks up the new barbershop
+    await refresh();
 
     toast({ title: "Barbearia criada!", description: "Sua barbearia está pronta para uso." });
     navigate("/dashboard");
