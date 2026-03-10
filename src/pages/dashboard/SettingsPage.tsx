@@ -230,6 +230,9 @@ export default function SettingsPage() {
             <TabsTrigger value="subscription" className="text-xs rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
               <CreditCard className="h-3.5 w-3.5 mr-1.5" /> Assinatura
             </TabsTrigger>
+            <TabsTrigger value="whatsapp" className="text-xs rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
+              <MessageCircle className="h-3.5 w-3.5 mr-1.5" /> WhatsApp
+            </TabsTrigger>
           </TabsList>
 
           {/* INFO */}
