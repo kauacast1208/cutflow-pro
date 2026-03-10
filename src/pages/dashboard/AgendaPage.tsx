@@ -311,19 +311,31 @@ export default function AgendaPage() {
             </div>
           </div>
 
-          {/* Block time button */}
+          {/* Action buttons */}
           {canViewFullAgenda && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="gap-1.5 rounded-xl text-xs hidden sm:flex"
-              onClick={() => {
-                setBlockForm(f => ({ ...f, date: format(selectedDate, "yyyy-MM-dd") }));
-                setShowBlockDialog(true);
-              }}
-            >
-              <Ban className="h-3.5 w-3.5" /> Bloquear horário
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                className="gap-1.5 rounded-xl text-xs hidden sm:flex"
+                onClick={() => {
+                  setNewApptDefaults({ date: selectedDate });
+                  setShowNewAppt(true);
+                }}
+              >
+                <Plus className="h-3.5 w-3.5" /> Novo agendamento
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 rounded-xl text-xs hidden sm:flex"
+                onClick={() => {
+                  setBlockForm(f => ({ ...f, date: format(selectedDate, "yyyy-MM-dd") }));
+                  setShowBlockDialog(true);
+                }}
+              >
+                <Ban className="h-3.5 w-3.5" /> Bloquear
+              </Button>
+            </div>
           )}
         </div>
 
