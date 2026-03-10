@@ -22,6 +22,12 @@ serve(async (req) => {
     Deno.env.get("SUPABASE_ANON_KEY") ?? ""
   );
 
+  const supabaseAdmin = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    { auth: { persistSession: false } }
+  );
+
   try {
     logStep("Function started");
 
@@ -36,6 +42,13 @@ serve(async (req) => {
     if (!priceId) throw new Error("priceId is required");
     logStep("Price ID received", { priceId });
 
+    // Get barbershop for metadata
+    const { data: barbershop } = await supabaseAdmin
+      .from("barbershops")
+      .select("id")
+      .eq("owner_id", user.id)
+      .maybeSingle();
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
@@ -46,9 +59,23 @@ serve(async (req) => {
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       logStep("Existing Stripe customer found", { customerId });
+
+      // Check if already has active subscription
+      const subs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
+      const trialSubs = await stripe.subscriptions.list({ customer: customerId, status: "trialing", limit: 1 });
+      if (subs.data.length > 0 || trialSubs.data.length > 0) {
+        logStep("User already has active subscription, skipping trial");
+      }
     }
 
     const origin = req.headers.get("origin") || "http://localhost:3000";
+
+    const metadata: Record<string, string> = {
+      user_id: user.id,
+    };
+    if (barbershop?.id) {
+      metadata.barbershop_id = barbershop.id;
+    }
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -57,15 +84,12 @@ serve(async (req) => {
       mode: "subscription",
       subscription_data: {
         trial_period_days: 7,
-        metadata: {
-          user_id: user.id,
-        },
+        metadata,
       },
-      success_url: `${origin}/dashboard?checkout=success`,
-      cancel_url: `${origin}/billing`,
-      metadata: {
-        user_id: user.id,
-      },
+      success_url: `${origin}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/billing/cancel`,
+      metadata,
+      allow_promotion_codes: true,
     });
 
     logStep("Checkout session created", { sessionId: session.id, trial: true });

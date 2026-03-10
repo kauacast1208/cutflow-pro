@@ -14,6 +14,19 @@ const PRICE_TO_PLAN: Record<string, string> = {
   "price_1T9CMGGYcPFVpgolzwe6TMW6": "premium",
 };
 
+function mapStripeStatus(status: string): string {
+  switch (status) {
+    case "active": return "active";
+    case "trialing": return "trial";
+    case "past_due": return "past_due";
+    case "canceled":
+    case "unpaid": return "cancelled";
+    case "incomplete":
+    case "incomplete_expired": return "expired";
+    default: return "expired";
+  }
+}
+
 serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
@@ -40,7 +53,6 @@ serve(async (req) => {
       event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
       logStep("Webhook signature verified", { type: event.type });
     } else {
-      // Fallback: parse without verification (dev mode)
       event = JSON.parse(body) as Stripe.Event;
       logStep("Webhook received (no signature verification)", { type: event.type });
     }
@@ -65,7 +77,6 @@ serve(async (req) => {
           break;
         }
 
-        // Get the subscription details from Stripe
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         const priceId = subscription.items.data[0]?.price?.id;
         const plan = priceId ? (PRICE_TO_PLAN[priceId] || "starter") : "starter";
@@ -77,33 +88,37 @@ serve(async (req) => {
         const periodEnd = new Date(subscription.current_period_end * 1000).toISOString();
         const periodStart = new Date(subscription.current_period_start * 1000).toISOString();
 
-        // Find the barbershop for this user
-        const { data: barbershop } = await supabase
-          .from("barbershops")
-          .select("id")
-          .eq("owner_id", userId)
-          .maybeSingle();
+        // Find barbershop - from metadata first, then from owner
+        let barbershopId = session.metadata?.barbershop_id;
+        if (!barbershopId) {
+          const { data: barbershop } = await supabase
+            .from("barbershops")
+            .select("id")
+            .eq("owner_id", userId)
+            .maybeSingle();
+          barbershopId = barbershop?.id;
+        }
 
-        if (barbershop) {
-          const status = subscription.status === "trialing" ? "trial" : "active";
+        if (barbershopId) {
+          const dbStatus = mapStripeStatus(subscription.status);
 
           const { error } = await supabase
             .from("subscriptions")
             .update({
               stripe_customer_id: customerId,
               stripe_subscription_id: subscriptionId,
-              plan: plan,
-              status: status,
+              plan,
+              status: dbStatus,
               trial_ends_at: trialEnd,
               current_period_start: periodStart,
               current_period_end: periodEnd,
             })
-            .eq("barbershop_id", barbershop.id);
+            .eq("barbershop_id", barbershopId);
 
           if (error) {
             logStep("Error updating subscription", { error: error.message });
           } else {
-            logStep("Subscription updated successfully", { barbershopId: barbershop.id, plan, status });
+            logStep("Subscription updated successfully", { barbershopId, plan, status: dbStatus });
           }
         } else {
           logStep("No barbershop found for user", { userId });
@@ -124,14 +139,16 @@ serve(async (req) => {
         const periodEnd = new Date(subscription.current_period_end * 1000).toISOString();
         const periodStart = new Date(subscription.current_period_start * 1000).toISOString();
 
+        const updateData: Record<string, any> = {
+          status: "active",
+          current_period_start: periodStart,
+          current_period_end: periodEnd,
+        };
+        if (plan) updateData.plan = plan;
+
         const { error } = await supabase
           .from("subscriptions")
-          .update({
-            status: "active",
-            plan: plan || undefined,
-            current_period_start: periodStart,
-            current_period_end: periodEnd,
-          })
+          .update(updateData)
           .eq("stripe_subscription_id", subscriptionId);
 
         if (error) {
@@ -144,22 +161,17 @@ serve(async (req) => {
 
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
-        logStep("customer.subscription.updated", { subscriptionId: subscription.id, status: subscription.status });
+        logStep("customer.subscription.updated", {
+          subscriptionId: subscription.id,
+          status: subscription.status,
+          cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        });
 
         const priceId = subscription.items.data[0]?.price?.id;
         const plan = priceId ? (PRICE_TO_PLAN[priceId] || null) : null;
         const periodEnd = new Date(subscription.current_period_end * 1000).toISOString();
         const periodStart = new Date(subscription.current_period_start * 1000).toISOString();
-
-        let dbStatus: string;
-        switch (subscription.status) {
-          case "active": dbStatus = "active"; break;
-          case "trialing": dbStatus = "trial"; break;
-          case "past_due": dbStatus = "past_due"; break;
-          case "canceled":
-          case "unpaid": dbStatus = "cancelled"; break;
-          default: dbStatus = "expired"; break;
-        }
+        const dbStatus = mapStripeStatus(subscription.status);
 
         const updateData: Record<string, any> = {
           status: dbStatus,
@@ -167,7 +179,6 @@ serve(async (req) => {
           current_period_end: periodEnd,
         };
         if (plan) updateData.plan = plan;
-
         if (subscription.trial_end) {
           updateData.trial_ends_at = new Date(subscription.trial_end * 1000).toISOString();
         }
