@@ -22,7 +22,7 @@ export function HeroSection() {
             className="inline-flex items-center gap-2.5 rounded-full border border-primary/15 bg-primary/5 px-5 py-2 text-sm text-primary font-medium mb-10 backdrop-blur-sm"
           >
             <Sparkles className="h-4 w-4" />
-            Teste grátis por 7 dias — sem cartão de crédito
+            Teste gratis por 7 dias — sem cartao de credito
           </motion.div>
 
           {/* Headline */}
@@ -32,10 +32,9 @@ export function HeroSection() {
             transition={{ duration: 0.6, delay: 0.08 }}
             className="text-[2.5rem] sm:text-5xl lg:text-6xl xl:text-[4.5rem] font-extrabold tracking-[-0.03em] leading-[1.05] mb-7"
           >
-            O sistema que toda{" "}
+            Gerencie sua barbearia com{" "}
             <br className="hidden sm:block" />
-            barbearia{" "}
-            <span className="text-gradient">moderna precisa.</span>
+            <span className="text-gradient">eficiencia profissional.</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -45,8 +44,8 @@ export function HeroSection() {
             transition={{ duration: 0.5, delay: 0.16 }}
             className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed"
           >
-            Organize sua agenda, receba agendamentos online e reduza faltas.
-            Tudo em uma plataforma profissional e fácil de usar.
+            Agenda, clientes, financeiro e relatorios em um so sistema.
+            Tudo em uma plataforma profissional e facil de usar.
           </motion.p>
 
           {/* CTA buttons */}
@@ -58,14 +57,14 @@ export function HeroSection() {
           >
             <Link to="/signup">
               <Button variant="hero" size="lg" className="text-base sm:text-lg px-10 sm:px-12 h-14 sm:h-[60px] min-w-[280px] shadow-glow">
-                Começar grátis
+                Comecar gratis
                 <ArrowRight className="ml-2.5 h-5 w-5" />
               </Button>
             </Link>
             <Link to="/demo">
               <Button variant="hero-outline" size="lg" className="text-base sm:text-lg px-10 sm:px-12 h-14 sm:h-[60px] min-w-[280px]">
                 <Play className="mr-2.5 h-5 w-5" />
-                Ver demonstração
+                Ver demonstracao
               </Button>
             </Link>
           </motion.div>
@@ -85,7 +84,7 @@ export function HeroSection() {
               ))}
             </div>
             <p className="text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground">+1.200 barbearias</span> já usam o CutFlow
+              <span className="font-semibold text-foreground">+1.200 barbearias</span> ja usam o CutFlow
             </p>
           </motion.div>
         </div>
@@ -116,8 +115,8 @@ export function HeroSection() {
               {[
                 { icon: Calendar, label: "Agendamentos hoje", value: "12", color: "text-primary" },
                 { icon: Users, label: "Clientes ativos", value: "248", color: "text-info" },
-                { icon: Clock, label: "Próximo horário", value: "14:30", color: "text-warning" },
-                { icon: CheckCircle2, label: "Taxa de presença", value: "94%", color: "text-success" },
+                { icon: Clock, label: "Proximo horario", value: "14:30", color: "text-warning" },
+                { icon: CheckCircle2, label: "Taxa de presenca", value: "94%", color: "text-success" },
               ].map((stat) => (
                 <div key={stat.label} className="rounded-xl border border-border bg-background p-4 hover:shadow-md transition-shadow">
                   <stat.icon className={`h-5 w-5 ${stat.color} mb-3`} />
@@ -128,7 +127,7 @@ export function HeroSection() {
             </div>
             {/* Mock agenda rows */}
             <div className="px-6 sm:px-8 pb-6 sm:pb-8 space-y-2">
-              {["09:00 — Carlos Silva · Corte + Barba", "10:00 — Rafael Santos · Corte Masculino", "11:00 — André Oliveira · Barba"].map((row, i) => (
+              {["09:00 — Carlos Silva · Corte + Barba", "10:00 — Rafael Santos · Corte Masculino", "11:00 — Andre Oliveira · Barba"].map((row, i) => (
                 <div key={i} className="flex items-center gap-3 rounded-xl border border-border bg-background px-4 py-3.5 text-sm group hover:border-primary/20 transition-colors">
                   <div className="h-2.5 w-2.5 rounded-full bg-primary/80" />
                   <span className="text-muted-foreground group-hover:text-foreground transition-colors">{row}</span>
