@@ -10,8 +10,9 @@ import { useBarbershop } from "@/hooks/useBarbershop";
 import { useToast } from "@/hooks/use-toast";
 import {
   Store, Clock, Scissors, Users, Shield, Loader2, Plus,
-  Trash2, Save, Copy, ExternalLink,
+  Trash2, Save, Copy, ExternalLink, CreditCard,
 } from "lucide-react";
+import SubscriptionManager from "@/components/billing/SubscriptionManager";
 
 const fadeUp = (i: number) => ({
   initial: { opacity: 0, y: 14 },
