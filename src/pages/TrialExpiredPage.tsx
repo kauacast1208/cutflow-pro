@@ -93,9 +93,9 @@ export default function TrialExpiredPage() {
 
   // Fallback plans if DB is empty
   const displayPlans = plans.length > 0 ? plans : [
-    { id: "1", slug: "starter", label: "Starter", price: 49, max_professionals: 1, features: ["agenda", "clients", "services", "basic_reports"] },
-    { id: "2", slug: "pro", label: "Pro", price: 89, max_professionals: 5, features: ["agenda", "clients", "services", "basic_reports", "advanced_reports", "finance", "simple_campaigns", "basic_mailing", "chat_support"] },
-    { id: "3", slug: "premium", label: "Premium", price: 149, max_professionals: 999, features: ["agenda", "clients", "services", "basic_reports", "advanced_reports", "finance", "simple_campaigns", "advanced_campaigns", "basic_mailing", "mailing", "marketing_automation", "priority_support", "chat_support", "integrations"] },
+    { id: "1", slug: "starter", label: "Starter", price: 79, max_professionals: 1, features: ["agenda", "clients", "services", "basic_reports"] },
+    { id: "2", slug: "pro", label: "Pro", price: 129, max_professionals: 5, features: ["agenda", "clients", "services", "basic_reports", "advanced_reports", "finance", "simple_campaigns", "basic_mailing", "chat_support"] },
+    { id: "3", slug: "premium", label: "Premium", price: 189, max_professionals: 999, features: ["agenda", "clients", "services", "basic_reports", "advanced_reports", "finance", "simple_campaigns", "advanced_campaigns", "basic_mailing", "mailing", "marketing_automation", "priority_support", "chat_support", "integrations"] },
   ];
 
   const recommendedSlug = "pro";

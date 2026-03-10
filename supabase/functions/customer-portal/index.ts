@@ -23,7 +23,7 @@ serve(async (req) => {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
-    const supabaseClient = createClient(
+    const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
@@ -33,7 +33,7 @@ serve(async (req) => {
     if (!authHeader) throw new Error("No authorization header provided");
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
@@ -42,15 +42,15 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     if (customers.data.length === 0) {
-      throw new Error("No Stripe customer found for this user");
+      throw new Error("Nenhuma assinatura encontrada. Assine um plano primeiro.");
     }
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    const origin = req.headers.get("origin") || "http://localhost:3000";
+    const origin = req.headers.get("origin") || "https://id-preview--3eb77533-9226-482b-81ba-9402b0a38373.lovable.app";
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,
-      return_url: `${origin}/dashboard/settings`,
+      return_url: `${origin}/billing`,
     });
     logStep("Portal session created", { url: portalSession.url });
 

@@ -7,6 +7,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const VALID_PRICE_IDS = new Set([
+  "price_1T9CKPGYcPFVpgolj3CkrGOE", // starter
+  "price_1T9CLnGYcPFVpgol9bzdrSgY",  // pro
+  "price_1T9CMGGYcPFVpgolzwe6TMW6",  // premium
+]);
+
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
@@ -17,11 +23,6 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-  );
-
   const supabaseAdmin = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -31,16 +32,23 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const authHeader = req.headers.get("Authorization")!;
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
+
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) throw new Error("No authorization header provided");
+
     const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
-    const user = data.user;
+    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
+    if (userError) throw new Error(`Authentication error: ${userError.message}`);
+    const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     const { priceId } = await req.json();
     if (!priceId) throw new Error("priceId is required");
-    logStep("Price ID received", { priceId });
+    if (!VALID_PRICE_IDS.has(priceId)) throw new Error("Invalid priceId");
+    logStep("Price ID validated", { priceId });
 
     // Get barbershop for metadata
     const { data: barbershop } = await supabaseAdmin
@@ -49,26 +57,38 @@ serve(async (req) => {
       .eq("owner_id", user.id)
       .maybeSingle();
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const stripe = new Stripe(stripeKey, {
       apiVersion: "2025-08-27.basil",
     });
 
     // Check existing customer
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId;
+    let customerId: string | undefined;
+    let hasActiveSub = false;
+
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       logStep("Existing Stripe customer found", { customerId });
 
-      // Check if already has active subscription
-      const subs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
-      const trialSubs = await stripe.subscriptions.list({ customer: customerId, status: "trialing", limit: 1 });
-      if (subs.data.length > 0 || trialSubs.data.length > 0) {
-        logStep("User already has active subscription, skipping trial");
+      // Check if already has active/trialing subscription
+      const activeSubs = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "active",
+        limit: 1,
+      });
+      const trialSubs = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "trialing",
+        limit: 1,
+      });
+
+      if (activeSubs.data.length > 0 || trialSubs.data.length > 0) {
+        hasActiveSub = true;
+        logStep("User already has active/trialing subscription");
       }
     }
 
-    const origin = req.headers.get("origin") || "http://localhost:3000";
+    const origin = req.headers.get("origin") || "https://id-preview--3eb77533-9226-482b-81ba-9402b0a38373.lovable.app";
 
     const metadata: Record<string, string> = {
       user_id: user.id,
@@ -77,22 +97,34 @@ serve(async (req) => {
       metadata.barbershop_id = barbershop.id;
     }
 
+    // Only add trial if user doesn't already have an active subscription
+    const subscriptionData: Stripe.Checkout.SessionCreateParams["subscription_data"] = {
+      metadata,
+    };
+    if (!hasActiveSub) {
+      subscriptionData.trial_period_days = 7;
+      logStep("Trial period enabled (7 days)");
+    } else {
+      logStep("Skipping trial - user has existing subscription");
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
-      subscription_data: {
-        trial_period_days: 7,
-        metadata,
-      },
+      subscription_data: subscriptionData,
       success_url: `${origin}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/billing/cancel`,
       metadata,
       allow_promotion_codes: true,
     });
 
-    logStep("Checkout session created", { sessionId: session.id, trial: true });
+    logStep("Checkout session created", {
+      sessionId: session.id,
+      trial: !hasActiveSub,
+      priceId,
+    });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

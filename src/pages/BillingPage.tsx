@@ -313,10 +313,12 @@ export default function BillingPage() {
               <Shield className="h-4 w-4 text-primary" />
               <span>Pagamento seguro via Stripe</span>
             </div>
-            <div className="flex items-center gap-2">
-              <CreditCard className="h-4 w-4 text-primary" />
-              <span>Nenhuma cobranca hoje</span>
-            </div>
+            {!hasStripeSubscription && (
+              <div className="flex items-center gap-2">
+                <CreditCard className="h-4 w-4 text-primary" />
+                <span>Nenhuma cobranca hoje</span>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <X className="h-4 w-4 text-primary" />
               <span>Cancele quando quiser</span>
