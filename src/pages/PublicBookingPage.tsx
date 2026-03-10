@@ -308,12 +308,12 @@ export default function PublicBookingPage() {
   const handleCancelAppointment = async () => {
     if (!appointmentId) return;
     await supabase.from("appointments").update({ status: "cancelled" }).eq("id", appointmentId);
-    if (clientEmail && service && professional && selectedDate && selectedTime) {
+    if (clientEmail && firstService && professional && selectedDate && selectedTime) {
       sendBookingEmail({
         type: "cancelled",
         clientName,
         clientEmail,
-        service,
+        service: firstService,
         professional,
         selectedDate,
         selectedTime,
