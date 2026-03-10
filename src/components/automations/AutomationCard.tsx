@@ -1,10 +1,11 @@
+import { useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Save, Loader2, ChevronDown, MessageSquare, Mail } from "lucide-react";
+import { Save, Loader2, ChevronDown, MessageSquare, Mail, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 
@@ -17,6 +18,7 @@ export interface AutomationType {
   bg: string;
   iconBg: string;
   defaultConfig: Record<string, any>;
+  placeholders?: string[];
 }
 
 export interface Automation {
@@ -37,6 +39,40 @@ interface AutomationCardProps {
   onSave: () => void;
 }
 
+function MessagePreview({ message, placeholders }: { message: string; placeholders?: string[] }) {
+  const exampleValues: Record<string, string> = {
+    "{{client_name}}": "João Silva",
+    "{{nome}}": "João Silva",
+    "{{barbershop_name}}": "Barbearia Premium",
+    "{{service_name}}": "Corte + Barba",
+    "{{professional_name}}": "Carlos",
+    "{{appointment_date}}": "sexta-feira, 15 de março",
+    "{{appointment_time}}": "14:30",
+    "{{link}}": "https://cutflow.app/agendar/barbearia",
+    "{{meta}}": "5",
+    "{{recompensa}}": "Corte grátis",
+  };
+
+  let preview = message;
+  for (const [key, value] of Object.entries(exampleValues)) {
+    preview = preview.replaceAll(key, value);
+  }
+
+  return (
+    <div className="rounded-xl bg-secondary/40 border border-border/30 p-4">
+      <div className="flex items-center gap-2 mb-2">
+        <MessageSquare className="h-3.5 w-3.5 text-green-600" />
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Preview da mensagem
+        </span>
+      </div>
+      <div className="bg-card rounded-lg p-3 border border-border/40 shadow-sm">
+        <p className="text-sm text-foreground whitespace-pre-line leading-relaxed">{preview}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function AutomationCard({
   at,
   automation,
@@ -47,6 +83,8 @@ export default function AutomationCard({
   onUpdateConfig,
   onSave,
 }: AutomationCardProps) {
+  const [showPreview, setShowPreview] = useState(false);
+
   return (
     <motion.div
       layout
@@ -112,15 +150,43 @@ export default function AutomationCard({
                   className="text-sm bg-card border-border/60 resize-none focus:ring-primary/20"
                 />
                 <p className="text-[11px] text-muted-foreground/70">
-                  Variáveis: <code className="text-primary/80 bg-primary/5 px-1 rounded">{"{{nome}}"}</code>,{" "}
-                  <code className="text-primary/80 bg-primary/5 px-1 rounded">{"{{link}}"}</code>
-                  {at.type === "referral_reward" && (
-                    <>
-                      , <code className="text-primary/80 bg-primary/5 px-1 rounded">{"{{meta}}"}</code>,{" "}
-                      <code className="text-primary/80 bg-primary/5 px-1 rounded">{"{{recompensa}}"}</code>
-                    </>
-                  )}
+                  Variáveis:{" "}
+                  {(at.placeholders || ["{{nome}}", "{{link}}"]).map((p, i) => (
+                    <span key={p}>
+                      {i > 0 && ", "}
+                      <code className="text-primary/80 bg-primary/5 px-1 rounded">{p}</code>
+                    </span>
+                  ))}
                 </p>
+              </div>
+
+              {/* Preview Toggle */}
+              <div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowPreview(!showPreview)}
+                >
+                  {showPreview ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  {showPreview ? "Ocultar preview" : "Ver preview"}
+                </Button>
+                <AnimatePresence>
+                  {showPreview && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden mt-2"
+                    >
+                      <MessagePreview
+                        message={automation.config?.message || ""}
+                        placeholders={at.placeholders}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Channel & Options */}
