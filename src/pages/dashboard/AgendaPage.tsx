@@ -629,12 +629,33 @@ export default function AgendaPage() {
                         const proIds = slotAppts.map(a => a.professional_id);
                         const hasConflict = proIds.length !== new Set(proIds).size;
 
+                        const showTimeLine = isToday && currentMinute >= h * 60 && currentMinute < (h + 1) * 60;
+                        const timeLineTop = showTimeLine ? ((currentMinute - h * 60) / 60) * 100 : 0;
+
                         return (
                           <div key={dayIdx}
-                            className={`border-l border-border/20 p-1 min-h-[64px] relative transition-colors ${
+                            className={`border-l border-border/20 p-1 min-h-[64px] relative transition-colors group/cell ${
                               slotBlocks.length > 0 ? "bg-muted/10" : ""
                             } ${isToday ? "bg-primary/[0.02]" : ""}`}
+                            onClick={() => {
+                              if (slotAppts.length === 0 && slotBlocks.length === 0 && canViewFullAgenda) {
+                                setNewApptDefaults({ date: day, time: `${String(h).padStart(2, "0")}:00` });
+                                setShowNewAppt(true);
+                              }
+                            }}
                           >
+                            {/* Current time indicator */}
+                            {showTimeLine && (
+                              <div
+                                className="absolute left-0 right-0 z-20 pointer-events-none"
+                                style={{ top: `${timeLineTop}%` }}
+                              >
+                                <div className="flex items-center">
+                                  <div className="h-2 w-2 rounded-full bg-destructive -ml-1 shrink-0" />
+                                  <div className="h-[2px] flex-1 bg-destructive/60" />
+                                </div>
+                              </div>
+                            )}
                             {hasConflict && (
                               <div className="absolute top-0.5 right-0.5 z-10" title="Conflito de horário">
                                 <AlertCircle className="h-3 w-3 text-destructive" />
@@ -651,6 +672,12 @@ export default function AgendaPage() {
                                 <span className="text-[9px] text-muted-foreground">
                                   {slotBlocks[0]?.reason || "Bloqueado"}
                                 </span>
+                              </div>
+                            )}
+                            {/* Quick add hint on empty slots */}
+                            {slotAppts.length === 0 && slotBlocks.length === 0 && canViewFullAgenda && (
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/cell:opacity-100 transition-opacity cursor-pointer">
+                                <Plus className="h-4 w-4 text-muted-foreground/40" />
                               </div>
                             )}
                           </div>
