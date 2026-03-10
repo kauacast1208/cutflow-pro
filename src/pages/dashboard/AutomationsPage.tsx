@@ -57,6 +57,21 @@ const automationTypes: AutomationType[] = [
       channel: "whatsapp",
     },
   },
+  {
+    type: "appointment_reminder_1h",
+    title: "Lembrete 1h antes",
+    description: "Envia lembrete via WhatsApp 1 hora antes do agendamento",
+    icon: Clock,
+    color: "text-violet-500",
+    bg: "bg-violet-500/10",
+    iconBg: "bg-gradient-to-br from-violet-500/10 to-violet-500/5",
+    placeholders: ["{{client_name}}", "{{barbershop_name}}", "{{appointment_time}}"],
+    defaultConfig: {
+      message:
+        "Olá {{client_name}}! Seu horário na {{barbershop_name}} é daqui a 1 hora, às {{appointment_time}}.\n\nTe esperamos!",
+      channel: "whatsapp",
+    },
+  },
   // --- Reativação ---
   {
     type: "inactive_client",
