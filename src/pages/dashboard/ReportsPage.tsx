@@ -8,6 +8,18 @@ import { Button } from "@/components/ui/button";
 import { format, subDays } from "date-fns";
 import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { UpgradeBanner } from "@/components/dashboard/UpgradePrompt";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+
+const PIE_COLORS = [
+  "hsl(var(--primary))",
+  "hsl(var(--chart-2))",
+  "hsl(var(--chart-3))",
+  "hsl(var(--chart-4))",
+  "hsl(var(--chart-5))",
+  "hsl(142 71% 45%)",
+  "hsl(280 65% 60%)",
+  "hsl(25 95% 53%)",
+];
 
 const fadeUp = (i: number) => ({
   initial: { opacity: 0, y: 14 },
