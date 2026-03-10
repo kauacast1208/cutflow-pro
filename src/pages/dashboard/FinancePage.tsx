@@ -1,10 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { DollarSign, TrendingUp, Receipt, Loader2, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import {
+  DollarSign, TrendingUp, Receipt, Loader2, ArrowUpRight, ArrowDownRight,
+  Calendar, Users, Target, BarChart3,
+} from "lucide-react";
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { useBarbershop } from "@/hooks/useBarbershop";
 import { supabase } from "@/integrations/supabase/client";
 import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { UpgradeBanner } from "@/components/dashboard/UpgradePrompt";
+import { format, subDays, parseISO, startOfWeek, addDays, eachDayOfInterval } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Button } from "@/components/ui/button";
 
 const fadeUp = (i: number) => ({
   initial: { opacity: 0, y: 14 },
@@ -12,167 +19,246 @@ const fadeUp = (i: number) => ({
   transition: { duration: 0.35, delay: i * 0.07 },
 });
 
+const periodOptions = [
+  { label: "7 dias", value: 7 },
+  { label: "30 dias", value: 30 },
+  { label: "90 dias", value: 90 },
+] as const;
+
 export default function FinancePage() {
   const { barbershop } = useBarbershop();
   const { can, plan } = usePlanPermissions();
-  const [monthTotal, setMonthTotal] = useState(0);
-  const [prevMonthTotal, setPrevMonthTotal] = useState(0);
-  const [apptCount, setApptCount] = useState(0);
+  const [period, setPeriod] = useState(30);
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [prevAppointments, setPrevAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!barbershop || !can("finance")) return;
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = now.getMonth();
-    const startOfMonth = `${y}-${String(m + 1).padStart(2, "0")}-01`;
-    const endOfMonth = `${y}-${String(m + 1).padStart(2, "0")}-31`;
-
-    const pm = m === 0 ? 11 : m - 1;
-    const py = m === 0 ? y - 1 : y;
-    const prevStart = `${py}-${String(pm + 1).padStart(2, "0")}-01`;
-    const prevEnd = `${py}-${String(pm + 1).padStart(2, "0")}-31`;
+    const today = new Date();
+    const periodStart = format(subDays(today, period), "yyyy-MM-dd");
+    const prevPeriodStart = format(subDays(today, period * 2), "yyyy-MM-dd");
 
     Promise.all([
-      supabase
-        .from("appointments")
-        .select("price")
-        .eq("barbershop_id", barbershop.id)
-        .gte("date", startOfMonth)
-        .lte("date", endOfMonth)
-        .not("status", "eq", "cancelled"),
-      supabase
-        .from("appointments")
-        .select("price")
-        .eq("barbershop_id", barbershop.id)
-        .gte("date", prevStart)
-        .lte("date", prevEnd)
-        .not("status", "eq", "cancelled"),
+      supabase.from("appointments").select("*, services(name, price), professionals(name)")
+        .eq("barbershop_id", barbershop.id).gte("date", periodStart),
+      supabase.from("appointments").select("*, services(name, price), professionals(name)")
+        .eq("barbershop_id", barbershop.id).gte("date", prevPeriodStart).lt("date", periodStart),
     ]).then(([curr, prev]) => {
-      const total = (curr.data || []).reduce((s, a) => s + Number(a.price || 0), 0);
-      const prevTotal = (prev.data || []).reduce((s, a) => s + Number(a.price || 0), 0);
-      setMonthTotal(total);
-      setPrevMonthTotal(prevTotal);
-      setApptCount(curr.data?.length || 0);
+      setAppointments(curr.data || []);
+      setPrevAppointments(prev.data || []);
       setLoading(false);
     });
-  }, [barbershop, can]);
+  }, [barbershop, can, period]);
 
   if (!can("finance")) {
     return (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          Financeiro
-        </h2>
+        <h2 className="text-2xl font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Financeiro</h2>
         <UpgradeBanner feature="finance" currentPlan={plan} />
       </div>
     );
   }
 
-  const ticket = apptCount > 0 ? monthTotal / apptCount : 0;
-  const revenueChange = prevMonthTotal > 0 ? ((monthTotal - prevMonthTotal) / prevMonthTotal) * 100 : 0;
-  const isPositive = revenueChange >= 0;
+  const completed = appointments.filter(a => a.status !== "cancelled");
+  const prevCompleted = prevAppointments.filter(a => a.status !== "cancelled");
+
+  const totalRevenue = completed.reduce((s, a) => s + Number(a.price || 0), 0);
+  const prevRevenue = prevCompleted.reduce((s, a) => s + Number(a.price || 0), 0);
+  const revenueChange = prevRevenue > 0 ? ((totalRevenue - prevRevenue) / prevRevenue * 100) : 0;
+
+  const todayStr = format(new Date(), "yyyy-MM-dd");
+  const ws = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const weekEndStr = format(addDays(ws, 6), "yyyy-MM-dd");
+  const weekStartStr = format(ws, "yyyy-MM-dd");
+  const monthStr = format(new Date(), "yyyy-MM");
+
+  const todayRevenue = completed.filter(a => a.date === todayStr).reduce((s, a) => s + Number(a.price || 0), 0);
+  const weekRevenue = completed.filter(a => a.date >= weekStartStr && a.date <= weekEndStr).reduce((s, a) => s + Number(a.price || 0), 0);
+  const monthRevenue = completed.filter(a => a.date.startsWith(monthStr)).reduce((s, a) => s + Number(a.price || 0), 0);
+
+  const ticket = completed.length > 0 ? totalRevenue / completed.length : 0;
+
+  // Revenue by professional
+  const proRevenue = useMemo(() => {
+    const map: Record<string, { name: string; revenue: number; count: number }> = {};
+    completed.forEach(a => {
+      const name = a.professionals?.name || "Sem profissional";
+      if (!map[name]) map[name] = { name, revenue: 0, count: 0 };
+      map[name].revenue += Number(a.price || 0);
+      map[name].count++;
+    });
+    return Object.values(map).sort((a, b) => b.revenue - a.revenue);
+  }, [completed]);
+
+  // Revenue projection (based on daily average)
+  const daysInPeriod = Math.min(period, Math.ceil((Date.now() - new Date(format(subDays(new Date(), period), "yyyy-MM-dd")).getTime()) / (1000 * 60 * 60 * 24)));
+  const dailyAvg = daysInPeriod > 0 ? totalRevenue / daysInPeriod : 0;
+  const monthProjection = dailyAvg * 30;
+
+  // Time series for chart
+  const timeSeriesData = useMemo(() => {
+    const days = eachDayOfInterval({
+      start: subDays(new Date(), Math.min(period, 30)),
+      end: new Date(),
+    });
+    return days.map(d => {
+      const dateStr = format(d, "yyyy-MM-dd");
+      const dayAppts = completed.filter(a => a.date === dateStr);
+      return {
+        date: format(d, "dd/MM"),
+        revenue: dayAppts.reduce((s, a) => s + Number(a.price || 0), 0),
+        count: dayAppts.length,
+      };
+    });
+  }, [completed, period]);
+
+  const fmt = (v: number) => `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
   const cards = [
+    { label: "Hoje", value: fmt(todayRevenue), icon: Calendar, change: null, positive: true },
+    { label: "Semana", value: fmt(weekRevenue), icon: BarChart3, change: null, positive: true },
+    { label: "Mês", value: fmt(monthRevenue), icon: DollarSign, change: null, positive: true },
     {
-      label: "Faturamento do mês",
-      value: `R$ ${monthTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
-      icon: DollarSign,
-      change: prevMonthTotal > 0 ? `${isPositive ? "+" : ""}${revenueChange.toFixed(1)}%` : null,
-      positive: isPositive,
-    },
-    {
-      label: "Ticket médio",
-      value: `R$ ${ticket.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+      label: `Período (${period}d)`,
+      value: fmt(totalRevenue),
       icon: TrendingUp,
-      change: null,
-      positive: true,
+      change: prevRevenue > 0 ? `${revenueChange >= 0 ? "+" : ""}${revenueChange.toFixed(1)}%` : null,
+      positive: revenueChange >= 0,
     },
-    {
-      label: "Atendimentos",
-      value: String(apptCount),
-      icon: Receipt,
-      change: null,
-      positive: true,
-    },
+    { label: "Ticket médio", value: fmt(ticket), icon: Receipt, change: null, positive: true },
+    { label: "Projeção mensal", value: fmt(monthProjection), icon: Target, change: null, positive: true },
   ];
 
   return (
     <div className="space-y-6">
-      <motion.div {...fadeUp(0)}>
-        <h2
-          className="text-2xl font-bold tracking-tight text-foreground"
-          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-        >
-          Financeiro
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">Acompanhe o desempenho financeiro da sua barbearia.</p>
+      <motion.div {...fadeUp(0)} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            Financeiro
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">Acompanhe o desempenho financeiro da sua barbearia.</p>
+        </div>
+        <div className="flex items-center gap-1 rounded-xl bg-muted/50 p-1">
+          {periodOptions.map(opt => (
+            <button key={opt.value} onClick={() => setPeriod(opt.value)}
+              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                period === opt.value ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </motion.div>
 
       {loading ? (
-        <div className="flex justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        </div>
+        <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Metric cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {cards.map((card, i) => {
               const Icon = card.icon;
               return (
-                <motion.div
-                  key={card.label}
-                  {...fadeUp(i + 1)}
-                  className="group relative overflow-hidden rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow duration-300"
+                <motion.div key={card.label} {...fadeUp(i + 1)}
+                  className="group relative overflow-hidden rounded-2xl border border-border bg-card p-4 hover:shadow-md transition-shadow"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-accent/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                  <div className="relative">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-[13px] font-medium text-muted-foreground">{card.label}</p>
-                      <div className="h-10 w-10 rounded-xl bg-accent/60 flex items-center justify-center">
-                        <Icon className="h-5 w-5 text-accent-foreground" />
-                      </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-[11px] font-medium text-muted-foreground">{card.label}</p>
+                    <div className="h-8 w-8 rounded-lg bg-muted/60 flex items-center justify-center">
+                      <Icon className="h-4 w-4 text-muted-foreground" />
                     </div>
-                    <p
-                      className="text-2xl font-bold tracking-tight text-foreground"
-                      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                    >
-                      {card.value}
-                    </p>
-                    {card.change && (
-                      <span
-                        className={`inline-flex items-center gap-0.5 text-xs font-medium mt-2 ${
-                          card.positive ? "text-primary" : "text-destructive"
-                        }`}
-                      >
-                        {card.positive ? (
-                          <ArrowUpRight className="h-3 w-3" />
-                        ) : (
-                          <ArrowDownRight className="h-3 w-3" />
-                        )}
-                        {card.change} vs mês anterior
-                      </span>
-                    )}
                   </div>
+                  <p className="text-lg font-bold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    {card.value}
+                  </p>
+                  {card.change && (
+                    <span className={`inline-flex items-center gap-0.5 text-xs font-medium mt-1 ${card.positive ? "text-primary" : "text-destructive"}`}>
+                      {card.positive ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                      {card.change}
+                    </span>
+                  )}
                 </motion.div>
               );
             })}
           </div>
 
-          <motion.div
-            {...fadeUp(4)}
-            className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow duration-300"
-          >
-            <h3
-              className="text-base font-semibold text-foreground mb-4"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-            >
-              Evolução mensal
+          {/* Revenue chart */}
+          <motion.div {...fadeUp(7)} className="rounded-2xl border border-border bg-card p-6">
+            <h3 className="text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Evolução do faturamento
             </h3>
-            <div className="h-64 flex items-center justify-center rounded-xl bg-muted/30 border border-border/50">
-              <p className="text-sm text-muted-foreground">
-                Os dados do gráfico serão populados conforme agendamentos forem realizados.
-              </p>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={timeSeriesData}>
+                  <defs>
+                    <linearGradient id="finRevGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: 12 }}
+                    formatter={(value: number) => [fmt(value), "Faturamento"]}
+                  />
+                  <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#finRevGradient)" strokeWidth={2} />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
+          </motion.div>
+
+          {/* Revenue by professional */}
+          <motion.div {...fadeUp(8)} className="rounded-2xl border border-border bg-card p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                <Users className="h-4 w-4 text-primary" />
+                Faturamento por profissional
+              </h3>
+              <span className="text-xs text-muted-foreground">Últimos {period} dias</span>
+            </div>
+
+            {proRevenue.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">Nenhum dado disponível.</p>
+            ) : (
+              <div className="space-y-3">
+                {proRevenue.map((pro, i) => {
+                  const pct = totalRevenue > 0 ? (pro.revenue / totalRevenue * 100) : 0;
+                  return (
+                    <div key={i} className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
+                        {pro.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-medium text-foreground truncate">{pro.name}</span>
+                          <span className="text-sm font-bold text-foreground shrink-0 ml-2">{fmt(pro.revenue)}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-2 rounded-full bg-muted/50 overflow-hidden">
+                            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+                          </div>
+                          <span className="text-[10px] text-muted-foreground w-12 text-right">{pro.count} atend.</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </motion.div>
+
+          {/* Commission prep */}
+          <motion.div {...fadeUp(9)} className="rounded-2xl border border-dashed border-border bg-muted/20 p-6 text-center">
+            <DollarSign className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
+            <h3 className="text-sm font-semibold text-foreground mb-1">Controle de comissões</h3>
+            <p className="text-xs text-muted-foreground max-w-md mx-auto">
+              O módulo de comissões por profissional está em desenvolvimento.
+              Configure porcentagens por serviço e gere relatórios de pagamento.
+            </p>
           </motion.div>
         </>
       )}
