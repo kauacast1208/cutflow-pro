@@ -100,9 +100,7 @@ export default function SignupPage() {
             className="w-full mb-4 h-12 rounded-xl text-base font-medium"
             onClick={async () => {
               setLoading(true);
-              const { error } = await lovable.auth.signInWithOAuth("google", {
-                redirect_uri: `${window.location.origin}/auth/callback`,
-              });
+              const { error } = await signInWithGoogle("/auth/callback");
               if (error) {
                 setError("Erro ao criar conta com Google. Tente novamente.");
                 setLoading(false);
