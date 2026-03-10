@@ -13,6 +13,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import DemoPage from "./pages/DemoPage";
+import AuthCallbackPage from "./pages/AuthCallbackPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import TrialExpiredPage from "./pages/TrialExpiredPage";
 import PublicBookingPage from "./pages/PublicBookingPage";
@@ -102,6 +103,7 @@ const AppRoutes = () => (
     <Route path="/" element={<Index />} />
     <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
     <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
+    <Route path="/auth/callback" element={<AuthCallbackPage />} />
     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
     <Route path="/reset-password" element={<ResetPasswordPage />} />
     <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
