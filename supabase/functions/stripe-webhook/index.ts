@@ -32,7 +32,13 @@ serve(async (req) => {
     return new Response("Method not allowed", { status: 405 });
   }
 
-  const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+  const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+  if (!stripeKey) {
+    logStep("ERROR: STRIPE_SECRET_KEY not set");
+    return new Response(JSON.stringify({ error: "Server configuration error" }), { status: 500 });
+  }
+
+  const stripe = new Stripe(stripeKey, {
     apiVersion: "2025-08-27.basil",
   });
 
@@ -53,12 +59,13 @@ serve(async (req) => {
       event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
       logStep("Webhook signature verified", { type: event.type });
     } else {
+      logStep("WARNING: No webhook secret configured - accepting unverified event");
       event = JSON.parse(body) as Stripe.Event;
-      logStep("Webhook received (no signature verification)", { type: event.type });
+      logStep("Webhook received (unverified)", { type: event.type });
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    logStep("Webhook signature verification failed", { error: msg });
+    logStep("Webhook signature verification FAILED", { error: msg });
     return new Response(JSON.stringify({ error: `Webhook Error: ${msg}` }), { status: 400 });
   }
 
@@ -66,14 +73,23 @@ serve(async (req) => {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        logStep("checkout.session.completed", { sessionId: session.id });
+        logStep("Processing checkout.session.completed", {
+          sessionId: session.id,
+          customerId: session.customer,
+          subscriptionId: session.subscription,
+        });
 
         const userId = session.metadata?.user_id;
         const customerId = session.customer as string;
         const subscriptionId = session.subscription as string;
 
         if (!userId) {
-          logStep("No user_id in metadata, skipping");
+          logStep("ERROR: No user_id in session metadata, cannot process");
+          break;
+        }
+
+        if (!subscriptionId) {
+          logStep("ERROR: No subscription ID in session, cannot process");
           break;
         }
 
@@ -87,6 +103,7 @@ serve(async (req) => {
 
         const periodEnd = new Date(subscription.current_period_end * 1000).toISOString();
         const periodStart = new Date(subscription.current_period_start * 1000).toISOString();
+        const dbStatus = mapStripeStatus(subscription.status);
 
         // Find barbershop - from metadata first, then from owner
         let barbershopId = session.metadata?.barbershop_id;
@@ -99,29 +116,34 @@ serve(async (req) => {
           barbershopId = barbershop?.id;
         }
 
-        if (barbershopId) {
-          const dbStatus = mapStripeStatus(subscription.status);
+        if (!barbershopId) {
+          logStep("ERROR: No barbershop found for user", { userId });
+          break;
+        }
 
-          const { error } = await supabase
-            .from("subscriptions")
-            .update({
-              stripe_customer_id: customerId,
-              stripe_subscription_id: subscriptionId,
-              plan,
-              status: dbStatus,
-              trial_ends_at: trialEnd,
-              current_period_start: periodStart,
-              current_period_end: periodEnd,
-            })
-            .eq("barbershop_id", barbershopId);
+        const { error } = await supabase
+          .from("subscriptions")
+          .update({
+            stripe_customer_id: customerId,
+            stripe_subscription_id: subscriptionId,
+            plan,
+            status: dbStatus,
+            trial_ends_at: trialEnd,
+            current_period_start: periodStart,
+            current_period_end: periodEnd,
+          })
+          .eq("barbershop_id", barbershopId);
 
-          if (error) {
-            logStep("Error updating subscription", { error: error.message });
-          } else {
-            logStep("Subscription updated successfully", { barbershopId, plan, status: dbStatus });
-          }
+        if (error) {
+          logStep("ERROR updating subscription in DB", { error: error.message, barbershopId });
         } else {
-          logStep("No barbershop found for user", { userId });
+          logStep("Subscription updated successfully", {
+            barbershopId,
+            plan,
+            status: dbStatus,
+            trialEnd,
+            periodEnd,
+          });
         }
         break;
       }
@@ -129,9 +151,22 @@ serve(async (req) => {
       case "invoice.payment_succeeded": {
         const invoice = event.data.object as Stripe.Invoice;
         const subscriptionId = invoice.subscription as string;
-        logStep("invoice.payment_succeeded", { subscriptionId });
+        logStep("Processing invoice.payment_succeeded", {
+          invoiceId: invoice.id,
+          subscriptionId,
+          billingReason: invoice.billing_reason,
+        });
 
-        if (!subscriptionId) break;
+        if (!subscriptionId) {
+          logStep("No subscription ID on invoice, skipping");
+          break;
+        }
+
+        // Skip initial invoice during trial (no payment actually processed)
+        if (invoice.billing_reason === "subscription_create" && invoice.amount_paid === 0) {
+          logStep("Initial trial invoice (amount=0), skipping status update");
+          break;
+        }
 
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         const priceId = subscription.items.data[0]?.price?.id;
@@ -152,16 +187,16 @@ serve(async (req) => {
           .eq("stripe_subscription_id", subscriptionId);
 
         if (error) {
-          logStep("Error updating on payment success", { error: error.message });
+          logStep("ERROR updating on payment success", { error: error.message });
         } else {
-          logStep("Subscription activated on payment", { subscriptionId });
+          logStep("Subscription activated after payment", { subscriptionId, plan });
         }
         break;
       }
 
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
-        logStep("customer.subscription.updated", {
+        logStep("Processing customer.subscription.updated", {
           subscriptionId: subscription.id,
           status: subscription.status,
           cancelAtPeriodEnd: subscription.cancel_at_period_end,
@@ -189,16 +224,16 @@ serve(async (req) => {
           .eq("stripe_subscription_id", subscription.id);
 
         if (error) {
-          logStep("Error updating subscription", { error: error.message });
+          logStep("ERROR updating subscription", { error: error.message });
         } else {
-          logStep("Subscription updated", { status: dbStatus, plan });
+          logStep("Subscription updated", { status: dbStatus, plan, cancelAtPeriodEnd: subscription.cancel_at_period_end });
         }
         break;
       }
 
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
-        logStep("customer.subscription.deleted", { subscriptionId: subscription.id });
+        logStep("Processing customer.subscription.deleted", { subscriptionId: subscription.id });
 
         const { error } = await supabase
           .from("subscriptions")
@@ -209,15 +244,15 @@ serve(async (req) => {
           .eq("stripe_subscription_id", subscription.id);
 
         if (error) {
-          logStep("Error cancelling subscription", { error: error.message });
+          logStep("ERROR cancelling subscription in DB", { error: error.message });
         } else {
-          logStep("Subscription cancelled in database");
+          logStep("Subscription cancelled in database", { subscriptionId: subscription.id });
         }
         break;
       }
 
       default:
-        logStep("Unhandled event type", { type: event.type });
+        logStep("Unhandled event type (ignored)", { type: event.type });
     }
 
     return new Response(JSON.stringify({ received: true }), {
@@ -226,10 +261,12 @@ serve(async (req) => {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR processing webhook", { message: errorMessage });
+    logStep("CRITICAL ERROR processing webhook", { message: errorMessage, eventType: event.type });
+    // Return 200 to prevent Stripe from retrying on application errors
+    // Only signature failures should return non-200
     return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { "Content-Type": "application/json" },
-      status: 500,
+      status: 200,
     });
   }
 });

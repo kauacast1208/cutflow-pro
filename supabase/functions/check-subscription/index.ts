@@ -23,7 +23,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
+  const supabaseAdmin = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     { auth: { persistSession: false } }
@@ -39,7 +39,7 @@ serve(async (req) => {
     if (!authHeader) throw new Error("No authorization header provided");
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
@@ -70,11 +70,11 @@ serve(async (req) => {
     const subscription = activeSubs.data[0] || trialingSubs.data[0];
 
     let subscribed = false;
-    let plan = null;
-    let subscriptionEnd = null;
-    let stripeSubscriptionId = null;
-    let currentPeriodStart = null;
-    let status = null;
+    let plan: string | null = null;
+    let subscriptionEnd: string | null = null;
+    let stripeSubscriptionId: string | null = null;
+    let currentPeriodStart: string | null = null;
+    let status: string | null = null;
     let cancelAtPeriodEnd = false;
 
     if (subscription) {
@@ -87,10 +87,10 @@ serve(async (req) => {
 
       const priceId = subscription.items.data[0]?.price?.id;
       plan = PRICE_TO_PLAN[priceId] || null;
-      logStep("Subscription found", { subscriptionId: subscription.id, plan, status });
+      logStep("Subscription found", { subscriptionId: subscription.id, plan, status, cancelAtPeriodEnd });
 
-      // Sync to Supabase
-      const { data: barbershop } = await supabaseClient
+      // Sync to Supabase using admin client
+      const { data: barbershop } = await supabaseAdmin
         .from("barbershops")
         .select("id")
         .eq("owner_id", user.id)
@@ -102,7 +102,7 @@ serve(async (req) => {
           ? new Date(subscription.trial_end * 1000).toISOString()
           : undefined;
 
-        const { error: upsertError } = await supabaseClient
+        const { error: upsertError } = await supabaseAdmin
           .from("subscriptions")
           .update({
             stripe_customer_id: customerId,
@@ -116,10 +116,12 @@ serve(async (req) => {
           .eq("barbershop_id", barbershop.id);
 
         if (upsertError) {
-          logStep("Error syncing subscription", { error: upsertError.message });
+          logStep("Error syncing subscription to DB", { error: upsertError.message });
         } else {
-          logStep("Subscription synced to database");
+          logStep("Subscription synced to database", { barbershopId: barbershop.id, plan, dbStatus });
         }
+      } else {
+        logStep("Could not sync - missing barbershop or plan", { hasBarbershop: !!barbershop, plan });
       }
     } else {
       logStep("No active or trialing subscription found");
