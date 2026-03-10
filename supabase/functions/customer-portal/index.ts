@@ -47,7 +47,7 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    const origin = req.headers.get("origin") || "https://id-preview--3eb77533-9226-482b-81ba-9402b0a38373.lovable.app";
+    const origin = req.headers.get("origin") || Deno.env.get("SITE_URL") || "https://cutflow.app";
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,
       return_url: `${origin}/billing`,

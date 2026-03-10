@@ -133,8 +133,6 @@ serve(async (req) => {
       status,
       subscription_end: subscriptionEnd,
       cancel_at_period_end: cancelAtPeriodEnd,
-      stripe_customer_id: customerId,
-      stripe_subscription_id: stripeSubscriptionId,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

@@ -88,7 +88,7 @@ serve(async (req) => {
       }
     }
 
-    const origin = req.headers.get("origin") || "https://id-preview--3eb77533-9226-482b-81ba-9402b0a38373.lovable.app";
+    const origin = req.headers.get("origin") || Deno.env.get("SITE_URL") || "https://cutflow.app";
 
     const metadata: Record<string, string> = {
       user_id: user.id,
