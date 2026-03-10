@@ -16,6 +16,8 @@ import CheckoutPage from "./pages/CheckoutPage";
 import TrialExpiredPage from "./pages/TrialExpiredPage";
 import PublicBookingPage from "./pages/PublicBookingPage";
 import BillingPage from "./pages/BillingPage";
+import BillingSuccessPage from "./pages/BillingSuccessPage";
+import BillingCancelPage from "./pages/BillingCancelPage";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import AgendaPage from "./pages/dashboard/AgendaPage";
@@ -105,6 +107,9 @@ const AppRoutes = () => (
     <Route path="/checkout" element={<CheckoutPage />} />
     <Route path="/trial-expired" element={<ProtectedRoute><TrialExpiredPage /></ProtectedRoute>} />
     <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
+    <Route path="/billing/success" element={<ProtectedRoute><BillingSuccessPage /></ProtectedRoute>} />
+    <Route path="/billing/cancel" element={<BillingCancelPage />} />
+    <Route path="/settings/billing" element={<Navigate to="/billing" replace />} />
     <Route path="/agendar/:slug" element={<PublicBookingPage />} />
     <Route path="/book/:slug" element={<RedirectToAgendar />} />
     <Route path="/b/:slug" element={<RedirectToAgendar />} />

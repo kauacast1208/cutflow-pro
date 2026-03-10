@@ -12,10 +12,9 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
-// Map Stripe price IDs to plan slugs
 const PRICE_TO_PLAN: Record<string, string> = {
   "price_1T9CKPGYcPFVpgolj3CkrGOE": "starter",
-  "price_1T9CLnGYcPFVpgolj9bzdrSgY": "pro",
+  "price_1T9CLnGYcPFVpgol9bzdrSgY": "pro",
   "price_1T9CMGGYcPFVpgolzwe6TMW6": "premium",
 };
 
@@ -60,30 +59,37 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "active",
-      limit: 1,
+    // Check active and trialing subscriptions
+    const activeSubs = await stripe.subscriptions.list({
+      customer: customerId, status: "active", limit: 1,
     });
+    const trialingSubs = await stripe.subscriptions.list({
+      customer: customerId, status: "trialing", limit: 1,
+    });
+
+    const subscription = activeSubs.data[0] || trialingSubs.data[0];
 
     let subscribed = false;
     let plan = null;
     let subscriptionEnd = null;
     let stripeSubscriptionId = null;
     let currentPeriodStart = null;
+    let status = null;
+    let cancelAtPeriodEnd = false;
 
-    if (subscriptions.data.length > 0) {
-      const subscription = subscriptions.data[0];
+    if (subscription) {
       subscribed = true;
       stripeSubscriptionId = subscription.id;
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       currentPeriodStart = new Date(subscription.current_period_start * 1000).toISOString();
+      status = subscription.status;
+      cancelAtPeriodEnd = subscription.cancel_at_period_end;
 
       const priceId = subscription.items.data[0]?.price?.id;
       plan = PRICE_TO_PLAN[priceId] || null;
-      logStep("Active subscription found", { subscriptionId: subscription.id, plan, priceId });
+      logStep("Subscription found", { subscriptionId: subscription.id, plan, status });
 
-      // Sync to Supabase subscriptions table
+      // Sync to Supabase
       const { data: barbershop } = await supabaseClient
         .from("barbershops")
         .select("id")
@@ -91,15 +97,21 @@ serve(async (req) => {
         .maybeSingle();
 
       if (barbershop && plan) {
+        const dbStatus = status === "trialing" ? "trial" : status === "active" ? "active" : "expired";
+        const trialEnd = subscription.trial_end
+          ? new Date(subscription.trial_end * 1000).toISOString()
+          : undefined;
+
         const { error: upsertError } = await supabaseClient
           .from("subscriptions")
           .update({
             stripe_customer_id: customerId,
             stripe_subscription_id: stripeSubscriptionId,
-            plan: plan,
-            status: "active",
+            plan,
+            status: dbStatus,
             current_period_start: currentPeriodStart,
             current_period_end: subscriptionEnd,
+            ...(trialEnd ? { trial_ends_at: trialEnd } : {}),
           })
           .eq("barbershop_id", barbershop.id);
 
@@ -110,13 +122,15 @@ serve(async (req) => {
         }
       }
     } else {
-      logStep("No active subscription found");
+      logStep("No active or trialing subscription found");
     }
 
     return new Response(JSON.stringify({
       subscribed,
       plan,
+      status,
       subscription_end: subscriptionEnd,
+      cancel_at_period_end: cancelAtPeriodEnd,
       stripe_customer_id: customerId,
       stripe_subscription_id: stripeSubscriptionId,
     }), {
