@@ -51,6 +51,38 @@ export default function FinancePage() {
     });
   }, [barbershop, can, period]);
 
+  const completed = useMemo(() => appointments.filter(a => a.status !== "cancelled"), [appointments]);
+  const prevCompleted = useMemo(() => prevAppointments.filter(a => a.status !== "cancelled"), [prevAppointments]);
+
+  // Revenue by professional
+  const proRevenue = useMemo(() => {
+    const map: Record<string, { name: string; revenue: number; count: number }> = {};
+    completed.forEach(a => {
+      const name = a.professionals?.name || "Sem profissional";
+      if (!map[name]) map[name] = { name, revenue: 0, count: 0 };
+      map[name].revenue += Number(a.price || 0);
+      map[name].count++;
+    });
+    return Object.values(map).sort((a, b) => b.revenue - a.revenue);
+  }, [completed]);
+
+  // Time series for chart
+  const timeSeriesData = useMemo(() => {
+    const days = eachDayOfInterval({
+      start: subDays(new Date(), Math.min(period, 30)),
+      end: new Date(),
+    });
+    return days.map(d => {
+      const dateStr = format(d, "yyyy-MM-dd");
+      const dayAppts = completed.filter(a => a.date === dateStr);
+      return {
+        date: format(d, "dd/MM"),
+        revenue: dayAppts.reduce((s, a) => s + Number(a.price || 0), 0),
+        count: dayAppts.length,
+      };
+    });
+  }, [completed, period]);
+
   if (!can("finance")) {
     return (
       <div className="space-y-6">
@@ -59,9 +91,6 @@ export default function FinancePage() {
       </div>
     );
   }
-
-  const completed = appointments.filter(a => a.status !== "cancelled");
-  const prevCompleted = prevAppointments.filter(a => a.status !== "cancelled");
 
   const totalRevenue = completed.reduce((s, a) => s + Number(a.price || 0), 0);
   const prevRevenue = prevCompleted.reduce((s, a) => s + Number(a.price || 0), 0);
