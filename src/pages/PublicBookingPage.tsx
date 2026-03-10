@@ -64,10 +64,19 @@ export default function PublicBookingPage() {
   const [appointmentId, setAppointmentId] = useState<string | null>(null);
   const [resolvedProId, setResolvedProId] = useState<string | null>(null);
 
-  const service = services.find((s) => s.id === selectedService);
+  const selectedServiceObjects = services.filter((s) => selectedServices.includes(s.id));
+  const totalDuration = selectedServiceObjects.reduce((sum, s) => sum + s.duration_minutes, 0);
+  const totalPrice = selectedServiceObjects.reduce((sum, s) => sum + Number(s.price), 0);
+  const firstService = selectedServiceObjects[0] || null;
   const isAnyPro = selectedPro === ANY_PRO_ID;
   const effectiveProId = isAnyPro ? resolvedProId : selectedPro;
   const professional = professionals.find((p) => p.id === effectiveProId);
+
+  const handleToggleService = (id: string) => {
+    setSelectedServices((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+    );
+  };
 
   useEffect(() => {
     const fetchData = async () => {
