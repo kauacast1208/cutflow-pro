@@ -370,11 +370,11 @@ export default function PublicBookingPage() {
     );
   }
 
-  if (confirmed && service && professional && selectedDate && selectedTime) {
+  if (confirmed && selectedServiceObjects.length > 0 && professional && selectedDate && selectedTime) {
     return (
       <BookingSuccess
         barbershop={barbershop}
-        service={service}
+        service={firstService}
         professional={professional}
         selectedDate={selectedDate}
         selectedTime={selectedTime}
