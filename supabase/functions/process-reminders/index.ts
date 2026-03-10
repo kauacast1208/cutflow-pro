@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -7,7 +6,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -18,7 +17,7 @@ serve(async (req) => {
     const resendKey = Deno.env.get("RESEND_API_KEY");
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch pending reminders that are due
+    // ── Fetch pending reminders ─────────────────────────────────────────
     const { data: notifications, error } = await supabase
       .from("notifications")
       .select("*")
@@ -42,6 +41,7 @@ serve(async (req) => {
         "retention_inactive_client_60",
         "retention_inactive_client_90",
       ])
+      .order("scheduled_for", { ascending: true })
       .limit(50);
 
     if (error) throw error;
@@ -50,12 +50,11 @@ serve(async (req) => {
     let failed = 0;
     let skipped = 0;
 
-    // Separate by channel
     const emailNotifs: any[] = [];
     const whatsappNotifs: any[] = [];
 
+    // ── Pre-filter: check appointment status ────────────────────────────
     for (const notif of notifications || []) {
-      // Check if appointment still active
       if (notif.appointment_id) {
         const { data: appt } = await supabase
           .from("appointments")
@@ -77,17 +76,19 @@ serve(async (req) => {
         whatsappNotifs.push(notif);
       } else if (notif.channel === "email" && notif.recipient_email) {
         emailNotifs.push(notif);
+      } else {
+        skipped++;
       }
     }
 
-    // Process emails via Resend
+    // ── Process emails via Resend ───────────────────────────────────────
     for (const notif of emailNotifs) {
       if (!resendKey) {
         skipped++;
         continue;
       }
 
-      const isReminder24 = notif.type === "appointment_reminder_24h";
+      const isReminder = notif.type?.includes("reminder");
 
       const emailRes = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -98,17 +99,17 @@ serve(async (req) => {
         body: JSON.stringify({
           from: "CutFlow <onboarding@resend.dev>",
           to: [notif.recipient_email],
-          subject: notif.subject,
+          subject: notif.subject || "Lembrete - CutFlow",
           html: `
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; background: #ffffff;">
-              <div style="text-align: center; margin-bottom: 32px;">
-                <div style="display: inline-block; background: #f59e0b15; border-radius: 50%; width: 56px; height: 56px; line-height: 56px; font-size: 28px;">⏰</div>
+              <div style="text-align: center; margin-bottom: 24px;">
+                <div style="display: inline-block; background: #16a34a15; border-radius: 16px; width: 56px; height: 56px; line-height: 56px; font-size: 24px; color: #16a34a;">CF</div>
               </div>
-              <h1 style="color: #1a1a1a; font-size: 22px; text-align: center; margin-bottom: 8px;">
-                ${isReminder24 ? "Seu horário é amanhã!" : "Faltam 2 horas!"}
+              <h1 style="color: #1a1a1a; font-size: 20px; text-align: center; margin-bottom: 8px;">
+                ${isReminder ? "Lembrete de agendamento" : (notif.subject || "Notificacao")}
               </h1>
-              <p style="color: #666; text-align: center; margin-bottom: 28px; white-space: pre-line;">${notif.body}</p>
-              <hr style="border: none; border-top: 1px solid #f0f0f0; margin: 24px 0;" />
+              <p style="color: #555; text-align: center; margin-bottom: 28px; white-space: pre-line; line-height: 1.6;">${notif.body}</p>
+              <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
               <p style="color: #bbb; font-size: 11px; text-align: center;">Enviado via CutFlow</p>
             </div>
           `,
@@ -125,66 +126,68 @@ serve(async (req) => {
         const errBody = await emailRes.text();
         await supabase
           .from("notifications")
-          .update({ status: "failed", error_message: `HTTP ${emailRes.status}: ${errBody.slice(0, 200)}` })
+          .update({
+            status: "failed",
+            error_message: `[email] HTTP ${emailRes.status}: ${errBody.slice(0, 300)}`,
+          })
           .eq("id", notif.id);
         failed++;
       }
     }
 
-    // Process WhatsApp via send-whatsapp function
-    if (whatsappNotifs.length > 0) {
-      for (const notif of whatsappNotifs) {
-        try {
-          const waRes = await fetch(
-            `${supabaseUrl}/functions/v1/send-whatsapp`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${supabaseKey}`,
-              },
-              body: JSON.stringify({
-                phone: notif.recipient_phone,
-                message: notif.body || "",
-                notificationId: notif.id,
-              }),
-            }
-          );
+    // ── Process WhatsApp via send-whatsapp function ─────────────────────
+    for (const notif of whatsappNotifs) {
+      try {
+        const waRes = await fetch(`${supabaseUrl}/functions/v1/send-whatsapp`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${supabaseKey}`,
+          },
+          body: JSON.stringify({
+            phone: notif.recipient_phone,
+            message: notif.body || "",
+            notificationId: notif.id,
+          }),
+        });
 
-          const result = await waRes.json();
+        const result = await waRes.json();
 
-          if (result.success) {
-            sent++;
-          } else if (waRes.status === 503) {
-            // WhatsApp not configured yet
-            skipped++;
-          } else {
-            failed++;
-          }
-        } catch (waErr) {
-          console.error(`WhatsApp send error for ${notif.id}:`, waErr);
-          await supabase
-            .from("notifications")
-            .update({
-              status: "failed",
-              error_message: `Internal: ${(waErr as Error).message}`.slice(0, 500),
-            })
-            .eq("id", notif.id);
+        if (result.success) {
+          sent++;
+        } else if (waRes.status === 503) {
+          // Provider not configured yet — skip, don't mark as failed
+          skipped++;
+        } else {
           failed++;
         }
-
-        // Rate limit between messages
-        await new Promise((r) => setTimeout(r, 200));
+      } catch (waErr) {
+        console.error(`WhatsApp error for notification ${notif.id}:`, waErr);
+        await supabase
+          .from("notifications")
+          .update({
+            status: "failed",
+            error_message: `[whatsapp] ${(waErr as Error).message}`.slice(0, 500),
+          })
+          .eq("id", notif.id);
+        failed++;
       }
+
+      // Rate limit
+      await new Promise((r) => setTimeout(r, 200));
     }
 
     return new Response(
       JSON.stringify({
         success: true,
-        processed: (notifications || []).length,
+        total: (notifications || []).length,
         sent,
         failed,
         skipped,
+        channels: {
+          email: emailNotifs.length,
+          whatsapp: whatsappNotifs.length,
+        },
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
