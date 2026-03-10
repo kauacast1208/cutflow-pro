@@ -4,12 +4,12 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
@@ -40,6 +40,10 @@ serve(async (req) => {
     let failed = 0;
     let skipped = 0;
 
+    // Separate by channel
+    const emailNotifs: any[] = [];
+    const whatsappNotifs: any[] = [];
+
     for (const notif of notifications || []) {
       // Check if appointment still active
       if (notif.appointment_id) {
@@ -59,72 +63,108 @@ serve(async (req) => {
         }
       }
 
-      // Send email
-      if (notif.channel === "email" && notif.recipient_email && resendKey) {
-        const isReminder24 = notif.type === "appointment_reminder_24h";
+      if (notif.channel === "whatsapp" && notif.recipient_phone) {
+        whatsappNotifs.push(notif);
+      } else if (notif.channel === "email" && notif.recipient_email) {
+        emailNotifs.push(notif);
+      }
+    }
 
-        const emailRes = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${resendKey}`,
-          },
-          body: JSON.stringify({
-            from: "CutFlow <onboarding@resend.dev>",
-            to: [notif.recipient_email],
-            subject: notif.subject,
-            html: `
-              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; background: #ffffff;">
-                <div style="text-align: center; margin-bottom: 32px;">
-                  <div style="display: inline-block; background: #f59e0b15; border-radius: 50%; width: 56px; height: 56px; line-height: 56px; font-size: 28px;">⏰</div>
-                </div>
-                <h1 style="color: #1a1a1a; font-size: 22px; text-align: center; margin-bottom: 8px;">
-                  ${isReminder24 ? "Seu horário é amanhã!" : "Faltam 2 horas!"}
-                </h1>
-                <p style="color: #666; text-align: center; margin-bottom: 28px; white-space: pre-line;">${notif.body}</p>
-                <hr style="border: none; border-top: 1px solid #f0f0f0; margin: 24px 0;" />
-                <p style="color: #bbb; font-size: 11px; text-align: center;">Enviado via CutFlow</p>
+    // Process emails via Resend
+    for (const notif of emailNotifs) {
+      if (!resendKey) {
+        skipped++;
+        continue;
+      }
+
+      const isReminder24 = notif.type === "appointment_reminder_24h";
+
+      const emailRes = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${resendKey}`,
+        },
+        body: JSON.stringify({
+          from: "CutFlow <onboarding@resend.dev>",
+          to: [notif.recipient_email],
+          subject: notif.subject,
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; background: #ffffff;">
+              <div style="text-align: center; margin-bottom: 32px;">
+                <div style="display: inline-block; background: #f59e0b15; border-radius: 50%; width: 56px; height: 56px; line-height: 56px; font-size: 28px;">⏰</div>
               </div>
-            `,
-          }),
-        });
+              <h1 style="color: #1a1a1a; font-size: 22px; text-align: center; margin-bottom: 8px;">
+                ${isReminder24 ? "Seu horário é amanhã!" : "Faltam 2 horas!"}
+              </h1>
+              <p style="color: #666; text-align: center; margin-bottom: 28px; white-space: pre-line;">${notif.body}</p>
+              <hr style="border: none; border-top: 1px solid #f0f0f0; margin: 24px 0;" />
+              <p style="color: #bbb; font-size: 11px; text-align: center;">Enviado via CutFlow</p>
+            </div>
+          `,
+        }),
+      });
 
-        if (emailRes.ok) {
+      if (emailRes.ok) {
+        await supabase
+          .from("notifications")
+          .update({ status: "sent", sent_at: new Date().toISOString() })
+          .eq("id", notif.id);
+        sent++;
+      } else {
+        const errBody = await emailRes.text();
+        await supabase
+          .from("notifications")
+          .update({ status: "failed", error_message: `HTTP ${emailRes.status}: ${errBody.slice(0, 200)}` })
+          .eq("id", notif.id);
+        failed++;
+      }
+    }
+
+    // Process WhatsApp via send-whatsapp function
+    if (whatsappNotifs.length > 0) {
+      for (const notif of whatsappNotifs) {
+        try {
+          const waRes = await fetch(
+            `${supabaseUrl}/functions/v1/send-whatsapp`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${supabaseKey}`,
+              },
+              body: JSON.stringify({
+                phone: notif.recipient_phone,
+                message: notif.body || "",
+                notificationId: notif.id,
+              }),
+            }
+          );
+
+          const result = await waRes.json();
+
+          if (result.success) {
+            sent++;
+          } else if (waRes.status === 503) {
+            // WhatsApp not configured yet
+            skipped++;
+          } else {
+            failed++;
+          }
+        } catch (waErr) {
+          console.error(`WhatsApp send error for ${notif.id}:`, waErr);
           await supabase
             .from("notifications")
-            .update({ status: "sent", sent_at: new Date().toISOString() })
-            .eq("id", notif.id);
-          sent++;
-        } else {
-          await supabase
-            .from("notifications")
-            .update({ status: "failed", error_message: `HTTP ${emailRes.status}` })
+            .update({
+              status: "failed",
+              error_message: `Internal: ${(waErr as Error).message}`.slice(0, 500),
+            })
             .eq("id", notif.id);
           failed++;
         }
-      }
 
-      // WhatsApp — prepared for provider integration
-      if (notif.channel === "whatsapp" && notif.recipient_phone) {
-        // TODO: Replace with actual WhatsApp Cloud API / Twilio / Z-API call
-        // Example structure:
-        // const whatsappRes = await fetch("https://graph.facebook.com/v18.0/PHONE_ID/messages", {
-        //   method: "POST",
-        //   headers: { Authorization: `Bearer ${whatsappToken}`, "Content-Type": "application/json" },
-        //   body: JSON.stringify({ messaging_product: "whatsapp", to: notif.recipient_phone, type: "text", text: { body: notif.body } }),
-        // });
-
-        console.log(`[WhatsApp Ready] ${notif.type} to ${notif.recipient_phone}: ${notif.body?.slice(0, 60)}...`);
-
-        // For now, mark as skipped with clear message
-        await supabase
-          .from("notifications")
-          .update({
-            status: "skipped",
-            error_message: "Integração WhatsApp pendente — mensagem preparada",
-          })
-          .eq("id", notif.id);
-        skipped++;
+        // Rate limit between messages
+        await new Promise((r) => setTimeout(r, 200));
       }
     }
 
@@ -139,10 +179,10 @@ serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
-    console.error("Error:", err);
-    return new Response(JSON.stringify({ error: (err as Error).message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("process-reminders error:", err);
+    return new Response(
+      JSON.stringify({ error: (err as Error).message }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 });
