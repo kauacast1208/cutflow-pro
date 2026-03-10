@@ -51,6 +51,7 @@ serve(async (req) => {
     const appointmentDateTime = new Date(`${appointment.date}T${appointment.start_time}`);
     const reminder24h = new Date(appointmentDateTime.getTime() - 24 * 60 * 60 * 1000);
     const reminder2h = new Date(appointmentDateTime.getTime() - 2 * 60 * 60 * 1000);
+    const reminder1h = new Date(appointmentDateTime.getTime() - 1 * 60 * 60 * 1000);
     const now = new Date();
 
     // Fetch automation configs for this barbershop
@@ -58,7 +59,7 @@ serve(async (req) => {
       .from("automations")
       .select("type, enabled, config")
       .eq("barbershop_id", appointment.barbershop_id)
-      .in("type", ["appointment_confirmation", "appointment_reminder_24h", "appointment_reminder_2h"]);
+      .in("type", ["appointment_confirmation", "appointment_reminder_24h", "appointment_reminder_2h", "appointment_reminder_1h"]);
 
     const autoMap = new Map<string, any>();
     (automations || []).forEach((a: any) => autoMap.set(a.type, a));
