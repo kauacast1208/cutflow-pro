@@ -151,7 +151,7 @@ export default function PublicBookingPage() {
     barbershop,
     selectedDate,
     selectedPro: isAnyPro ? null : selectedPro,
-    serviceDuration: service?.duration_minutes,
+    serviceDuration: totalDuration || 30,
     appointments,
     blockedTimes,
     availability,
