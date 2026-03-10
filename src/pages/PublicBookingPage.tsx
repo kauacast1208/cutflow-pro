@@ -204,7 +204,7 @@ export default function PublicBookingPage() {
   };
 
   const handleConfirm = async () => {
-    if (!barbershop || !service || !professional || !selectedDate || !selectedTime) return;
+    if (!barbershop || selectedServices.length === 0 || !professional || !selectedDate || !selectedTime) return;
     if (!isValidName || !isValidPhone) return;
     setSubmitting(true);
 
@@ -212,11 +212,6 @@ export default function PublicBookingPage() {
     const sanitizedPhone = clientPhone.trim().slice(0, 20);
     const sanitizedEmail = clientEmail.trim().slice(0, 255);
     const sanitizedNotes = clientNotes.trim().slice(0, 500);
-
-    const endTime = format(
-      addMinutes(parse(selectedTime, "HH:mm", selectedDate), service.duration_minutes),
-      "HH:mm"
-    );
 
     // Upsert client
     if (sanitizedName) {
@@ -242,20 +237,37 @@ export default function PublicBookingPage() {
       }
     }
 
-    const { data, error } = await supabase.from("appointments").insert({
-      barbershop_id: barbershop.id,
-      service_id: service.id,
-      professional_id: professional.id,
-      client_name: sanitizedName,
-      client_phone: sanitizedPhone,
-      client_email: sanitizedEmail,
-      notes: sanitizedNotes || null,
-      date: format(selectedDate, "yyyy-MM-dd"),
-      start_time: selectedTime,
-      end_time: endTime,
-      price: service.price,
-      status: barbershop.auto_confirm ? "confirmed" : "scheduled",
-    }).select("id").single();
+    // Create one appointment per service, chaining times
+    let currentTime = selectedTime;
+    let firstAppointmentId: string | null = null;
+
+    for (const svc of selectedServiceObjects) {
+      const endTime = format(
+        addMinutes(parse(currentTime, "HH:mm", selectedDate), svc.duration_minutes),
+        "HH:mm"
+      );
+
+      const { data, error } = await supabase.from("appointments").insert({
+        barbershop_id: barbershop.id,
+        service_id: svc.id,
+        professional_id: professional.id,
+        client_name: sanitizedName,
+        client_phone: sanitizedPhone,
+        client_email: sanitizedEmail,
+        notes: sanitizedNotes || null,
+        date: format(selectedDate, "yyyy-MM-dd"),
+        start_time: currentTime,
+        end_time: endTime,
+        price: svc.price,
+        status: barbershop.auto_confirm ? "confirmed" : "scheduled",
+      }).select("id").single();
+
+      if (!error && data) {
+        if (!firstAppointmentId) firstAppointmentId = data.id;
+      }
+
+      currentTime = endTime;
+    }
 
     setSubmitting(false);
     if (!error && data) {
