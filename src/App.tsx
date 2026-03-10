@@ -34,6 +34,7 @@ import InactiveClientsPage from "./pages/dashboard/InactiveClientsPage";
 import MarketingOverviewPage from "./pages/dashboard/MarketingOverviewPage";
 import BirthdaysPage from "./pages/dashboard/BirthdaysPage";
 import LoyaltyPage from "./pages/dashboard/LoyaltyPage";
+import RetentionPage from "./pages/dashboard/RetentionPage";
 import { Loader2 } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useBarbershop } from "@/hooks/useBarbershop";
@@ -122,6 +123,7 @@ const AppRoutes = () => (
       <Route path="marketing" element={<MarketingOverviewPage />} />
       <Route path="birthdays" element={<BirthdaysPage />} />
       <Route path="loyalty" element={<LoyaltyPage />} />
+      <Route path="retention" element={<RetentionPage />} />
     </Route>
     <Route path="*" element={<NotFound />} />
   </Routes>
