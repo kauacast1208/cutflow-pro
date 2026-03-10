@@ -539,7 +539,7 @@ export default function PublicBookingPage() {
             )}
             {step === 4 && (
               <ConfirmStep
-                service={service}
+                services={selectedServiceObjects}
                 professional={professional || (isAnyPro ? { name: "Qualquer profissional" } : null)}
                 selectedDate={selectedDate}
                 selectedTime={selectedTime}
