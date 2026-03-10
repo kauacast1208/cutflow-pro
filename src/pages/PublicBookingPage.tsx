@@ -293,7 +293,7 @@ export default function PublicBookingPage() {
     setConfirmed(false);
     setStep(0);
     setDirection(1);
-    setSelectedService(null);
+    setSelectedServices([]);
     setSelectedPro(null);
     setSelectedDate(undefined);
     setSelectedTime(null);
