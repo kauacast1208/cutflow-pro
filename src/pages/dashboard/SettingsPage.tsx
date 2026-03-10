@@ -474,6 +474,11 @@ export default function SettingsPage() {
             </div>
           </TabsContent>
 
+          {/* SUBSCRIPTION */}
+          <TabsContent value="subscription">
+            <SubscriptionManager />
+          </TabsContent>
+
           {/* PREFERENCES */}
           <TabsContent value="preferences">
             <CardSection className="space-y-6">

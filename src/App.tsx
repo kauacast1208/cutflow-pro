@@ -97,6 +97,7 @@ const AppRoutes = () => (
     <Route path="/demo" element={<DemoPage />} />
     <Route path="/checkout" element={<CheckoutPage />} />
     <Route path="/trial-expired" element={<ProtectedRoute><TrialExpiredPage /></ProtectedRoute>} />
+    <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
     <Route path="/agendar/:slug" element={<PublicBookingPage />} />
     <Route path="/book/:slug" element={<PublicBookingPage />} />
     <Route path="/b/:slug" element={<PublicBookingPage />} />
