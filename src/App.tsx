@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { TenantProvider, useTenant } from "@/hooks/useTenant";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/LoginPage";
@@ -39,53 +40,54 @@ import LoyaltyPage from "./pages/dashboard/LoyaltyPage";
 import RetentionPage from "./pages/dashboard/RetentionPage";
 import { Loader2 } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
-import { useBarbershop } from "@/hooks/useBarbershop";
 
 const queryClient = new QueryClient();
 
+function FullScreenLoader() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
+}
+
+/** Redirects to /login if not authenticated */
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (loading) return <FullScreenLoader />;
   if (!user) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
 
-function SubscriptionGuard({ children }: { children: React.ReactNode }) {
-  const { barbershop, loading: shopLoading } = useBarbershop();
+/**
+ * Dashboard guard — requires:
+ * 1. Authenticated user (handled by ProtectedRoute wrapper)
+ * 2. Resolved tenant (barbershop)
+ * 3. Active subscription (not trial-expired)
+ *
+ * Redirects:
+ * - No barbershop → /onboarding
+ * - Trial expired → TrialExpiredPage (inline)
+ */
+function TenantGuard({ children }: { children: React.ReactNode }) {
+  const { status } = useTenant();
   const { isTrialExpired, loading: subLoading } = useSubscription();
 
-  if (shopLoading || subLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (status === "loading" || subLoading) return <FullScreenLoader />;
 
-  // No barbershop yet → send to onboarding
-  if (!barbershop) return <Navigate to="/onboarding" replace />;
+  // No barbershop → onboarding
+  if (status === "no_barbershop") return <Navigate to="/onboarding" replace />;
 
-  // Trial expired → show paywall
+  // Trial expired → paywall
   if (isTrialExpired) return <TrialExpiredPage />;
 
   return <>{children}</>;
 }
 
+/** Redirects authenticated users away from login/signup */
 function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (loading) return <FullScreenLoader />;
   if (user) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 }
@@ -113,9 +115,17 @@ const AppRoutes = () => (
     <Route path="/agendar/:slug" element={<PublicBookingPage />} />
     <Route path="/book/:slug" element={<RedirectToAgendar />} />
     <Route path="/b/:slug" element={<RedirectToAgendar />} />
-    {/* Legacy booking route */}
     <Route path="/booking" element={<Navigate to="/signup" replace />} />
-    <Route path="/dashboard" element={<ProtectedRoute><SubscriptionGuard><DashboardLayout /></SubscriptionGuard></ProtectedRoute>}>
+    <Route
+      path="/dashboard"
+      element={
+        <ProtectedRoute>
+          <TenantGuard>
+            <DashboardLayout />
+          </TenantGuard>
+        </ProtectedRoute>
+      }
+    >
       <Route index element={<DashboardHome />} />
       <Route path="agenda" element={<AgendaPage />} />
       <Route path="clients" element={<ClientsPage />} />
@@ -142,13 +152,15 @@ const AppRoutes = () => (
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </TooltipProvider>
+      <TenantProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </TooltipProvider>
+      </TenantProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
