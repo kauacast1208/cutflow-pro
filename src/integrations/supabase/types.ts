@@ -989,6 +989,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_booked_slots: {
+        Args: {
+          _barbershop_id: string
+          _date: string
+          _professional_id?: string
+        }
+        Returns: {
+          end_time: string
+          professional_id: string
+          start_time: string
+          status: string
+        }[]
+      }
       get_user_barbershop_id: { Args: { _user_id: string }; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
@@ -1000,6 +1013,13 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      match_client_for_booking: {
+        Args: { _barbershop_id: string; _email?: string; _phone?: string }
+        Returns: {
+          id: string
+          name: string
+        }[]
       }
     }
     Enums: {
