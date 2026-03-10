@@ -210,7 +210,7 @@ export default function SettingsPage() {
 
       <motion.div {...fadeUp(1)}>
         <Tabs defaultValue="info" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 h-auto rounded-xl bg-muted/50 p-1">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-6 h-auto rounded-xl bg-muted/50 p-1">
             <TabsTrigger value="info" className="text-xs rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
               <Store className="h-3.5 w-3.5 mr-1.5" /> Dados
             </TabsTrigger>
