@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -88,6 +88,11 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function RedirectToAgendar() {
+  const { slug } = useParams();
+  return <Navigate to={`/agendar/${slug}`} replace />;
+}
+
 const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Index />} />
@@ -101,8 +106,8 @@ const AppRoutes = () => (
     <Route path="/trial-expired" element={<ProtectedRoute><TrialExpiredPage /></ProtectedRoute>} />
     <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
     <Route path="/agendar/:slug" element={<PublicBookingPage />} />
-    <Route path="/book/:slug" element={<PublicBookingPage />} />
-    <Route path="/b/:slug" element={<PublicBookingPage />} />
+    <Route path="/book/:slug" element={<RedirectToAgendar />} />
+    <Route path="/b/:slug" element={<RedirectToAgendar />} />
     {/* Legacy booking route */}
     <Route path="/booking" element={<Navigate to="/signup" replace />} />
     <Route path="/dashboard" element={<ProtectedRoute><SubscriptionGuard><DashboardLayout /></SubscriptionGuard></ProtectedRoute>}>
