@@ -270,21 +270,21 @@ export default function PublicBookingPage() {
     }
 
     setSubmitting(false);
-    if (!error && data) {
-      setAppointmentId(data.id);
+    if (firstAppointmentId) {
+      setAppointmentId(firstAppointmentId);
       setConfirmed(true);
       sendBookingEmail({
         type: "confirmed",
         clientName: sanitizedName,
         clientEmail: sanitizedEmail,
-        service,
+        service: firstService,
         professional,
         selectedDate,
         selectedTime,
         barbershop,
       });
       supabase.functions.invoke("send-booking-confirmation", {
-        body: { appointmentId: data.id },
+        body: { appointmentId: firstAppointmentId },
       }).catch(() => {});
     }
   };
