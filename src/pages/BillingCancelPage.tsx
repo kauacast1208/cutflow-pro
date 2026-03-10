@@ -22,9 +22,9 @@ export default function BillingCancelPage() {
         </p>
 
         <div className="flex flex-col gap-3">
-          <Link to="/checkout">
+          <Link to="/billing">
             <Button variant="hero" size="lg" className="w-full h-12 rounded-xl">
-              Tentar novamente
+              Escolher um plano
             </Button>
           </Link>
           <Link to="/dashboard">

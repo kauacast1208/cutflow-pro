@@ -21,13 +21,13 @@ export default function BillingSuccessPage() {
           <CheckCircle className="h-10 w-10 text-primary" />
         </div>
 
-        <h1 className="text-2xl sm:text-3xl font-bold mb-3">Assinatura ativada</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-3">Assinatura ativada! 🎉</h1>
         <p className="text-muted-foreground mb-2">
           Seu plano foi ativado com sucesso. Seus 7 dias de teste gratuito
-          ja comecaram.
+          já começaram — nenhuma cobrança será feita hoje.
         </p>
         <p className="text-sm text-muted-foreground mb-8">
-          Voce pode gerenciar sua assinatura a qualquer momento nas configuracoes.
+          Você pode gerenciar sua assinatura a qualquer momento na página de billing.
         </p>
 
         <Link to="/dashboard">
