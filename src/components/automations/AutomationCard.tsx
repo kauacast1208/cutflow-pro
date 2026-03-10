@@ -55,7 +55,7 @@ function MessagePreview({ message, placeholders }: { message: string; placeholde
 
   let preview = message;
   for (const [key, value] of Object.entries(exampleValues)) {
-    preview = preview.replaceAll(key, value);
+    preview = preview.split(key).join(value);
   }
 
   return (
