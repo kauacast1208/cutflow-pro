@@ -185,7 +185,7 @@ export default function PublicBookingPage() {
   const isValidEmail = !clientEmail || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail);
 
   const canNext =
-    (step === 0 && selectedService !== null) ||
+    (step === 0 && selectedServices.length > 0) ||
     (step === 1 && selectedPro !== null) ||
     (step === 2 && selectedDate !== undefined && selectedTime !== null) ||
     (step === 3 && isValidName && isValidPhone && isValidEmail) ||
