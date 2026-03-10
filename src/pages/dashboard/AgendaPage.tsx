@@ -391,19 +391,31 @@ export default function AgendaPage() {
             </Button>
           </div>
 
-          {/* Mobile block button */}
+          {/* Mobile action buttons */}
           {canViewFullAgenda && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="gap-1.5 rounded-xl text-xs sm:hidden h-9"
-              onClick={() => {
-                setBlockForm(f => ({ ...f, date: format(selectedDate, "yyyy-MM-dd") }));
-                setShowBlockDialog(true);
-              }}
-            >
-              <Ban className="h-3.5 w-3.5" />
-            </Button>
+            <div className="flex items-center gap-1.5 sm:hidden">
+              <Button
+                size="sm"
+                className="gap-1.5 rounded-xl text-xs h-9"
+                onClick={() => {
+                  setNewApptDefaults({ date: selectedDate });
+                  setShowNewAppt(true);
+                }}
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 rounded-xl text-xs h-9"
+                onClick={() => {
+                  setBlockForm(f => ({ ...f, date: format(selectedDate, "yyyy-MM-dd") }));
+                  setShowBlockDialog(true);
+                }}
+              >
+                <Ban className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           )}
         </div>
       </motion.div>
