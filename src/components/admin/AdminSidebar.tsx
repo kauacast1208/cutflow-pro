@@ -42,6 +42,7 @@ const items: MenuItem[] = [
   { title: "Clientes Inativos", url: "/dashboard/inactive-clients", icon: UserX, roles: ["owner", "admin"], group: "marketing" },
   { title: "Aniversariantes", url: "/dashboard/birthdays", icon: Cake, roles: ["owner", "admin"], group: "marketing" },
   { title: "Indicações", url: "/dashboard/referrals", icon: Gift, roles: ["owner", "admin"], group: "marketing" },
+  { title: "Fidelidade", url: "/dashboard/loyalty", icon: Trophy, roles: ["owner", "admin"], group: "marketing" },
   { title: "Equipe", url: "/dashboard/team", icon: UserPlus, roles: ["owner", "admin"], group: "admin" },
   { title: "Configurações", url: "/dashboard/settings", icon: Settings, roles: ["owner", "admin"], group: "admin" },
 ];

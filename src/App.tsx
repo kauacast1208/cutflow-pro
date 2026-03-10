@@ -121,6 +121,7 @@ const AppRoutes = () => (
       <Route path="inactive-clients" element={<InactiveClientsPage />} />
       <Route path="marketing" element={<MarketingOverviewPage />} />
       <Route path="birthdays" element={<BirthdaysPage />} />
+      <Route path="loyalty" element={<LoyaltyPage />} />
     </Route>
     <Route path="*" element={<NotFound />} />
   </Routes>
