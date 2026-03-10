@@ -4,7 +4,7 @@ import { formatCurrency, getInitials } from "@/lib/format";
 import { CheckCircle2, Scissors, User, CalendarDays, Clock } from "lucide-react";
 
 interface ConfirmStepProps {
-  service: any;
+  services: any[];
   professional: any;
   selectedDate: Date | undefined;
   selectedTime: string | null;
@@ -14,7 +14,7 @@ interface ConfirmStepProps {
 }
 
 export function ConfirmStep({
-  service,
+  services,
   professional,
   selectedDate,
   selectedTime,
@@ -22,8 +22,11 @@ export function ConfirmStep({
   clientPhone,
   clientNotes,
 }: ConfirmStepProps) {
-  const endTimeStr = selectedTime && service && selectedDate
-    ? format(addMinutes(parse(selectedTime, "HH:mm", selectedDate), service.duration_minutes), "HH:mm")
+  const totalDuration = services.reduce((sum: number, s: any) => sum + s.duration_minutes, 0);
+  const totalPrice = services.reduce((sum: number, s: any) => sum + Number(s.price), 0);
+
+  const endTimeStr = selectedTime && selectedDate && totalDuration
+    ? format(addMinutes(parse(selectedTime, "HH:mm", selectedDate), totalDuration), "HH:mm")
     : "";
 
   return (
@@ -47,13 +50,20 @@ export function ConfirmStep({
           </div>
         </div>
 
-        <div className="flex justify-between text-sm py-0.5">
-          <span className="text-muted-foreground flex items-center gap-2"><Scissors className="h-3.5 w-3.5" />Serviço</span>
-          <span className="font-semibold">{service?.name}</span>
+        {/* Services list */}
+        <div className="py-0.5">
+          <span className="text-muted-foreground text-sm flex items-center gap-2 mb-2"><Scissors className="h-3.5 w-3.5" />{services.length === 1 ? "Serviço" : "Serviços"}</span>
+          {services.map((s: any) => (
+            <div key={s.id} className="flex justify-between text-sm py-1 pl-5">
+              <span className="font-medium">{s.name} <span className="text-muted-foreground">({s.duration_minutes} min)</span></span>
+              <span className="font-semibold">{formatCurrency(Number(s.price))}</span>
+            </div>
+          ))}
         </div>
+
         <div className="flex justify-between text-sm py-0.5">
-          <span className="text-muted-foreground flex items-center gap-2"><Clock className="h-3.5 w-3.5" />Duração</span>
-          <span className="font-semibold">{service?.duration_minutes} min</span>
+          <span className="text-muted-foreground flex items-center gap-2"><Clock className="h-3.5 w-3.5" />Duração total</span>
+          <span className="font-semibold">{totalDuration} min</span>
         </div>
         <div className="flex justify-between text-sm py-0.5">
           <span className="text-muted-foreground flex items-center gap-2"><CalendarDays className="h-3.5 w-3.5" />Data</span>
@@ -83,7 +93,7 @@ export function ConfirmStep({
         )}
         <div className="border-t border-border pt-4 flex justify-between items-center">
           <span className="font-bold">Total</span>
-          <span className="font-extrabold text-xl text-primary">{formatCurrency(Number(service?.price || 0))}</span>
+          <span className="font-extrabold text-xl text-primary">{formatCurrency(totalPrice)}</span>
         </div>
       </div>
     </div>
