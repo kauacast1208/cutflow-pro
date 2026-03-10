@@ -51,7 +51,7 @@ export default function PublicBookingPage() {
 
   const [step, setStep] = useState<Step>(0);
   const [direction, setDirection] = useState(1); // 1 = forward, -1 = back
-  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [selectedPro, setSelectedPro] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -64,10 +64,19 @@ export default function PublicBookingPage() {
   const [appointmentId, setAppointmentId] = useState<string | null>(null);
   const [resolvedProId, setResolvedProId] = useState<string | null>(null);
 
-  const service = services.find((s) => s.id === selectedService);
+  const selectedServiceObjects = services.filter((s) => selectedServices.includes(s.id));
+  const totalDuration = selectedServiceObjects.reduce((sum, s) => sum + s.duration_minutes, 0);
+  const totalPrice = selectedServiceObjects.reduce((sum, s) => sum + Number(s.price), 0);
+  const firstService = selectedServiceObjects[0] || null;
   const isAnyPro = selectedPro === ANY_PRO_ID;
   const effectiveProId = isAnyPro ? resolvedProId : selectedPro;
   const professional = professionals.find((p) => p.id === effectiveProId);
+
+  const handleToggleService = (id: string) => {
+    setSelectedServices((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+    );
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -117,12 +126,12 @@ export default function PublicBookingPage() {
 
   // For "any professional": compute slots across all pros
   const anyProSlots = useMemo(() => {
-    if (!isAnyPro || !selectedDate || !barbershop || !service) return [];
+    if (!isAnyPro || !selectedDate || !barbershop || selectedServices.length === 0) return [];
     const config = {
       openingTime: barbershop.opening_time || "09:00",
       closingTime: barbershop.closing_time || "19:00",
       intervalMinutes: barbershop.slot_interval_minutes || 30,
-      durationMinutes: service.duration_minutes,
+      durationMinutes: totalDuration,
       bufferMinutes: barbershop.buffer_minutes || 0,
       minAdvanceHours: barbershop.min_advance_hours || 1,
     };
@@ -136,13 +145,13 @@ export default function PublicBookingPage() {
     });
 
     return Array.from(slotMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
-  }, [isAnyPro, selectedDate, barbershop, service, professionals, appointments, blockedTimes, availability]);
+  }, [isAnyPro, selectedDate, barbershop, selectedServices, totalDuration, professionals, appointments, blockedTimes, availability]);
 
   const { timeSlots, groupedSlots, dayStatusMap } = useBookingSlots({
     barbershop,
     selectedDate,
     selectedPro: isAnyPro ? null : selectedPro,
-    serviceDuration: service?.duration_minutes,
+    serviceDuration: totalDuration || 30,
     appointments,
     blockedTimes,
     availability,
@@ -176,7 +185,7 @@ export default function PublicBookingPage() {
   const isValidEmail = !clientEmail || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail);
 
   const canNext =
-    (step === 0 && selectedService !== null) ||
+    (step === 0 && selectedServices.length > 0) ||
     (step === 1 && selectedPro !== null) ||
     (step === 2 && selectedDate !== undefined && selectedTime !== null) ||
     (step === 3 && isValidName && isValidPhone && isValidEmail) ||
@@ -195,7 +204,7 @@ export default function PublicBookingPage() {
   };
 
   const handleConfirm = async () => {
-    if (!barbershop || !service || !professional || !selectedDate || !selectedTime) return;
+    if (!barbershop || selectedServices.length === 0 || !professional || !selectedDate || !selectedTime) return;
     if (!isValidName || !isValidPhone) return;
     setSubmitting(true);
 
@@ -203,11 +212,6 @@ export default function PublicBookingPage() {
     const sanitizedPhone = clientPhone.trim().slice(0, 20);
     const sanitizedEmail = clientEmail.trim().slice(0, 255);
     const sanitizedNotes = clientNotes.trim().slice(0, 500);
-
-    const endTime = format(
-      addMinutes(parse(selectedTime, "HH:mm", selectedDate), service.duration_minutes),
-      "HH:mm"
-    );
 
     // Upsert client
     if (sanitizedName) {
@@ -233,37 +237,54 @@ export default function PublicBookingPage() {
       }
     }
 
-    const { data, error } = await supabase.from("appointments").insert({
-      barbershop_id: barbershop.id,
-      service_id: service.id,
-      professional_id: professional.id,
-      client_name: sanitizedName,
-      client_phone: sanitizedPhone,
-      client_email: sanitizedEmail,
-      notes: sanitizedNotes || null,
-      date: format(selectedDate, "yyyy-MM-dd"),
-      start_time: selectedTime,
-      end_time: endTime,
-      price: service.price,
-      status: barbershop.auto_confirm ? "confirmed" : "scheduled",
-    }).select("id").single();
+    // Create one appointment per service, chaining times
+    let currentTime = selectedTime;
+    let firstAppointmentId: string | null = null;
+
+    for (const svc of selectedServiceObjects) {
+      const endTime = format(
+        addMinutes(parse(currentTime, "HH:mm", selectedDate), svc.duration_minutes),
+        "HH:mm"
+      );
+
+      const { data, error } = await supabase.from("appointments").insert({
+        barbershop_id: barbershop.id,
+        service_id: svc.id,
+        professional_id: professional.id,
+        client_name: sanitizedName,
+        client_phone: sanitizedPhone,
+        client_email: sanitizedEmail,
+        notes: sanitizedNotes || null,
+        date: format(selectedDate, "yyyy-MM-dd"),
+        start_time: currentTime,
+        end_time: endTime,
+        price: svc.price,
+        status: barbershop.auto_confirm ? "confirmed" : "scheduled",
+      }).select("id").single();
+
+      if (!error && data) {
+        if (!firstAppointmentId) firstAppointmentId = data.id;
+      }
+
+      currentTime = endTime;
+    }
 
     setSubmitting(false);
-    if (!error && data) {
-      setAppointmentId(data.id);
+    if (firstAppointmentId) {
+      setAppointmentId(firstAppointmentId);
       setConfirmed(true);
       sendBookingEmail({
         type: "confirmed",
         clientName: sanitizedName,
         clientEmail: sanitizedEmail,
-        service,
+        service: firstService,
         professional,
         selectedDate,
         selectedTime,
         barbershop,
       });
       supabase.functions.invoke("send-booking-confirmation", {
-        body: { appointmentId: data.id },
+        body: { appointmentId: firstAppointmentId },
       }).catch(() => {});
     }
   };
@@ -272,7 +293,7 @@ export default function PublicBookingPage() {
     setConfirmed(false);
     setStep(0);
     setDirection(1);
-    setSelectedService(null);
+    setSelectedServices([]);
     setSelectedPro(null);
     setSelectedDate(undefined);
     setSelectedTime(null);
@@ -287,12 +308,12 @@ export default function PublicBookingPage() {
   const handleCancelAppointment = async () => {
     if (!appointmentId) return;
     await supabase.from("appointments").update({ status: "cancelled" }).eq("id", appointmentId);
-    if (clientEmail && service && professional && selectedDate && selectedTime) {
+    if (clientEmail && firstService && professional && selectedDate && selectedTime) {
       sendBookingEmail({
         type: "cancelled",
         clientName,
         clientEmail,
-        service,
+        service: firstService,
         professional,
         selectedDate,
         selectedTime,
@@ -349,11 +370,11 @@ export default function PublicBookingPage() {
     );
   }
 
-  if (confirmed && service && professional && selectedDate && selectedTime) {
+  if (confirmed && selectedServiceObjects.length > 0 && professional && selectedDate && selectedTime) {
     return (
       <BookingSuccess
         barbershop={barbershop}
-        service={service}
+        service={firstService}
         professional={professional}
         selectedDate={selectedDate}
         selectedTime={selectedTime}
@@ -475,7 +496,7 @@ export default function PublicBookingPage() {
             transition={{ duration: 0.25, ease: "easeInOut" }}
           >
             {step === 0 && (
-              <ServiceStep services={services} selectedService={selectedService} onSelect={setSelectedService} />
+              <ServiceStep services={services} selectedServices={selectedServices} onToggle={handleToggleService} />
             )}
             {step === 1 && (
               <ProfessionalStep
@@ -487,7 +508,7 @@ export default function PublicBookingPage() {
             {step === 2 && (
               <DateTimeStep
                 barbershop={barbershop}
-                service={service}
+                service={firstService}
                 professional={isAnyPro ? { name: "Qualquer profissional", role: "Primeiro disponivel" } : professional}
                 selectedDate={selectedDate}
                 selectedTime={selectedTime}
@@ -502,7 +523,7 @@ export default function PublicBookingPage() {
             )}
             {step === 3 && (
               <ClientInfoStep
-                service={service}
+                service={firstService}
                 professional={professional || (isAnyPro ? { name: "Qualquer profissional" } : null)}
                 selectedDate={selectedDate}
                 selectedTime={selectedTime}
@@ -518,7 +539,7 @@ export default function PublicBookingPage() {
             )}
             {step === 4 && (
               <ConfirmStep
-                service={service}
+                services={selectedServiceObjects}
                 professional={professional || (isAnyPro ? { name: "Qualquer profissional" } : null)}
                 selectedDate={selectedDate}
                 selectedTime={selectedTime}
