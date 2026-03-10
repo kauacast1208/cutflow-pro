@@ -37,6 +37,9 @@ serve(async (req) => {
         "referral_reward",
         "loyalty_earned",
         "loyalty_near",
+        "retention_inactive_client",
+        "retention_inactive_client_60",
+        "retention_inactive_client_90",
       ])
       .limit(50);
 
