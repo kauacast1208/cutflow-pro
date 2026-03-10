@@ -37,7 +37,7 @@ export interface PlanConfig {
 export const planConfig: Record<PlanTier, PlanConfig> = {
   starter: {
     label: "Starter",
-    price: 49,
+    price: 79,
     features: [
       "agenda",
       "clients",
