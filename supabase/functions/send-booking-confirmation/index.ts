@@ -7,6 +7,14 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+function replacePlaceholders(template: string, vars: Record<string, string>): string {
+  let result = template;
+  for (const [key, value] of Object.entries(vars)) {
+    result = result.replaceAll(`{{${key}}}`, value);
+  }
+  return result;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -36,6 +44,8 @@ serve(async (req) => {
     });
     const startTime = appointment.start_time?.slice(0, 5);
     const barbershopName = appointment.barbershops?.name || "Barbearia";
+    const serviceName = appointment.services?.name || "—";
+    const professionalName = appointment.professionals?.name || "—";
 
     // Schedule timestamps
     const appointmentDateTime = new Date(`${appointment.date}T${appointment.start_time}`);
@@ -43,17 +53,39 @@ serve(async (req) => {
     const reminder2h = new Date(appointmentDateTime.getTime() - 2 * 60 * 60 * 1000);
     const now = new Date();
 
+    // Fetch automation configs for this barbershop
+    const { data: automations } = await supabase
+      .from("automations")
+      .select("type, enabled, config")
+      .eq("barbershop_id", appointment.barbershop_id)
+      .in("type", ["appointment_reminder_24h", "appointment_reminder_2h"]);
+
+    const autoMap = new Map<string, any>();
+    (automations || []).forEach((a: any) => autoMap.set(a.type, a));
+
+    // Template variables for placeholder substitution
+    const templateVars: Record<string, string> = {
+      client_name: appointment.client_name,
+      barbershop_name: barbershopName,
+      service_name: serviceName,
+      professional_name: professionalName,
+      appointment_date: formattedDate,
+      appointment_time: startTime,
+      nome: appointment.client_name,
+      link: "",
+    };
+
     // Confirmation message
-    const confirmationBody = `Olá ${appointment.client_name}!\n\nSeu horário foi confirmado.\n\nServiço: ${appointment.services?.name}\nData: ${formattedDate}\nHora: ${startTime}\n\n${barbershopName}`;
+    const confirmationBody = `Olá ${appointment.client_name}!\n\nSeu horário foi confirmado.\n\nServiço: ${serviceName}\nData: ${formattedDate}\nHora: ${startTime}\n\n${barbershopName}`;
 
-    // Reminder message
-    const reminderBody = `Lembrete de agendamento hoje às ${startTime}.\nBarbearia ${barbershopName}.`;
+    // Determine preferred channel (WhatsApp if phone, email if email)
+    const preferredChannel = appointment.client_phone ? "whatsapp" : "email";
 
-    const notifications = [
+    const notifications: any[] = [
       {
         barbershop_id: appointment.barbershop_id,
         appointment_id: appointmentId,
-        channel: appointment.client_email ? "email" : "whatsapp",
+        channel: appointment.client_email ? "email" : preferredChannel,
         type: "appointment_created",
         recipient_name: appointment.client_name,
         recipient_email: appointment.client_email,
@@ -65,46 +97,75 @@ serve(async (req) => {
       },
     ];
 
-    // Only schedule reminders if they're in the future
-    if (reminder24h > now) {
+    // 24h reminder — respect automation config
+    const auto24 = autoMap.get("appointment_reminder_24h");
+    const enabled24 = auto24 ? auto24.enabled : true; // default enabled
+    if (enabled24 && reminder24h > now) {
+      const channel24 = auto24?.config?.channel || preferredChannel;
+      const customMsg = auto24?.config?.message;
+      const body = customMsg
+        ? replacePlaceholders(customMsg, templateVars)
+        : `Lembrete: seu agendamento é amanhã às ${startTime}.\n${barbershopName}.`;
+
       notifications.push({
         barbershop_id: appointment.barbershop_id,
         appointment_id: appointmentId,
-        channel: appointment.client_email ? "email" : "whatsapp",
+        channel: channel24,
         type: "appointment_reminder_24h",
         recipient_name: appointment.client_name,
         recipient_email: appointment.client_email,
         recipient_phone: appointment.client_phone,
         subject: `⏰ Lembrete: seu horário é amanhã - ${barbershopName}`,
-        body: reminderBody,
+        body,
         status: "pending",
         scheduled_for: reminder24h.toISOString(),
       });
     }
 
-    if (reminder2h > now) {
+    // 2h reminder — respect automation config
+    const auto2h = autoMap.get("appointment_reminder_2h");
+    const enabled2h = auto2h ? auto2h.enabled : true; // default enabled
+    if (enabled2h && reminder2h > now) {
+      const channel2h = auto2h?.config?.channel || preferredChannel;
+      const customMsg = auto2h?.config?.message;
+      const body = customMsg
+        ? replacePlaceholders(customMsg, templateVars)
+        : `Faltam 2 horas para seu agendamento às ${startTime}.\n${barbershopName}.`;
+
       notifications.push({
         barbershop_id: appointment.barbershop_id,
         appointment_id: appointmentId,
-        channel: appointment.client_email ? "email" : "whatsapp",
+        channel: channel2h,
         type: "appointment_reminder_2h",
         recipient_name: appointment.client_name,
         recipient_email: appointment.client_email,
         recipient_phone: appointment.client_phone,
         subject: `⏰ Faltam 2 horas para seu horário - ${barbershopName}`,
-        body: reminderBody,
+        body,
         status: "pending",
         scheduled_for: reminder2h.toISOString(),
       });
     }
 
-    await supabase.from("notifications").insert(notifications);
+    // Check for duplicate notifications
+    const { data: existing } = await supabase
+      .from("notifications")
+      .select("type")
+      .eq("appointment_id", appointmentId)
+      .in("type", ["appointment_created", "appointment_reminder_24h", "appointment_reminder_2h"]);
+
+    const existingTypes = new Set((existing || []).map((e: any) => e.type));
+    const newNotifications = notifications.filter((n) => !existingTypes.has(n.type));
+
+    if (newNotifications.length > 0) {
+      await supabase.from("notifications").insert(newNotifications);
+    }
 
     // Send confirmation email immediately
     if (resendKey && appointment.client_email) {
-      const serviceName = appointment.services?.name || "—";
-      const professionalName = appointment.professionals?.name || "—";
-      const price = appointment.services?.price ? `R$ ${Number(appointment.services.price).toFixed(2)}` : null;
+      const price = appointment.services?.price
+        ? `R$ ${Number(appointment.services.price).toFixed(2)}`
+        : null;
 
       const emailRes = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -151,14 +212,16 @@ serve(async (req) => {
         .eq("type", "appointment_created");
     }
 
-    // WhatsApp placeholder
-    if (appointment.client_phone && !appointment.client_email) {
-      console.log(`[WhatsApp Ready] Confirmation for ${appointment.client_phone}: ${confirmationBody}`);
+    // WhatsApp — log ready for provider integration
+    if (appointment.client_phone) {
+      console.log(`[WhatsApp Ready] Confirmation for ${appointment.client_phone}`);
+      // When WhatsApp provider is connected, send here and update notification status
     }
 
-    return new Response(JSON.stringify({ success: true, notifications: notifications.length }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ success: true, notifications: newNotifications.length }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   } catch (err) {
     console.error("Error:", err);
     return new Response(JSON.stringify({ error: (err as Error).message }), {

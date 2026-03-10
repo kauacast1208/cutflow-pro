@@ -1,7 +1,9 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Send, Clock, AlertCircle, CheckCircle2, Mail, Phone, XCircle, Inbox,
+  RefreshCw, MessageSquare,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -11,6 +13,8 @@ const statusConfig: Record<string, { label: string; icon: typeof CheckCircle2; c
   sent: { label: "Enviada", icon: CheckCircle2, color: "text-success", bg: "bg-success/10" },
   pending: { label: "Pendente", icon: Clock, color: "text-warning", bg: "bg-warning/10" },
   failed: { label: "Falha", icon: XCircle, color: "text-destructive", bg: "bg-destructive/10" },
+  skipped: { label: "Aguardando", icon: Clock, color: "text-muted-foreground", bg: "bg-secondary" },
+  cancelled: { label: "Cancelada", icon: XCircle, color: "text-muted-foreground", bg: "bg-secondary" },
 };
 
 const typeLabels: Record<string, string> = {
@@ -30,14 +34,42 @@ function EmptyState() {
         <Inbox className="h-6 w-6 opacity-40" />
       </div>
       <p className="text-sm font-medium">Nenhuma notificação</p>
-      <p className="text-xs mt-1 text-muted-foreground/60">As notificações aparecerão aqui quando forem enviadas</p>
+      <p className="text-xs mt-1 text-muted-foreground/60">
+        As notificações aparecerão aqui quando forem enviadas
+      </p>
     </div>
   );
 }
 
-function NotificationItem({ n, index }: { n: any; index: number }) {
-  const sc = statusConfig[n.error_message ? "failed" : n.status] || statusConfig.pending;
+function ChannelBadge({ channel }: { channel: string }) {
+  if (channel === "whatsapp") {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] text-green-600 bg-green-500/10 px-1.5 py-0.5 rounded-md font-medium">
+        <MessageSquare className="h-2.5 w-2.5" />
+        WhatsApp
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 text-[10px] text-blue-600 bg-blue-500/10 px-1.5 py-0.5 rounded-md font-medium">
+      <Mail className="h-2.5 w-2.5" />
+      E-mail
+    </span>
+  );
+}
+
+function NotificationItem({
+  n,
+  index,
+  onResend,
+}: {
+  n: any;
+  index: number;
+  onResend?: (id: string) => void;
+}) {
+  const sc = statusConfig[n.error_message && n.status !== "sent" ? "failed" : n.status] || statusConfig.pending;
   const StatusIcon = sc.icon;
+  const canResend = n.status === "failed" || (n.status === "skipped" && n.error_message);
 
   return (
     <motion.div
@@ -50,16 +82,20 @@ function NotificationItem({ n, index }: { n: any; index: number }) {
         <StatusIcon className={`h-4 w-4 ${sc.color}`} />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <p className="text-sm font-medium truncate text-foreground">{n.recipient_name || "—"}</p>
-          <Badge variant="secondary" className="text-[10px] shrink-0 font-normal rounded-md border-0 bg-secondary/80">
+          <Badge
+            variant="secondary"
+            className="text-[10px] shrink-0 font-normal rounded-md border-0 bg-secondary/80"
+          >
             {typeLabels[n.type] || n.type}
           </Badge>
+          <ChannelBadge channel={n.channel} />
         </div>
         <p className="text-xs text-muted-foreground truncate mt-1 leading-relaxed">
           {n.subject || n.body?.slice(0, 80)}
         </p>
-        <div className="flex items-center gap-3 mt-1.5">
+        <div className="flex items-center gap-3 mt-1.5 flex-wrap">
           {n.channel === "email" && n.recipient_email && (
             <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1">
               <Mail className="h-2.5 w-2.5" />
@@ -70,6 +106,12 @@ function NotificationItem({ n, index }: { n: any; index: number }) {
             <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1">
               <Phone className="h-2.5 w-2.5" />
               {n.recipient_phone}
+            </span>
+          )}
+          {n.scheduled_for && (
+            <span className="text-[10px] text-muted-foreground/40 flex items-center gap-1">
+              <Clock className="h-2.5 w-2.5" />
+              Agendado: {format(new Date(n.scheduled_for), "dd/MM HH:mm", { locale: ptBR })}
             </span>
           )}
           <span className="text-[10px] text-muted-foreground/40">
@@ -83,14 +125,32 @@ function NotificationItem({ n, index }: { n: any; index: number }) {
           </p>
         )}
       </div>
+      {canResend && onResend && (
+        <Button
+          size="sm"
+          variant="ghost"
+          className="shrink-0 h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+          onClick={() => onResend(n.id)}
+          title="Reenviar"
+        >
+          <RefreshCw className="h-3.5 w-3.5" />
+        </Button>
+      )}
     </motion.div>
   );
 }
 
-export default function NotificationsPanel({ notifications }: { notifications: any[] }) {
+export default function NotificationsPanel({
+  notifications,
+  onResend,
+}: {
+  notifications: any[];
+  onResend?: (id: string) => void;
+}) {
   const sent = notifications.filter((n) => n.status === "sent");
   const pending = notifications.filter((n) => n.status === "pending");
-  const failed = notifications.filter((n) => n.status === "failed" || n.error_message);
+  const failed = notifications.filter((n) => n.status === "failed" || (n.error_message && n.status !== "sent"));
+  const whatsappOnly = notifications.filter((n) => n.channel === "whatsapp");
 
   const renderList = (list: any[]) =>
     list.length === 0 ? (
@@ -98,7 +158,7 @@ export default function NotificationsPanel({ notifications }: { notifications: a
     ) : (
       <div className="space-y-2">
         {list.map((n, i) => (
-          <NotificationItem key={n.id} n={n} index={i} />
+          <NotificationItem key={n.id} n={n} index={i} onResend={onResend} />
         ))}
       </div>
     );
@@ -112,7 +172,7 @@ export default function NotificationsPanel({ notifications }: { notifications: a
     >
       {/* Header */}
       <div className="p-6 pb-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <Send className="h-4.5 w-4.5 text-primary" />
@@ -122,7 +182,7 @@ export default function NotificationsPanel({ notifications }: { notifications: a
               <p className="text-xs text-muted-foreground mt-0.5">Histórico de envios automáticos</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <StatBadge count={sent.length} label="enviadas" variant="success" />
             <StatBadge count={pending.length} label="pendentes" variant="warning" />
             {failed.length > 0 && <StatBadge count={failed.length} label="falhas" variant="destructive" />}
@@ -133,31 +193,68 @@ export default function NotificationsPanel({ notifications }: { notifications: a
       {/* Tabs */}
       <div className="px-6 pb-6">
         <Tabs defaultValue="all" className="space-y-4">
-          <TabsList className="bg-secondary/50 p-0.5 rounded-lg">
-            <TabsTrigger value="all" className="text-xs rounded-md data-[state=active]:bg-card data-[state=active]:shadow-sm">
+          <TabsList className="bg-secondary/50 p-0.5 rounded-lg flex-wrap">
+            <TabsTrigger
+              value="all"
+              className="text-xs rounded-md data-[state=active]:bg-card data-[state=active]:shadow-sm"
+            >
               Todas ({notifications.length})
             </TabsTrigger>
-            <TabsTrigger value="sent" className="text-xs rounded-md data-[state=active]:bg-card data-[state=active]:shadow-sm">
+            <TabsTrigger
+              value="whatsapp"
+              className="text-xs rounded-md data-[state=active]:bg-card data-[state=active]:shadow-sm"
+            >
+              WhatsApp ({whatsappOnly.length})
+            </TabsTrigger>
+            <TabsTrigger
+              value="sent"
+              className="text-xs rounded-md data-[state=active]:bg-card data-[state=active]:shadow-sm"
+            >
               Enviadas ({sent.length})
             </TabsTrigger>
-            <TabsTrigger value="pending" className="text-xs rounded-md data-[state=active]:bg-card data-[state=active]:shadow-sm">
+            <TabsTrigger
+              value="pending"
+              className="text-xs rounded-md data-[state=active]:bg-card data-[state=active]:shadow-sm"
+            >
               Pendentes ({pending.length})
             </TabsTrigger>
-            <TabsTrigger value="failed" className="text-xs rounded-md data-[state=active]:bg-card data-[state=active]:shadow-sm">
+            <TabsTrigger
+              value="failed"
+              className="text-xs rounded-md data-[state=active]:bg-card data-[state=active]:shadow-sm"
+            >
               Falhas ({failed.length})
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="all" className="max-h-[420px] overflow-y-auto pr-1">{renderList(notifications)}</TabsContent>
-          <TabsContent value="sent" className="max-h-[420px] overflow-y-auto pr-1">{renderList(sent)}</TabsContent>
-          <TabsContent value="pending" className="max-h-[420px] overflow-y-auto pr-1">{renderList(pending)}</TabsContent>
-          <TabsContent value="failed" className="max-h-[420px] overflow-y-auto pr-1">{renderList(failed)}</TabsContent>
+          <TabsContent value="all" className="max-h-[420px] overflow-y-auto pr-1">
+            {renderList(notifications)}
+          </TabsContent>
+          <TabsContent value="whatsapp" className="max-h-[420px] overflow-y-auto pr-1">
+            {renderList(whatsappOnly)}
+          </TabsContent>
+          <TabsContent value="sent" className="max-h-[420px] overflow-y-auto pr-1">
+            {renderList(sent)}
+          </TabsContent>
+          <TabsContent value="pending" className="max-h-[420px] overflow-y-auto pr-1">
+            {renderList(pending)}
+          </TabsContent>
+          <TabsContent value="failed" className="max-h-[420px] overflow-y-auto pr-1">
+            {renderList(failed)}
+          </TabsContent>
         </Tabs>
       </div>
     </motion.div>
   );
 }
 
-function StatBadge({ count, label, variant }: { count: number; label: string; variant: "success" | "warning" | "destructive" }) {
+function StatBadge({
+  count,
+  label,
+  variant,
+}: {
+  count: number;
+  label: string;
+  variant: "success" | "warning" | "destructive";
+}) {
   const styles = {
     success: "bg-success/10 text-success",
     warning: "bg-warning/10 text-warning",
