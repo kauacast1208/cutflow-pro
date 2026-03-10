@@ -1,26 +1,28 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Check, ArrowRight, ArrowLeft, Scissors,
-  Loader2, AlertCircle, MapPin, ChevronLeft, User, CalendarDays, Phone
+  Loader2, AlertCircle, MapPin, ChevronLeft, User, CalendarDays, Phone, Clock, Globe
 } from "lucide-react";
 import { format, addMinutes, parse } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import SupportBot from "@/components/booking/SupportBot";
 import { ServiceStep } from "@/components/booking/ServiceStep";
-import { ProfessionalStep } from "@/components/booking/ProfessionalStep";
+import { ProfessionalStep, ANY_PRO_ID } from "@/components/booking/ProfessionalStep";
 import { DateTimeStep } from "@/components/booking/DateTimeStep";
 import { ClientInfoStep } from "@/components/booking/ClientInfoStep";
 import { ConfirmStep } from "@/components/booking/ConfirmStep";
 import { BookingSuccess } from "@/components/booking/BookingSuccess";
 import { useBookingSlots } from "@/hooks/useBookingSlots";
 import { sendBookingEmail } from "@/lib/email";
+import { generateTimeSlots } from "@/lib/booking";
 
 type Step = 0 | 1 | 2 | 3 | 4;
 
 const stepsMeta = [
-  { label: "Serviço", icon: Scissors },
+  { label: "Servico", icon: Scissors },
   { label: "Profissional", icon: User },
   { label: "Data e hora", icon: CalendarDays },
   { label: "Seus dados", icon: Phone },
@@ -51,9 +53,13 @@ export default function PublicBookingPage() {
   const [submitting, setSubmitting] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [appointmentId, setAppointmentId] = useState<string | null>(null);
+  // When "any professional" is selected, store the resolved pro for the booking
+  const [resolvedProId, setResolvedProId] = useState<string | null>(null);
 
   const service = services.find((s) => s.id === selectedService);
-  const professional = professionals.find((p) => p.id === selectedPro);
+  const isAnyPro = selectedPro === ANY_PRO_ID;
+  const effectiveProId = isAnyPro ? resolvedProId : selectedPro;
+  const professional = professionals.find((p) => p.id === effectiveProId);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -101,15 +107,65 @@ export default function PublicBookingPage() {
     });
   }, [selectedDate, barbershop]);
 
+  // For "any professional": compute slots across all pros and pick the best
+  const anyProSlots = useMemo(() => {
+    if (!isAnyPro || !selectedDate || !barbershop || !service) return [];
+    const config = {
+      openingTime: barbershop.opening_time || "09:00",
+      closingTime: barbershop.closing_time || "19:00",
+      intervalMinutes: barbershop.slot_interval_minutes || 30,
+      durationMinutes: service.duration_minutes,
+      bufferMinutes: barbershop.buffer_minutes || 0,
+      minAdvanceHours: barbershop.min_advance_hours || 1,
+    };
+
+    // Collect slots from all professionals
+    const slotMap = new Map<string, string>(); // time -> first available pro id
+    professionals.forEach((pro) => {
+      const slots = generateTimeSlots(selectedDate, pro.id, config, appointments, blockedTimes, availability);
+      slots.forEach((t) => {
+        if (!slotMap.has(t)) slotMap.set(t, pro.id);
+      });
+    });
+
+    return Array.from(slotMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  }, [isAnyPro, selectedDate, barbershop, service, professionals, appointments, blockedTimes, availability]);
+
+  // Use first pro for slot generation when specific pro selected
+  const slotsProId = isAnyPro ? (professionals[0]?.id || null) : selectedPro;
+
   const { timeSlots, groupedSlots, dayStatusMap } = useBookingSlots({
     barbershop,
     selectedDate,
-    selectedPro,
+    selectedPro: isAnyPro ? null : selectedPro,
     serviceDuration: service?.duration_minutes,
     appointments,
     blockedTimes,
     availability,
   });
+
+  // Override slots when "any pro" is selected
+  const finalTimeSlots = isAnyPro ? anyProSlots.map(([t]) => t) : timeSlots;
+  const finalGroupedSlots = useMemo(() => {
+    const morning: string[] = [];
+    const afternoon: string[] = [];
+    const evening: string[] = [];
+    finalTimeSlots.forEach((t) => {
+      const hour = parseInt(t.split(":")[0]);
+      if (hour < 12) morning.push(t);
+      else if (hour < 18) afternoon.push(t);
+      else evening.push(t);
+    });
+    return { morning, afternoon, evening };
+  }, [finalTimeSlots]);
+
+  const handleTimeSelect = (time: string) => {
+    setSelectedTime(time);
+    if (isAnyPro) {
+      const entry = anyProSlots.find(([t]) => t === time);
+      if (entry) setResolvedProId(entry[1]);
+    }
+  };
 
   const canNext =
     (step === 0 && selectedService !== null) ||
@@ -127,11 +183,28 @@ export default function PublicBookingPage() {
       "HH:mm"
     );
 
+    // Upsert client
     if (clientName.trim()) {
-      await supabase.from("clients").upsert(
-        { barbershop_id: barbershop.id, name: clientName, phone: clientPhone, email: clientEmail },
-        { onConflict: "id" }
-      );
+      const { data: existingClients } = await supabase
+        .from("clients")
+        .select("id")
+        .eq("barbershop_id", barbershop.id)
+        .eq("phone", clientPhone)
+        .limit(1);
+
+      if (existingClients && existingClients.length > 0) {
+        await supabase.from("clients").update({
+          name: clientName,
+          email: clientEmail || null,
+        }).eq("id", existingClients[0].id);
+      } else {
+        await supabase.from("clients").insert({
+          barbershop_id: barbershop.id,
+          name: clientName,
+          phone: clientPhone,
+          email: clientEmail || null,
+        });
+      }
     }
 
     const { data, error } = await supabase.from("appointments").insert({
@@ -181,6 +254,7 @@ export default function PublicBookingPage() {
     setClientEmail("");
     setClientNotes("");
     setAppointmentId(null);
+    setResolvedProId(null);
   };
 
   const handleCancelAppointment = async () => {
@@ -231,9 +305,9 @@ export default function PublicBookingPage() {
           <div className="h-16 w-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-5">
             <AlertCircle className="h-8 w-8 text-muted-foreground" />
           </div>
-          <h1 className="text-2xl font-extrabold mb-2">Barbearia não encontrada</h1>
-          <p className="text-muted-foreground mb-8">O link que você acessou não corresponde a nenhuma barbearia cadastrada.</p>
-          <Link to="/"><Button variant="outline" className="rounded-xl h-11 px-6">Voltar ao início</Button></Link>
+          <h1 className="text-2xl font-extrabold mb-2">Barbearia nao encontrada</h1>
+          <p className="text-muted-foreground mb-8">O link que voce acessou nao corresponde a nenhuma barbearia cadastrada.</p>
+          <Link to="/"><Button variant="outline" className="rounded-xl h-11 px-6">Voltar ao inicio</Button></Link>
         </div>
       </div>
     );
@@ -284,7 +358,46 @@ export default function PublicBookingPage() {
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-4 py-6 sm:py-10">
+      {/* Barbershop info banner (step 0 only) */}
+      {step === 0 && (
+        <div className="max-w-2xl mx-auto px-4 pt-5">
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-card mb-2">
+            <div className="flex items-start gap-4">
+              {barbershop.logo_url ? (
+                <img src={barbershop.logo_url} className="h-16 w-16 rounded-2xl object-cover border border-border shrink-0" alt="" />
+              ) : (
+                <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <Scissors className="h-7 w-7 text-primary" />
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <h1 className="font-extrabold text-lg tracking-tight">{barbershop.name}</h1>
+                {barbershop.description && (
+                  <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{barbershop.description}</p>
+                )}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2.5 text-xs text-muted-foreground">
+                  {barbershop.address && (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3 shrink-0" />{barbershop.address}
+                    </span>
+                  )}
+                  {(barbershop.phone || barbershop.whatsapp) && (
+                    <span className="flex items-center gap-1">
+                      <Phone className="h-3 w-3 shrink-0" />{barbershop.whatsapp || barbershop.phone}
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3 shrink-0" />
+                    {barbershop.opening_time?.slice(0, 5)} - {barbershop.closing_time?.slice(0, 5)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-2xl mx-auto px-4 py-6 sm:py-8">
         {/* Progress steps */}
         <div className="flex items-center gap-1 mb-8">
           {stepsMeta.map((s, i) => {
@@ -314,28 +427,29 @@ export default function PublicBookingPage() {
           <ProfessionalStep
             professionals={professionals}
             selectedPro={selectedPro}
-            onSelect={(id) => { setSelectedPro(id); setSelectedTime(null); }}
+            onSelect={(id) => { setSelectedPro(id); setSelectedTime(null); setResolvedProId(null); }}
           />
         )}
         {step === 2 && (
           <DateTimeStep
             barbershop={barbershop}
             service={service}
-            professional={professional}
+            professional={isAnyPro ? { name: "Qualquer profissional", role: "Primeiro disponivel" } : professional}
             selectedDate={selectedDate}
             selectedTime={selectedTime}
-            timeSlots={timeSlots}
-            groupedSlots={groupedSlots}
+            timeSlots={finalTimeSlots}
+            groupedSlots={finalGroupedSlots}
             dayStatusMap={dayStatusMap}
             availability={availability}
             onSelectDate={(d) => { setSelectedDate(d); setSelectedTime(null); }}
-            onSelectTime={setSelectedTime}
+            onSelectTime={handleTimeSelect}
+            resolvedProfessional={isAnyPro && resolvedProId ? professionals.find((p) => p.id === resolvedProId) : undefined}
           />
         )}
         {step === 3 && (
           <ClientInfoStep
             service={service}
-            professional={professional}
+            professional={professional || (isAnyPro ? { name: "Qualquer profissional" } : null)}
             selectedDate={selectedDate}
             selectedTime={selectedTime}
             clientName={clientName}
@@ -351,7 +465,7 @@ export default function PublicBookingPage() {
         {step === 4 && (
           <ConfirmStep
             service={service}
-            professional={professional}
+            professional={professional || (isAnyPro ? { name: "Qualquer profissional" } : null)}
             selectedDate={selectedDate}
             selectedTime={selectedTime}
             clientName={clientName}
@@ -378,7 +492,7 @@ export default function PublicBookingPage() {
               disabled={!canNext}
               className="rounded-xl h-12 px-6 font-semibold shadow-sm"
             >
-              Próximo <ArrowRight className="h-4 w-4 ml-2" />
+              Proximo <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           ) : (
             <Button
