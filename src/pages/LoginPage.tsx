@@ -36,7 +36,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Left panel */}
+      {/* Left panel — desktop only */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary relative items-center justify-center p-12">
         <div className="absolute inset-0 bg-[linear-gradient(135deg,hsl(var(--primary))_0%,hsl(152,58%,22%)_100%)]" />
         <div className="relative z-10 text-primary-foreground max-w-md">
@@ -64,16 +64,17 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right panel - Form */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-12">
-        <div className="w-full max-w-md">
-          <div className="lg:hidden flex items-center gap-2 mb-8">
+      {/* Right panel — form */}
+      <div className="flex-1 flex items-center justify-center px-4 py-8 sm:p-12">
+        <div className="w-full max-w-md mx-auto">
+          {/* Mobile logo */}
+          <div className="lg:hidden flex items-center gap-2 mb-6">
             <Scissors className="h-6 w-6 text-primary" />
-            <span className="text-2xl font-bold">CutFlow</span>
+            <span className="text-xl font-bold">CutFlow</span>
           </div>
 
           <h1 className="text-2xl font-bold mb-1">Entrar no painel</h1>
-          <p className="text-muted-foreground text-sm mb-8">
+          <p className="text-muted-foreground text-sm mb-6">
             Acesse o painel administrativo da sua barbearia.
           </p>
 
@@ -81,7 +82,7 @@ export default function LoginPage() {
           <Button
             type="button"
             variant="outline"
-            className="w-full mb-4 h-11"
+            className="w-full mb-4 h-12 rounded-xl text-base font-medium"
             onClick={async () => {
               setLoading(true);
               const { error } = await lovable.auth.signInWithOAuth("google", {
@@ -94,7 +95,7 @@ export default function LoginPage() {
             }}
             disabled={loading}
           >
-            <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
+            <svg className="h-5 w-5 mr-2 shrink-0" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
@@ -108,9 +109,9 @@ export default function LoginPage() {
             <div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground">ou</span></div>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
+          <form onSubmit={handleLogin} className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-sm">E-mail</Label>
               <Input
                 id="email"
                 type="email"
@@ -119,12 +120,13 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
+                className="h-12 text-base rounded-xl"
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Senha</Label>
+                <Label htmlFor="password" className="text-sm">Senha</Label>
                 <Link to="/forgot-password" className="text-xs text-primary hover:underline">
                   Esqueci minha senha
                 </Link>
@@ -138,30 +140,30 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete="current-password"
-                  className="pr-10"
+                  className="pr-10 h-12 text-base rounded-xl"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
 
             {error && (
-              <p className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">{error}</p>
+              <p className="text-sm text-destructive bg-destructive/10 rounded-xl px-3 py-2">{error}</p>
             )}
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full h-12 rounded-xl text-base font-medium" disabled={loading}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Entrar
               {!loading && <ArrowRight className="h-4 w-4 ml-1" />}
             </Button>
           </form>
 
-          <p className="text-center text-sm text-muted-foreground mt-6">
+          <p className="text-center text-sm text-muted-foreground mt-5">
             Não tem uma conta?{" "}
             <Link to="/signup" className="text-primary font-medium hover:underline">
               Criar conta grátis
