@@ -79,19 +79,19 @@ export function PricingSection() {
   return (
     <section id="pricing" className="section-padding bg-secondary/30">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-14">
-          <span className="inline-block text-sm font-medium text-primary mb-3">
+        <div className="text-center mb-10 sm:mb-14">
+          <span className="inline-flex items-center gap-2 rounded-full bg-primary/8 border border-primary/15 px-4 py-1.5 text-xs sm:text-sm font-medium text-primary mb-4 sm:mb-5">
             Planos e precos
           </span>
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-[-0.02em] mb-3 sm:mb-4">
             Escolha o plano ideal para sua barbearia
           </h2>
-          <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+          <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto">
             Todos os planos incluem 7 dias gratis. Cancele quando quiser.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 max-w-5xl mx-auto">
           {plans.map((plan, i) => {
             const isPopular = plan.slug === "pro";
             const highlights = planHighlights[plan.slug] || [];
@@ -104,44 +104,44 @@ export function PricingSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className={`rounded-2xl border flex flex-col relative transition-all duration-300 ${
+                className={`rounded-xl sm:rounded-2xl border flex flex-col relative transition-all duration-300 ${
                   isPopular
-                    ? "border-primary bg-card shadow-lg ring-2 ring-primary/20 scale-[1.03] md:scale-105 z-10 p-8 sm:p-9"
-                    : "border-border bg-card shadow-sm hover:shadow-md p-7 sm:p-8"
+                    ? "border-primary bg-card shadow-lg ring-2 ring-primary/20 md:scale-105 z-10 p-6 sm:p-8 lg:p-9"
+                    : "border-border bg-card shadow-sm hover:shadow-md p-5 sm:p-7 lg:p-8"
                 }`}
               >
                 {isPopular && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-primary px-5 py-1.5 text-xs font-semibold text-primary-foreground shadow-md">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-primary px-4 sm:px-5 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-primary-foreground shadow-md whitespace-nowrap">
                     <Star className="h-3 w-3 fill-current" />
-                    Mais escolhido pelas barbearias
+                    Mais escolhido
                   </div>
                 )}
 
-                <div className="mb-5">
-                  <h3 className={`font-bold ${isPopular ? "text-2xl" : "text-xl"}`}>
+                <div className="mb-4 sm:mb-5">
+                  <h3 className={`font-bold ${isPopular ? "text-xl sm:text-2xl" : "text-lg sm:text-xl"}`}>
                     {plan.label}
                   </h3>
-                  <p className="text-sm text-muted-foreground mt-1">{desc}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">{desc}</p>
                 </div>
 
-                <div className="mb-6">
+                <div className="mb-5 sm:mb-6">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-sm text-muted-foreground">R$</span>
-                    <span className={`font-extrabold tracking-tight ${isPopular ? "text-5xl" : "text-4xl"}`}>
+                    <span className="text-xs sm:text-sm text-muted-foreground">R$</span>
+                    <span className={`font-extrabold tracking-tight ${isPopular ? "text-4xl sm:text-5xl" : "text-3xl sm:text-4xl"}`}>
                       {plan.price}
                     </span>
-                    <span className="text-muted-foreground text-sm">/mes</span>
+                    <span className="text-muted-foreground text-xs sm:text-sm">/mes</span>
                   </div>
-                  <p className="text-xs text-primary mt-1.5 font-medium">
+                  <p className="text-[11px] sm:text-xs text-primary mt-1.5 font-medium">
                     7 dias gratis para testar
                   </p>
                 </div>
 
-                <ul className="space-y-3 mb-8 flex-1">
+                <ul className="space-y-2.5 sm:space-y-3 mb-6 sm:mb-8 flex-1">
                   {highlights.map((f) => (
-                    <li key={f} className="flex items-start gap-2.5 text-sm">
+                    <li key={f} className="flex items-start gap-2 sm:gap-2.5 text-xs sm:text-sm">
                       <Check
-                        className={`h-4 w-4 mt-0.5 shrink-0 ${
+                        className={`h-3.5 w-3.5 sm:h-4 sm:w-4 mt-0.5 shrink-0 ${
                           isPopular ? "text-primary" : "text-primary/70"
                         }`}
                       />
@@ -153,7 +153,7 @@ export function PricingSection() {
                 <Link to={`/checkout?plan=${plan.slug}`} className="block">
                   <Button
                     variant={isPopular ? "hero" : "outline"}
-                    className={`w-full ${isPopular ? "h-12 text-base" : "h-11"}`}
+                    className={`w-full rounded-xl ${isPopular ? "h-11 sm:h-12 text-sm sm:text-base" : "h-10 sm:h-11 text-sm"}`}
                   >
                     Iniciar 7 dias gratis
                   </Button>
@@ -164,7 +164,7 @@ export function PricingSection() {
         </div>
 
         {/* Trust signals */}
-        <div className="flex flex-wrap items-center justify-center gap-6 mt-10 text-sm text-muted-foreground">
+        <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 mt-8 sm:mt-10 text-xs sm:text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-primary" />
             <span>Pagamento seguro via Stripe</span>
