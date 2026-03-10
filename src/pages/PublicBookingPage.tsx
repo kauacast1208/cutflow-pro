@@ -496,7 +496,7 @@ export default function PublicBookingPage() {
             transition={{ duration: 0.25, ease: "easeInOut" }}
           >
             {step === 0 && (
-              <ServiceStep services={services} selectedService={selectedService} onSelect={setSelectedService} />
+              <ServiceStep services={services} selectedServices={selectedServices} onToggle={handleToggleService} />
             )}
             {step === 1 && (
               <ProfessionalStep
