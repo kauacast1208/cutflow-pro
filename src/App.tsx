@@ -123,6 +123,7 @@ const AppRoutes = () => (
       <Route path="marketing" element={<MarketingOverviewPage />} />
       <Route path="birthdays" element={<BirthdaysPage />} />
       <Route path="loyalty" element={<LoyaltyPage />} />
+      <Route path="retention" element={<RetentionPage />} />
     </Route>
     <Route path="*" element={<NotFound />} />
   </Routes>
