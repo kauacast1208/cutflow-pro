@@ -195,7 +195,7 @@ export default function ReportsPage() {
             size="sm"
             onClick={() =>
               exportMetricsCsv(
-                metrics.map((m) => ({ label: m.label, value: m.value, sub: m.sub })),
+                metrics.cards.map((m) => ({ label: m.label, value: m.value, sub: m.sub })),
                 period
               )
             }
