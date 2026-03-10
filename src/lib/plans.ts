@@ -50,7 +50,7 @@ export const planConfig: Record<PlanTier, PlanConfig> = {
   },
   pro: {
     label: "Pro",
-    price: 89,
+    price: 129,
     recommended: true,
     features: [
       "agenda",
