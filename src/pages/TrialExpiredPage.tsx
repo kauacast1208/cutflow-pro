@@ -230,18 +230,21 @@ export default function TrialExpiredPage() {
                       ))}
                     </ul>
 
-                    <Link to="/billing" className="mt-auto">
-                      <Button
-                        variant={isRecommended ? "default" : "outline"}
-                        size="lg"
-                        className={`w-full h-12 rounded-xl font-semibold text-base ${
-                          isRecommended ? "shadow-md" : ""
-                        }`}
-                      >
-                        Escolher {plan.label}
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </Button>
-                    </Link>
+                    <Button
+                      variant={isRecommended ? "default" : "outline"}
+                      size="lg"
+                      className={`w-full h-12 rounded-xl font-semibold text-base mt-auto ${
+                        isRecommended ? "shadow-md" : ""
+                      }`}
+                      onClick={() => handleDirectCheckout(plan.slug)}
+                      disabled={checkoutLoading !== null}
+                    >
+                      {checkoutLoading === plan.slug ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : null}
+                      Assinar {plan.label}
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
                   </motion.div>
                 );
               })}
