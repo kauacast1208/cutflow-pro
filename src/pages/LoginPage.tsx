@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import { Scissors, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+import { signInWithGoogle } from "@/lib/auth-helpers";
 import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
@@ -85,9 +85,7 @@ export default function LoginPage() {
             className="w-full mb-4 h-12 rounded-xl text-base font-medium"
             onClick={async () => {
               setLoading(true);
-              const { error } = await lovable.auth.signInWithOAuth("google", {
-                redirect_uri: `${window.location.origin}/auth/callback`,
-              });
+              const { error } = await signInWithGoogle("/auth/callback");
               if (error) {
                 setError("Erro ao entrar com Google. Tente novamente.");
                 setLoading(false);
