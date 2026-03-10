@@ -126,12 +126,12 @@ export default function PublicBookingPage() {
 
   // For "any professional": compute slots across all pros
   const anyProSlots = useMemo(() => {
-    if (!isAnyPro || !selectedDate || !barbershop || !service) return [];
+    if (!isAnyPro || !selectedDate || !barbershop || selectedServices.length === 0) return [];
     const config = {
       openingTime: barbershop.opening_time || "09:00",
       closingTime: barbershop.closing_time || "19:00",
       intervalMinutes: barbershop.slot_interval_minutes || 30,
-      durationMinutes: service.duration_minutes,
+      durationMinutes: totalDuration,
       bufferMinutes: barbershop.buffer_minutes || 0,
       minAdvanceHours: barbershop.min_advance_hours || 1,
     };
@@ -145,7 +145,7 @@ export default function PublicBookingPage() {
     });
 
     return Array.from(slotMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
-  }, [isAnyPro, selectedDate, barbershop, service, professionals, appointments, blockedTimes, availability]);
+  }, [isAnyPro, selectedDate, barbershop, selectedServices, totalDuration, professionals, appointments, blockedTimes, availability]);
 
   const { timeSlots, groupedSlots, dayStatusMap } = useBookingSlots({
     barbershop,
