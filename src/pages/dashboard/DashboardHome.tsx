@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Calendar, DollarSign, Users, TrendingUp, Copy, ExternalLink, Plus, AlertTriangle, Trophy, Clock, Zap, Bell } from "lucide-react";
+import { Calendar, DollarSign, Users, TrendingUp, Copy, ExternalLink, Plus, AlertTriangle, Trophy, Clock, Zap, Bell, Heart, UserX as UserXIcon } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { useBarbershop } from "@/hooks/useBarbershop";
 import { useAuth } from "@/hooks/useAuth";
