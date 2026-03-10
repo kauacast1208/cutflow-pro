@@ -394,6 +394,40 @@ export default function DashboardHome() {
         </div>
       </div>
 
+      {/* Retention Insights */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div
+          className="rounded-2xl border border-border bg-card p-5 hover:shadow-md transition-shadow cursor-pointer"
+          onClick={() => navigate("/dashboard/retention")}
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Heart className="h-4 w-4 text-primary" />
+            </div>
+            <h3 className="text-sm font-semibold text-foreground">Retenção Inteligente</h3>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Análise preditiva de retorno de clientes baseada no histórico de visitas
+          </p>
+          <p className="text-xs text-primary mt-2 font-medium">Ver análise →</p>
+        </div>
+        <div
+          className="rounded-2xl border border-border bg-card p-5 hover:shadow-md transition-shadow cursor-pointer"
+          onClick={() => navigate("/dashboard/loyalty")}
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-9 w-9 rounded-xl bg-success/10 flex items-center justify-center">
+              <Trophy className="h-4 w-4 text-success" />
+            </div>
+            <h3 className="text-sm font-semibold text-foreground">Programa de Fidelidade</h3>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Recompense clientes fiéis e incentive o retorno frequente
+          </p>
+          <p className="text-xs text-primary mt-2 font-medium">Gerenciar →</p>
+        </div>
+      </div>
+
       {/* Professional Ranking */}
       <div className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow duration-300">
         <div className="flex items-center justify-between mb-4">
