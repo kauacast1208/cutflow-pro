@@ -34,6 +34,7 @@ import InactiveClientsPage from "./pages/dashboard/InactiveClientsPage";
 import MarketingOverviewPage from "./pages/dashboard/MarketingOverviewPage";
 import BirthdaysPage from "./pages/dashboard/BirthdaysPage";
 import LoyaltyPage from "./pages/dashboard/LoyaltyPage";
+import RetentionPage from "./pages/dashboard/RetentionPage";
 import { Loader2 } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useBarbershop } from "@/hooks/useBarbershop";
