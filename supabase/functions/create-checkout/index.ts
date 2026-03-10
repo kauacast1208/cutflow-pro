@@ -55,6 +55,12 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
+      subscription_data: {
+        trial_period_days: 7,
+        metadata: {
+          user_id: user.id,
+        },
+      },
       success_url: `${origin}/dashboard?checkout=success`,
       cancel_url: `${origin}/billing`,
       metadata: {
@@ -62,7 +68,7 @@ serve(async (req) => {
       },
     });
 
-    logStep("Checkout session created", { sessionId: session.id });
+    logStep("Checkout session created", { sessionId: session.id, trial: true });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
