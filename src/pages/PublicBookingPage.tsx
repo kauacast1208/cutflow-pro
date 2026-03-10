@@ -115,11 +115,22 @@ export default function PublicBookingPage() {
     if (!selectedDate || !barbershop) return;
     const dateStr = format(selectedDate, "yyyy-MM-dd");
     Promise.all([
-      supabase.from("appointments").select("*").eq("barbershop_id", barbershop.id).eq("date", dateStr)
-        .not("status", "eq", "cancelled"),
+      supabase.rpc("get_booked_slots", {
+        _barbershop_id: barbershop.id,
+        _date: dateStr,
+      }),
       supabase.from("blocked_times").select("*").eq("barbershop_id", barbershop.id).eq("date", dateStr),
     ]).then(([appRes, blockRes]) => {
-      setAppointments(appRes.data || []);
+      // Map RPC results to match Appointment interface expected by booking logic
+      const slots = (appRes.data || []).map((s: any) => ({
+        professional_id: s.professional_id,
+        start_time: s.start_time,
+        end_time: s.end_time,
+        status: s.status,
+        date: dateStr,
+        barbershop_id: barbershop.id,
+      }));
+      setAppointments(slots);
       setBlockedTimes(blockRes.data || []);
     });
   }, [selectedDate, barbershop]);
