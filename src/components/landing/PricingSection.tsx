@@ -15,9 +15,9 @@ interface PlanRow {
 }
 
 const planHighlights: Record<string, string[]> = {
-  starter: ["1 profissional", "Agenda online", "Gestão de clientes", "Relatórios básicos", "Agendamento online"],
-  pro: ["Até 5 profissionais", "Tudo do Starter", "Controle financeiro", "Campanhas simples", "Mala direta", "Relatórios avançados"],
-  premium: ["Profissionais ilimitados", "Tudo do Pro", "Campanhas completas", "Automações de marketing", "Suporte prioritário", "Integrações e API"],
+  starter: ["1 profissional", "Agenda online", "Gestao de clientes", "Relatorios basicos", "Agendamento online"],
+  pro: ["Ate 5 profissionais", "Tudo do Starter", "Controle financeiro", "Campanhas simples", "Mala direta", "Relatorios avancados"],
+  premium: ["Profissionais ilimitados", "Tudo do Pro", "Campanhas completas", "Automacoes de marketing", "Suporte prioritario", "Integracoes e API"],
 };
 
 const planDescriptions: Record<string, string> = {
@@ -27,9 +27,9 @@ const planDescriptions: Record<string, string> = {
 };
 
 const fallbackPlans: PlanRow[] = [
-  { id: "1", slug: "starter", label: "Starter", price: 49, max_professionals: 1, features: [] },
-  { id: "2", slug: "pro", label: "Pro", price: 89, max_professionals: 5, features: [] },
-  { id: "3", slug: "premium", label: "Premium", price: 149, max_professionals: 999, features: [] },
+  { id: "1", slug: "starter", label: "Starter", price: 79, max_professionals: 1, features: [] },
+  { id: "2", slug: "pro", label: "Pro", price: 129, max_professionals: 5, features: [] },
+  { id: "3", slug: "premium", label: "Premium", price: 189, max_professionals: 999, features: [] },
 ];
 
 export function PricingSection() {
