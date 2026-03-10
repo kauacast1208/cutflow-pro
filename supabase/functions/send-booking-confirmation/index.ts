@@ -58,7 +58,7 @@ serve(async (req) => {
       .from("automations")
       .select("type, enabled, config")
       .eq("barbershop_id", appointment.barbershop_id)
-      .in("type", ["appointment_reminder_24h", "appointment_reminder_2h"]);
+      .in("type", ["appointment_confirmation", "appointment_reminder_24h", "appointment_reminder_2h"]);
 
     const autoMap = new Map<string, any>();
     (automations || []).forEach((a: any) => autoMap.set(a.type, a));
@@ -75,17 +75,25 @@ serve(async (req) => {
       link: "",
     };
 
-    // Confirmation message
-    const confirmationBody = `Olá ${appointment.client_name}!\n\nSeu horário foi confirmado.\n\nServiço: ${serviceName}\nData: ${formattedDate}\nHora: ${startTime}\n\n${barbershopName}`;
+    // Confirmation message — respect automation config
+    const autoConfirm = autoMap.get("appointment_confirmation");
+    const confirmEnabled = autoConfirm ? autoConfirm.enabled : true; // default enabled
+    const confirmChannel = autoConfirm?.config?.channel || (appointment.client_phone ? "whatsapp" : "email");
+    const customConfirmMsg = autoConfirm?.config?.message;
+    const confirmationBody = customConfirmMsg
+      ? replacePlaceholders(customConfirmMsg, templateVars)
+      : `Olá ${appointment.client_name}!\n\nSeu horário foi confirmado.\n\nServiço: ${serviceName}\nData: ${formattedDate}\nHora: ${startTime}\n\n${barbershopName}`;
 
     // Determine preferred channel (WhatsApp if phone, email if email)
     const preferredChannel = appointment.client_phone ? "whatsapp" : "email";
 
-    const notifications: any[] = [
-      {
+    const notifications: any[] = [];
+
+    if (confirmEnabled) {
+      notifications.push({
         barbershop_id: appointment.barbershop_id,
         appointment_id: appointmentId,
-        channel: appointment.client_email ? "email" : preferredChannel,
+        channel: confirmChannel,
         type: "appointment_created",
         recipient_name: appointment.client_name,
         recipient_email: appointment.client_email,
@@ -94,8 +102,8 @@ serve(async (req) => {
         body: confirmationBody,
         status: "pending",
         scheduled_for: now.toISOString(),
-      },
-    ];
+      });
+    }
 
     // 24h reminder — respect automation config
     const auto24 = autoMap.get("appointment_reminder_24h");

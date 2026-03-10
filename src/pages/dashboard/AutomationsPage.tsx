@@ -4,13 +4,29 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
   Loader2, Zap, CalendarHeart, UserX, Star, Gift, Sparkles,
-  Bell, Clock, MessageSquare,
+  Bell, Clock, MessageSquare, CheckCircle2, UserMinus,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import AutomationCard, { type Automation, type AutomationType } from "@/components/automations/AutomationCard";
 import NotificationsPanel from "@/components/automations/NotificationsPanel";
 
 const automationTypes: AutomationType[] = [
+  // --- Agendamento ---
+  {
+    type: "appointment_confirmation",
+    title: "Confirmação de agendamento",
+    description: "Envia mensagem automática quando um novo agendamento é criado",
+    icon: CheckCircle2,
+    color: "text-success",
+    bg: "bg-success/10",
+    iconBg: "bg-gradient-to-br from-success/10 to-success/5",
+    placeholders: ["{{client_name}}", "{{barbershop_name}}", "{{service_name}}", "{{professional_name}}", "{{appointment_date}}", "{{appointment_time}}"],
+    defaultConfig: {
+      message:
+        "Seu horário foi confirmado na {{barbershop_name}}.\n\nServiço: {{service_name}}\nProfissional: {{professional_name}}\nData: {{appointment_date}}\nHorário: {{appointment_time}}\n\nTe esperamos!",
+      channel: "whatsapp",
+    },
+  },
   {
     type: "appointment_reminder_24h",
     title: "Lembrete 24h antes",
@@ -19,9 +35,10 @@ const automationTypes: AutomationType[] = [
     color: "text-blue-500",
     bg: "bg-blue-500/10",
     iconBg: "bg-gradient-to-br from-blue-500/10 to-blue-500/5",
+    placeholders: ["{{client_name}}", "{{barbershop_name}}", "{{service_name}}", "{{professional_name}}", "{{appointment_date}}", "{{appointment_time}}"],
     defaultConfig: {
       message:
-        "Olá, {{client_name}}! Este é um lembrete do seu agendamento na {{barbershop_name}}.\n\nServiço: {{service_name}}\nProfissional: {{professional_name}}\nData: {{appointment_date}}\nHorário: {{appointment_time}}\n\nSe precisar reagendar, entre em contato conosco.",
+        "Olá {{client_name}}! Este é um lembrete do seu horário na {{barbershop_name}}.\n\nServiço: {{service_name}}\nProfissional: {{professional_name}}\nData: {{appointment_date}}\nHorário: {{appointment_time}}\n\nQualquer dúvida estamos à disposição.",
       channel: "whatsapp",
     },
   },
@@ -33,12 +50,63 @@ const automationTypes: AutomationType[] = [
     color: "text-indigo-500",
     bg: "bg-indigo-500/10",
     iconBg: "bg-gradient-to-br from-indigo-500/10 to-indigo-500/5",
+    placeholders: ["{{client_name}}", "{{barbershop_name}}", "{{service_name}}", "{{appointment_date}}", "{{appointment_time}}"],
     defaultConfig: {
       message:
-        "Olá, {{client_name}}! Faltam 2 horas para o seu horário na {{barbershop_name}}.\n\nServiço: {{service_name}}\nHorário: {{appointment_time}}\n\nTe esperamos!",
+        "Olá {{client_name}}! Faltam 2 horas para o seu horário na {{barbershop_name}}.\n\nServiço: {{service_name}}\nHorário: {{appointment_time}}\n\nTe esperamos!",
       channel: "whatsapp",
     },
   },
+  // --- Reativação ---
+  {
+    type: "inactive_client",
+    title: "Reativação — 30 dias",
+    description: "Mensagem para clientes que não agendam há 30 dias",
+    icon: UserX,
+    color: "text-warning",
+    bg: "bg-warning/10",
+    iconBg: "bg-gradient-to-br from-warning/10 to-warning/5",
+    placeholders: ["{{client_name}}", "{{barbershop_name}}", "{{link}}"],
+    defaultConfig: {
+      message:
+        "Olá {{client_name}}! Sentimos sua falta na {{barbershop_name}}.\n\nEstamos com horários disponíveis essa semana. Que tal agendar seu próximo corte?\n\n{{link}}",
+      channel: "whatsapp",
+      days_threshold: 30,
+    },
+  },
+  {
+    type: "inactive_client_60",
+    title: "Reativação — 60 dias",
+    description: "Mensagem para clientes que não agendam há 60 dias",
+    icon: UserMinus,
+    color: "text-orange-500",
+    bg: "bg-orange-500/10",
+    iconBg: "bg-gradient-to-br from-orange-500/10 to-orange-500/5",
+    placeholders: ["{{client_name}}", "{{barbershop_name}}", "{{link}}"],
+    defaultConfig: {
+      message:
+        "Olá {{client_name}}! Já faz 2 meses que não te vemos na {{barbershop_name}}.\n\nTemos novidades e horários disponíveis esperando por você!\n\n{{link}}",
+      channel: "whatsapp",
+      days_threshold: 60,
+    },
+  },
+  {
+    type: "inactive_client_90",
+    title: "Reativação — 90 dias",
+    description: "Mensagem para clientes que não agendam há 90 dias",
+    icon: UserMinus,
+    color: "text-destructive",
+    bg: "bg-destructive/10",
+    iconBg: "bg-gradient-to-br from-destructive/10 to-destructive/5",
+    placeholders: ["{{client_name}}", "{{barbershop_name}}", "{{link}}"],
+    defaultConfig: {
+      message:
+        "Olá {{client_name}}! Faz bastante tempo que não nos visita na {{barbershop_name}}.\n\nQueremos te ver de volta! Agende agora e garanta seu horário:\n\n{{link}}",
+      channel: "whatsapp",
+      days_threshold: 90,
+    },
+  },
+  // --- Marketing ---
   {
     type: "birthday",
     title: "Aniversário",
@@ -47,25 +115,11 @@ const automationTypes: AutomationType[] = [
     color: "text-pink-500",
     bg: "bg-pink-500/10",
     iconBg: "bg-gradient-to-br from-pink-500/10 to-pink-500/5",
+    placeholders: ["{{client_name}}", "{{barbershop_name}}", "{{link}}"],
     defaultConfig: {
       message:
-        "Feliz aniversário, {{nome}}!\n\nPara comemorar, temos um presente especial para você. Agende seu horário!\n\n{{link}}",
+        "Feliz aniversário, {{client_name}}!\n\nPara comemorar, temos um presente especial para você na {{barbershop_name}}. Agende seu horário!\n\n{{link}}",
       channel: "whatsapp",
-    },
-  },
-  {
-    type: "inactive_client",
-    title: "Cliente inativo",
-    description: "Envia mensagem quando o cliente não agenda há X dias",
-    icon: UserX,
-    color: "text-warning",
-    bg: "bg-warning/10",
-    iconBg: "bg-gradient-to-br from-warning/10 to-warning/5",
-    defaultConfig: {
-      message:
-        "Olá {{nome}}, sentimos sua falta!\n\nJá faz um tempo que você não nos visita. Que tal agendar um horário?\n\n{{link}}",
-      channel: "whatsapp",
-      days_threshold: 30,
     },
   },
   {
@@ -76,9 +130,10 @@ const automationTypes: AutomationType[] = [
     color: "text-primary",
     bg: "bg-primary/10",
     iconBg: "bg-gradient-to-br from-primary/10 to-primary/5",
+    placeholders: ["{{client_name}}", "{{barbershop_name}}"],
     defaultConfig: {
       message:
-        "Olá {{nome}}!\n\nObrigado pela visita hoje! Esperamos que tenha gostado do resultado.\n\nNos vemos em breve!",
+        "Olá {{client_name}}!\n\nObrigado pela visita na {{barbershop_name}}! Esperamos que tenha gostado do resultado.\n\nNos vemos em breve!",
       channel: "whatsapp",
       delay_hours: 2,
     },
@@ -91,9 +146,10 @@ const automationTypes: AutomationType[] = [
     color: "text-success",
     bg: "bg-success/10",
     iconBg: "bg-gradient-to-br from-success/10 to-success/5",
+    placeholders: ["{{client_name}}", "{{meta}}", "{{recompensa}}", "{{link}}"],
     defaultConfig: {
       message:
-        "Parabéns {{nome}}!\n\nVocê completou {{meta}} indicações e ganhou: {{recompensa}}!\n\nAgende seu horário para resgatar: {{link}}",
+        "Parabéns {{client_name}}!\n\nVocê completou {{meta}} indicações e ganhou: {{recompensa}}!\n\nAgende seu horário para resgatar: {{link}}",
       channel: "whatsapp",
     },
   },
@@ -216,7 +272,6 @@ export default function AutomationsPage() {
   };
 
   const handleResend = async (notificationId: string) => {
-    // Reset notification to pending so process-reminders picks it up
     await supabase
       .from("notifications")
       .update({ status: "pending", error_message: null, sent_at: null, scheduled_for: new Date().toISOString() } as any)
@@ -238,12 +293,48 @@ export default function AutomationsPage() {
 
   const activeCount = automationTypes.filter((at) => getAutomation(at.type).enabled).length;
 
-  // Separate reminder automations from marketing ones
-  const reminderTypes = automationTypes.filter((at) =>
-    at.type === "appointment_reminder_24h" || at.type === "appointment_reminder_2h"
+  const appointmentTypes = automationTypes.filter((at) =>
+    ["appointment_confirmation", "appointment_reminder_24h", "appointment_reminder_2h"].includes(at.type)
   );
-  const marketingTypes = automationTypes.filter(
-    (at) => at.type !== "appointment_reminder_24h" && at.type !== "appointment_reminder_2h"
+  const reactivationTypes = automationTypes.filter((at) =>
+    ["inactive_client", "inactive_client_60", "inactive_client_90"].includes(at.type)
+  );
+  const marketingTypes = automationTypes.filter((at) =>
+    ["birthday", "post_service", "referral_reward"].includes(at.type)
+  );
+
+  const renderSection = (
+    title: string,
+    icon: React.ReactNode,
+    badge: string,
+    badgeColor: string,
+    types: AutomationType[],
+    delay: number
+  ) => (
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }}>
+      <div className="flex items-center gap-2.5 mb-3">
+        {icon}
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+        <span className={`text-[10px] ${badgeColor} px-2 py-0.5 rounded-full font-medium`}>
+          {badge}
+        </span>
+      </div>
+      <div className="space-y-3">
+        {types.map((at) => (
+          <AutomationCard
+            key={at.type}
+            at={at}
+            automation={getAutomation(at.type)}
+            isExpanded={expandedType === at.type}
+            saving={saving}
+            onToggle={() => toggleAutomation(at.type)}
+            onExpand={() => setExpandedType(expandedType === at.type ? null : at.type)}
+            onUpdateConfig={(key, value) => updateConfig(at.type, key, value)}
+            onSave={() => saveConfig(at.type)}
+          />
+        ))}
+      </div>
+    </motion.div>
   );
 
   return (
@@ -257,9 +348,9 @@ export default function AutomationsPage() {
                 <Zap className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold tracking-tight text-foreground">Automações</h2>
+                <h2 className="text-2xl font-bold tracking-tight text-foreground">Automações de Clientes</h2>
                 <p className="text-sm text-muted-foreground mt-0.5">
-                  Configure lembretes e mensagens automáticas para seus clientes
+                  Configure lembretes, confirmações e reativações automáticas via WhatsApp
                 </p>
               </div>
             </div>
@@ -275,60 +366,41 @@ export default function AutomationsPage() {
         </div>
       </motion.div>
 
-      {/* Reminder Section */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-        <div className="flex items-center gap-2.5 mb-3">
-          <MessageSquare className="h-4 w-4 text-blue-500" />
-          <h3 className="text-sm font-semibold text-foreground">Lembretes de Agendamento</h3>
-          <span className="text-[10px] bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded-full font-medium">
-            WhatsApp
-          </span>
-        </div>
-        <div className="space-y-3">
-          {reminderTypes.map((at) => (
-            <AutomationCard
-              key={at.type}
-              at={at}
-              automation={getAutomation(at.type)}
-              isExpanded={expandedType === at.type}
-              saving={saving}
-              onToggle={() => toggleAutomation(at.type)}
-              onExpand={() => setExpandedType(expandedType === at.type ? null : at.type)}
-              onUpdateConfig={(key, value) => updateConfig(at.type, key, value)}
-              onSave={() => saveConfig(at.type)}
-            />
-          ))}
-        </div>
-      </motion.div>
+      {/* Agendamento Section */}
+      {renderSection(
+        "Agendamento",
+        <MessageSquare className="h-4 w-4 text-blue-500" />,
+        "WhatsApp",
+        "bg-blue-500/10 text-blue-500",
+        appointmentTypes,
+        0.05
+      )}
+
+      {/* Reativação Section */}
+      {renderSection(
+        "Reativação de Clientes Inativos",
+        <UserX className="h-4 w-4 text-warning" />,
+        "30 / 60 / 90 dias",
+        "bg-warning/10 text-warning",
+        reactivationTypes,
+        0.1
+      )}
 
       {/* Marketing Section */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-        <div className="flex items-center gap-2.5 mb-3">
-          <Zap className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-semibold text-foreground">Marketing & Engajamento</h3>
-        </div>
-        <div className="space-y-3">
-          {marketingTypes.map((at) => (
-            <AutomationCard
-              key={at.type}
-              at={at}
-              automation={getAutomation(at.type)}
-              isExpanded={expandedType === at.type}
-              saving={saving}
-              onToggle={() => toggleAutomation(at.type)}
-              onExpand={() => setExpandedType(expandedType === at.type ? null : at.type)}
-              onUpdateConfig={(key, value) => updateConfig(at.type, key, value)}
-              onSave={() => saveConfig(at.type)}
-            />
-          ))}
-        </div>
-      </motion.div>
+      {renderSection(
+        "Marketing & Engajamento",
+        <Zap className="h-4 w-4 text-primary" />,
+        "Automático",
+        "bg-primary/10 text-primary",
+        marketingTypes,
+        0.15
+      )}
 
       {/* How it works */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
+        transition={{ delay: 0.2 }}
         className="rounded-2xl border border-border/60 bg-card p-6"
       >
         <div className="flex items-center gap-3 mb-5">
@@ -336,21 +408,21 @@ export default function AutomationsPage() {
             <Zap className="h-4.5 w-4.5 text-accent-foreground" />
           </div>
           <div>
-            <h3 className="font-semibold text-foreground">Como funcionam os lembretes</h3>
+            <h3 className="font-semibold text-foreground">Como funcionam as automações</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Fluxo automático em três passos</p>
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            { step: "1", title: "Configure", desc: "Ative o lembrete e personalize a mensagem com os placeholders disponíveis" },
-            { step: "2", title: "Detecção", desc: "O sistema identifica agendamentos futuros e agenda os lembretes automaticamente" },
-            { step: "3", title: "Envio", desc: "A mensagem é enviada via WhatsApp no horário programado" },
+            { step: "1", title: "Configure", desc: "Ative a automação, personalize a mensagem e escolha o canal" },
+            { step: "2", title: "Detecção", desc: "O sistema monitora agendamentos e clientes inativos automaticamente" },
+            { step: "3", title: "Envio", desc: "A mensagem é enviada via WhatsApp no momento certo" },
           ].map((s, i) => (
             <motion.div
               key={s.step}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + i * 0.08 }}
+              transition={{ delay: 0.25 + i * 0.08 }}
               className="relative text-center p-5 rounded-xl bg-secondary/30 border border-border/30"
             >
               <div className="h-8 w-8 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center mx-auto mb-3">

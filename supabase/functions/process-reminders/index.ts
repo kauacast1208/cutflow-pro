@@ -25,11 +25,15 @@ serve(async (req) => {
       .eq("status", "pending")
       .lte("scheduled_for", new Date().toISOString())
       .in("type", [
+        "appointment_created",
         "appointment_reminder_24h",
         "appointment_reminder_2h",
         "post_service",
         "birthday_campaign",
         "reactivation_campaign",
+        "reactivation_inactive_client",
+        "reactivation_inactive_client_60",
+        "reactivation_inactive_client_90",
         "referral_reward",
       ])
       .limit(50);
