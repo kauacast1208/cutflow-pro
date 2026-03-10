@@ -109,6 +109,23 @@ export default function NewAppointmentDialog({
 
       if (error) throw error;
 
+      // Send WhatsApp confirmation (fire-and-forget)
+      if (form.client_phone) {
+        const selectedPro = professionals.find((p: any) => p.id === form.professional_id);
+        sendAppointmentConfirmation({
+          clientName: form.client_name,
+          clientPhone: form.client_phone,
+          barbershopName: barbershop.name,
+          serviceName: selectedService?.name || "",
+          date: form.date,
+          startTime: form.start_time,
+          endTime,
+          price: selectedService?.price,
+          professionalName: selectedPro?.name,
+          type: "confirmed",
+        }).catch((err) => console.warn("[whatsapp] confirmation failed:", err));
+      }
+
       toast({ title: "Agendamento criado com sucesso!" });
       onOpenChange(false);
       onCreated();
