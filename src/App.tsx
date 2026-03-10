@@ -15,6 +15,7 @@ import DemoPage from "./pages/DemoPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import TrialExpiredPage from "./pages/TrialExpiredPage";
 import PublicBookingPage from "./pages/PublicBookingPage";
+import BillingPage from "./pages/BillingPage";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import AgendaPage from "./pages/dashboard/AgendaPage";
@@ -96,6 +97,7 @@ const AppRoutes = () => (
     <Route path="/demo" element={<DemoPage />} />
     <Route path="/checkout" element={<CheckoutPage />} />
     <Route path="/trial-expired" element={<ProtectedRoute><TrialExpiredPage /></ProtectedRoute>} />
+    <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
     <Route path="/agendar/:slug" element={<PublicBookingPage />} />
     <Route path="/book/:slug" element={<PublicBookingPage />} />
     <Route path="/b/:slug" element={<PublicBookingPage />} />
