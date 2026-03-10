@@ -309,7 +309,7 @@ export default function AutomationsPage() {
   const activeCount = automationTypes.filter((at) => getAutomation(at.type).enabled).length;
 
   const appointmentTypes = automationTypes.filter((at) =>
-    ["appointment_confirmation", "appointment_reminder_24h", "appointment_reminder_2h"].includes(at.type)
+    ["appointment_confirmation", "appointment_reminder_24h", "appointment_reminder_2h", "appointment_reminder_1h"].includes(at.type)
   );
   const reactivationTypes = automationTypes.filter((at) =>
     ["inactive_client", "inactive_client_60", "inactive_client_90"].includes(at.type)
