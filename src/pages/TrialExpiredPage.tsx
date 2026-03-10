@@ -67,9 +67,11 @@ const planDescriptions: Record<string, string> = {
 
 export default function TrialExpiredPage() {
   const { signOut } = useAuth();
-  const { daysRemaining } = useSubscription();
+  const { daysRemaining, isCancelled, isTrialExpired } = useSubscription();
+  const { toast } = useToast();
   const [plans, setPlans] = useState<PlanData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPlans = async () => {
