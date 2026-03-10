@@ -14,6 +14,7 @@ import { useBarbershop } from "@/hooks/useBarbershop";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus } from "lucide-react";
 import { format, addMinutes, parse } from "date-fns";
+import { sendAppointmentConfirmation } from "@/services/whatsapp";
 
 interface NewAppointmentDialogProps {
   open: boolean;
