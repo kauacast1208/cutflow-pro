@@ -483,6 +483,11 @@ export default function SettingsPage() {
             <SubscriptionManager />
           </TabsContent>
 
+          {/* WHATSAPP TEST */}
+          <TabsContent value="whatsapp">
+            <WhatsAppTestPanel />
+          </TabsContent>
+
           {/* PREFERENCES */}
           <TabsContent value="preferences">
             <CardSection className="space-y-6">
