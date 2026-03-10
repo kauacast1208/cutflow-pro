@@ -57,6 +57,21 @@ const automationTypes: AutomationType[] = [
       channel: "whatsapp",
     },
   },
+  {
+    type: "appointment_reminder_1h",
+    title: "Lembrete 1h antes",
+    description: "Envia lembrete via WhatsApp 1 hora antes do agendamento",
+    icon: Clock,
+    color: "text-violet-500",
+    bg: "bg-violet-500/10",
+    iconBg: "bg-gradient-to-br from-violet-500/10 to-violet-500/5",
+    placeholders: ["{{client_name}}", "{{barbershop_name}}", "{{appointment_time}}"],
+    defaultConfig: {
+      message:
+        "Olá {{client_name}}! Seu horário na {{barbershop_name}} é daqui a 1 hora, às {{appointment_time}}.\n\nTe esperamos!",
+      channel: "whatsapp",
+    },
+  },
   // --- Reativação ---
   {
     type: "inactive_client",
@@ -294,7 +309,7 @@ export default function AutomationsPage() {
   const activeCount = automationTypes.filter((at) => getAutomation(at.type).enabled).length;
 
   const appointmentTypes = automationTypes.filter((at) =>
-    ["appointment_confirmation", "appointment_reminder_24h", "appointment_reminder_2h"].includes(at.type)
+    ["appointment_confirmation", "appointment_reminder_24h", "appointment_reminder_2h", "appointment_reminder_1h"].includes(at.type)
   );
   const reactivationTypes = automationTypes.filter((at) =>
     ["inactive_client", "inactive_client_60", "inactive_client_90"].includes(at.type)
