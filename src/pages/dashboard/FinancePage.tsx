@@ -131,13 +131,18 @@ export default function FinancePage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24 sm:pb-6">
       <motion.div {...fadeUp(0)} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            Financeiro
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">Acompanhe o desempenho financeiro da sua barbearia.</p>
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <DollarSign className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Financeiro
+            </h2>
+            <p className="text-sm text-muted-foreground">Desempenho financeiro da sua barbearia</p>
+          </div>
         </div>
         <div className="flex items-center gap-1 rounded-xl bg-muted/50 p-1">
           {periodOptions.map(opt => (
