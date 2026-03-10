@@ -735,7 +735,7 @@ export default function AgendaPage() {
               )}
 
               {/* Action buttons */}
-              {(canViewFullAgenda || !isProfessional) && (
+              {(canViewFullAgenda || !isProfessional) && selectedAppt.status !== "cancelled" && selectedAppt.status !== "completed" && (
                 <div className="flex flex-wrap gap-2">
                   {selectedAppt.status === "scheduled" && (
                     <>
@@ -748,9 +748,19 @@ export default function AgendaPage() {
                     </>
                   )}
                   {selectedAppt.status === "confirmed" && (
-                    <Button size="sm" className="gap-1.5 rounded-xl flex-1" onClick={() => handleAction(selectedAppt.id, "completed", "Atendimento concluído!")}>
-                      <CheckCircle2 className="h-3.5 w-3.5" /> Concluir atendimento
-                    </Button>
+                    <>
+                      <Button size="sm" className="gap-1.5 rounded-xl flex-1" onClick={() => handleAction(selectedAppt.id, "completed", "Atendimento concluído!")}>
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Concluir
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5 rounded-xl border-amber-500/30 text-amber-600 hover:bg-amber-500/10"
+                        onClick={() => handleAction(selectedAppt.id, "cancelled", "Marcado como não compareceu")}
+                      >
+                        <UserX className="h-3.5 w-3.5" /> No-show
+                      </Button>
+                    </>
                   )}
                 </div>
               )}
