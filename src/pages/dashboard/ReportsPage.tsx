@@ -233,36 +233,81 @@ export default function ReportsPage() {
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {metrics.map((m, i) => {
-            const Icon = m.icon;
-            const colors = iconBg[m.colorKey] || iconBg.primary;
-            return (
-              <motion.div
-                key={m.label}
-                {...fadeUp(i + 1)}
-                className="group relative overflow-hidden rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow duration-300"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-accent/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                <div className="relative">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${colors}`}>
-                      <Icon className="h-5 w-5" />
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {metrics.cards.map((m, i) => {
+              const Icon = m.icon;
+              const colors = iconBg[m.colorKey] || iconBg.primary;
+              return (
+                <motion.div
+                  key={m.label}
+                  {...fadeUp(i + 1)}
+                  className="group relative overflow-hidden rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow duration-300"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-accent/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  <div className="relative">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${colors}`}>
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <p className="text-[13px] text-muted-foreground font-medium">{m.label}</p>
                     </div>
-                    <p className="text-[13px] text-muted-foreground font-medium">{m.label}</p>
+                    <p
+                      className="text-xl font-bold tracking-tight text-foreground mb-1"
+                      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                    >
+                      {m.value}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{m.sub}</p>
                   </div>
-                  <p
-                    className="text-xl font-bold tracking-tight text-foreground mb-1"
-                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                  >
-                    {m.value}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{m.sub}</p>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Pie Chart — Services Distribution */}
+          {metrics.serviceDistribution.length > 0 && (
+            <motion.div
+              {...fadeUp(8)}
+              className="rounded-2xl border border-border bg-card p-6"
+            >
+              <h3 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                Distribuição de serviços
+              </h3>
+              <div className="h-[320px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={metrics.serviceDistribution}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={110}
+                      paddingAngle={3}
+                      dataKey="value"
+                      nameKey="name"
+                      label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                    >
+                      {metrics.serviceDistribution.map((_, idx) => (
+                        <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "12px",
+                        color: "hsl(var(--foreground))",
+                      }}
+                      formatter={(value: number) => [`${value} agendamentos`, "Qtd"]}
+                    />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+          )}
+        </>
       )}
     </div>
   );

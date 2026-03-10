@@ -28,6 +28,7 @@ serve(async (req) => {
         "appointment_created",
         "appointment_reminder_24h",
         "appointment_reminder_2h",
+        "appointment_reminder_1h",
         "post_service",
         "birthday_campaign",
         "reactivation_campaign",
