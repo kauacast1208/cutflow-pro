@@ -5,6 +5,8 @@ import { Scissors, Check, AlertTriangle, ArrowRight, Shield, Users, Calendar, Ba
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useToast } from "@/hooks/use-toast";
+import { STRIPE_PLANS, type StripePlanKey } from "@/lib/stripe";
 import { motion } from "framer-motion";
 
 interface PlanData {
