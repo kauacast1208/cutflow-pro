@@ -51,6 +51,7 @@ serve(async (req) => {
     const appointmentDateTime = new Date(`${appointment.date}T${appointment.start_time}`);
     const reminder24h = new Date(appointmentDateTime.getTime() - 24 * 60 * 60 * 1000);
     const reminder2h = new Date(appointmentDateTime.getTime() - 2 * 60 * 60 * 1000);
+    const reminder1h = new Date(appointmentDateTime.getTime() - 1 * 60 * 60 * 1000);
     const now = new Date();
 
     // Fetch automation configs for this barbershop
@@ -58,7 +59,7 @@ serve(async (req) => {
       .from("automations")
       .select("type, enabled, config")
       .eq("barbershop_id", appointment.barbershop_id)
-      .in("type", ["appointment_confirmation", "appointment_reminder_24h", "appointment_reminder_2h"]);
+      .in("type", ["appointment_confirmation", "appointment_reminder_24h", "appointment_reminder_2h", "appointment_reminder_1h"]);
 
     const autoMap = new Map<string, any>();
     (automations || []).forEach((a: any) => autoMap.set(a.type, a));
@@ -155,12 +156,37 @@ serve(async (req) => {
       });
     }
 
+    // 1h reminder — always WhatsApp, default enabled
+    const auto1h = autoMap.get("appointment_reminder_1h");
+    const enabled1h = auto1h ? auto1h.enabled : true;
+    if (enabled1h && reminder1h > now) {
+      const channel1h = "whatsapp"; // 1h reminder always via WhatsApp
+      const customMsg1h = auto1h?.config?.message;
+      const body1h = customMsg1h
+        ? replacePlaceholders(customMsg1h, templateVars)
+        : `Olá ${appointment.client_name}! Falta 1 hora para seu horário às ${startTime}.\n\nServiço: ${serviceName}\nProfissional: ${professionalName}\n\n${barbershopName} te espera!`;
+
+      notifications.push({
+        barbershop_id: appointment.barbershop_id,
+        appointment_id: appointmentId,
+        channel: channel1h,
+        type: "appointment_reminder_1h",
+        recipient_name: appointment.client_name,
+        recipient_email: appointment.client_email,
+        recipient_phone: appointment.client_phone,
+        subject: `⏰ Falta 1 hora para seu horário - ${barbershopName}`,
+        body: body1h,
+        status: "pending",
+        scheduled_for: reminder1h.toISOString(),
+      });
+    }
+
     // Check for duplicate notifications
     const { data: existing } = await supabase
       .from("notifications")
       .select("type")
       .eq("appointment_id", appointmentId)
-      .in("type", ["appointment_created", "appointment_reminder_24h", "appointment_reminder_2h"]);
+      .in("type", ["appointment_created", "appointment_reminder_24h", "appointment_reminder_2h", "appointment_reminder_1h"]);
 
     const existingTypes = new Set((existing || []).map((e: any) => e.type));
     const newNotifications = notifications.filter((n) => !existingTypes.has(n.type));
