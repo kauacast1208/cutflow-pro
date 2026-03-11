@@ -18,6 +18,19 @@ const PRICE_TO_PLAN: Record<string, string> = {
   "price_1T9CMGGYcPFVpgolzwe6TMW6": "premium",
 };
 
+function mapStripeStatus(status: string): string {
+  switch (status) {
+    case "active": return "active";
+    case "trialing": return "trial";
+    case "past_due": return "past_due";
+    case "canceled":
+    case "unpaid": return "cancelled";
+    case "incomplete":
+    case "incomplete_expired": return "expired";
+    default: return "expired";
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -59,15 +72,15 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    // Check active and trialing subscriptions
-    const activeSubs = await stripe.subscriptions.list({
-      customer: customerId, status: "active", limit: 1,
-    });
-    const trialingSubs = await stripe.subscriptions.list({
-      customer: customerId, status: "trialing", limit: 1,
-    });
+    // Query ALL relevant subscription statuses (not just active+trialing)
+    const [activeSubs, trialingSubs, pastDueSubs] = await Promise.all([
+      stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 }),
+      stripe.subscriptions.list({ customer: customerId, status: "trialing", limit: 1 }),
+      stripe.subscriptions.list({ customer: customerId, status: "past_due", limit: 1 }),
+    ]);
 
-    const subscription = activeSubs.data[0] || trialingSubs.data[0];
+    // Priority: active > trialing > past_due
+    const subscription = activeSubs.data[0] || trialingSubs.data[0] || pastDueSubs.data[0];
 
     let subscribed = false;
     let plan: string | null = null;
@@ -89,7 +102,7 @@ serve(async (req) => {
       plan = PRICE_TO_PLAN[priceId] || null;
       logStep("Subscription found", { subscriptionId: subscription.id, plan, status, cancelAtPeriodEnd });
 
-      // Sync to Supabase using admin client
+      // Sync to Supabase
       const { data: barbershop } = await supabaseAdmin
         .from("barbershops")
         .select("id")
@@ -97,7 +110,7 @@ serve(async (req) => {
         .maybeSingle();
 
       if (barbershop && plan) {
-        const dbStatus = status === "trialing" ? "trial" : status === "active" ? "active" : "expired";
+        const dbStatus = mapStripeStatus(subscription.status);
         const trialEnd = subscription.trial_end
           ? new Date(subscription.trial_end * 1000).toISOString()
           : undefined;
@@ -124,7 +137,7 @@ serve(async (req) => {
         logStep("Could not sync - missing barbershop or plan", { hasBarbershop: !!barbershop, plan });
       }
     } else {
-      logStep("No active or trialing subscription found");
+      logStep("No active, trialing, or past_due subscription found");
     }
 
     return new Response(JSON.stringify({
@@ -140,7 +153,7 @@ serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    return new Response(JSON.stringify({ error: "Erro ao verificar assinatura" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

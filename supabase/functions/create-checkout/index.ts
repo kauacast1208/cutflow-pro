@@ -133,7 +133,12 @@ serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    // Only expose safe messages to client
+    const safeMessages = ["priceId is required", "Invalid priceId"];
+    const clientMessage = safeMessages.some(m => errorMessage.includes(m))
+      ? errorMessage
+      : "Erro ao iniciar checkout. Tente novamente.";
+    return new Response(JSON.stringify({ error: clientMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

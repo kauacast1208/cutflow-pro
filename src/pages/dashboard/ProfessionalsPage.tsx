@@ -68,10 +68,29 @@ export default function ProfessionalsPage() {
     setSaving(true);
     const payload = { name, role, specialties: specialties.split(",").map((s) => s.trim()).filter(Boolean), work_start: workStart, work_end: workEnd, work_days: workDays };
     if (editing) {
-      await supabase.from("professionals").update(payload).eq("id", editing.id);
+      const { error } = await supabase.from("professionals").update(payload).eq("id", editing.id);
+      if (error) {
+        toast({ title: "Erro ao atualizar", description: error.message, variant: "destructive" });
+        setSaving(false);
+        return;
+      }
       toast({ title: "Profissional atualizado!" });
     } else {
-      await supabase.from("professionals").insert({ ...payload, barbershop_id: barbershop.id });
+      const { error } = await supabase.from("professionals").insert({ ...payload, barbershop_id: barbershop.id });
+      if (error) {
+        // DB trigger raises exception with plan limit message
+        const isLimitError = error.message.includes("plano") || error.message.includes("profissional");
+        toast({
+          title: isLimitError ? "Limite do plano atingido" : "Erro ao adicionar",
+          description: isLimitError
+            ? `${error.message} Faça upgrade para continuar.`
+            : error.message,
+          variant: "destructive",
+        });
+        if (isLimitError) showUpgrade("agenda");
+        setSaving(false);
+        return;
+      }
       toast({ title: "Profissional adicionado!" });
     }
     setSaving(false); setDialogOpen(false); load();
