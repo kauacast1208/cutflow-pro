@@ -690,8 +690,11 @@ export default function AgendaPage() {
                               ))}
                             </div>
                             {slotBlocks.length > 0 && slotAppts.length === 0 && (
-                              <div className="flex items-center justify-center h-full opacity-40">
-                                <Ban className="h-3 w-3 text-muted-foreground mr-1" />
+                              <div className="flex items-center justify-center h-full opacity-50">
+                                <span className="text-xs mr-1">
+                                  {(slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "🍽️" :
+                                   (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "☕" : "🚫"}
+                                </span>
                                 <span className="text-[9px] text-muted-foreground">
                                   {slotBlocks[0]?.reason || "Bloqueado"}
                                 </span>
