@@ -122,10 +122,12 @@ class ZApiProvider implements WhatsAppProvider {
   name = "z_api";
   private instanceId: string;
   private token: string;
+  private clientToken: string;
 
-  constructor(instanceId: string, token: string) {
+  constructor(instanceId: string, token: string, clientToken: string) {
     this.instanceId = instanceId;
     this.token = token;
+    this.clientToken = clientToken;
   }
 
   async send(phone: string, message: string): Promise<SendResult> {
@@ -134,7 +136,10 @@ class ZApiProvider implements WhatsAppProvider {
 
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Client-Token": this.clientToken,
+      },
       body: JSON.stringify({ phone: normalizedPhone, message }),
     });
 
