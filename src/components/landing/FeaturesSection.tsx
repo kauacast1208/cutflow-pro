@@ -3,34 +3,34 @@ import { Calendar, Users, BarChart3, Globe, Bell, UserCheck } from "lucide-react
 
 const features = [
   {
-    icon: Calendar,
-    title: "Agenda inteligente",
-    description: "Visualize sua agenda semanal e organize horários facilmente. Sem conflitos, sem confusão.",
-  },
-  {
-    icon: Users,
-    title: "Gestão de clientes",
-    description: "Acompanhe histórico de atendimentos, preferências e anotações de cada cliente.",
-  },
-  {
-    icon: BarChart3,
-    title: "Relatórios e faturamento",
-    description: "Entenda quanto sua barbearia está faturando com relatórios claros e detalhados.",
-  },
-  {
-    icon: UserCheck,
-    title: "Controle de equipe",
-    description: "Gerencie barbeiros, escalas, comissões e produtividade individual com facilidade.",
-  },
-  {
     icon: Bell,
-    title: "Lembretes automáticos",
-    description: "Reduza faltas com lembretes automáticos por WhatsApp antes de cada atendimento.",
+    title: "Nunca mais esqueça clientes",
+    description: "O sistema envia lembretes automáticos e reduz faltas.",
+  },
+  {
+    icon: Calendar,
+    title: "Menos estresse no dia a dia",
+    description: "Pare de organizar tudo pelo WhatsApp.",
   },
   {
     icon: Globe,
-    title: "Agendamento online",
-    description: "Clientes agendam horários em poucos segundos, direto pelo celular, 24h por dia.",
+    title: "Agenda sempre organizada",
+    description: "Veja horários livres e ocupados em segundos.",
+  },
+  {
+    icon: Users,
+    title: "Mais clientes retornando",
+    description: "Histórico e gestão ajudam fidelizar clientes.",
+  },
+  {
+    icon: BarChart3,
+    title: "Controle financeiro simples",
+    description: "Saiba quanto sua barbearia fatura.",
+  },
+  {
+    icon: UserCheck,
+    title: "Sistema feito para barbeiros",
+    description: "Simples, rápido e fácil de usar.",
   },
 ];
 
@@ -54,9 +54,7 @@ export function FeaturesSection() {
             viewport={{ once: true }}
             className="text-2xl sm:text-4xl lg:text-[2.75rem] font-extrabold tracking-[-0.02em] mb-3 sm:mb-4"
           >
-            Uma plataforma completa para{" "}
-            <br className="hidden sm:block" />
-            barbearias modernas.
+            Por que barbearias usam o CutFlow
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -65,7 +63,7 @@ export function FeaturesSection() {
             transition={{ delay: 0.1 }}
             className="text-muted-foreground text-[15px] sm:text-lg max-w-lg mx-auto leading-relaxed"
           >
-            Ferramentas profissionais para organizar, crescer e encantar seus clientes.
+            Ferramentas práticas para organizar sua barbearia e atender melhor.
           </motion.p>
         </div>
 
