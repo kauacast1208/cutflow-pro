@@ -601,7 +601,7 @@ export default function DashboardHome() {
         </motion.div>
 
         {/* Day of week */}
-        <motion.div {...fadeUp(11)} className="rounded-2xl border border-border bg-card p-4 sm:p-6 hover:shadow-md transition-shadow">
+        <motion.div {...fadeUp(11)} className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
           <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Faturamento por dia da semana
           </h3>
