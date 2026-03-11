@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
-import { Settings, Share2, CalendarCheck } from "lucide-react";
+import { UserPlus, Settings, CalendarCheck } from "lucide-react";
 
 const steps = [
-  { icon: Settings, step: "01", title: "Configure sua barbearia", description: "Adicione serviços, preços e equipe de barbeiros em poucos minutos." },
-  { icon: Share2, step: "02", title: "Compartilhe sua página de agendamento", description: "Envie o link exclusivo para seus clientes agendarem online." },
-  { icon: CalendarCheck, step: "03", title: "Receba clientes automaticamente", description: "Clientes agendam sozinhos e sua agenda fica sempre organizada." },
+  { icon: UserPlus, step: "01", title: "Cadastre sua barbearia", description: "Crie sua conta e configure sua barbearia em poucos minutos." },
+  { icon: Settings, step: "02", title: "Configure seus serviços", description: "Adicione serviços, preços e horários de cada profissional." },
+  { icon: CalendarCheck, step: "03", title: "Receba agendamentos", description: "Compartilhe seu link e receba agendamentos automaticamente." },
 ];
 
 export function HowItWorksSection() {
