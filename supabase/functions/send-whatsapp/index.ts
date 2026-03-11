@@ -181,8 +181,9 @@ function createProvider(): WhatsAppProvider | null {
   // Priority 3: Z-API
   const zapiInstance = Deno.env.get("ZAPI_INSTANCE_ID");
   const zapiToken = Deno.env.get("ZAPI_TOKEN");
-  if (zapiInstance && zapiToken) {
-    return new ZApiProvider(zapiInstance, zapiToken);
+  const zapiClientToken = Deno.env.get("ZAPI_CLIENT_TOKEN");
+  if (zapiInstance && zapiToken && zapiClientToken) {
+    return new ZApiProvider(zapiInstance, zapiToken, zapiClientToken);
   }
 
   return null;
