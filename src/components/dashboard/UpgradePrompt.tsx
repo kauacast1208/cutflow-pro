@@ -83,7 +83,7 @@ export function UpgradePrompt({ feature, currentPlan, onClose }: UpgradePromptPr
               Cancelar
             </Button>
             <Button className="flex-1 gap-2" onClick={handleUpgrade}>
-              Fazer upgrade <ArrowRight className="h-4 w-4" />
+              Ver planos <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
 
