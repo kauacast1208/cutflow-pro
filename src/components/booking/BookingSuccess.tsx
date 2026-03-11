@@ -167,6 +167,21 @@ export function BookingSuccess({
                 Agendar outro horário
               </Button>
             </Link>
+
+            {/* Viral CutFlow branding */}
+            <div className="mt-6 pt-4 border-t border-border">
+              <p className="text-xs text-muted-foreground text-center">
+                Agendamento realizado via{" "}
+                <a
+                  href="https://cutflow.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary font-semibold hover:underline"
+                >
+                  CutFlow
+                </a>
+              </p>
+            </div>
           </motion.div>
         </motion.div>
       </div>

@@ -28,6 +28,7 @@ export type Database = {
           notes: string | null
           price: number | null
           professional_id: string
+          reschedule_token: string | null
           service_id: string
           start_time: string
           status: Database["public"]["Enums"]["appointment_status"]
@@ -46,6 +47,7 @@ export type Database = {
           notes?: string | null
           price?: number | null
           professional_id: string
+          reschedule_token?: string | null
           service_id: string
           start_time: string
           status?: Database["public"]["Enums"]["appointment_status"]
@@ -64,6 +66,7 @@ export type Database = {
           notes?: string | null
           price?: number | null
           professional_id?: string
+          reschedule_token?: string | null
           service_id?: string
           start_time?: string
           status?: Database["public"]["Enums"]["appointment_status"]
