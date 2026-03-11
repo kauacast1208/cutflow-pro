@@ -17,7 +17,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 rounded-full border border-primary/12 bg-primary/[0.04] px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm text-primary font-medium mb-7 sm:mb-9"
+            className="inline-flex items-center gap-2 rounded-full border border-primary/12 bg-primary/[0.04] px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm text-primary font-medium mb-6 sm:mb-7"
           >
             <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span className="hidden sm:inline">Teste gratuito por 7 dias — sem cartão de crédito</span>
@@ -31,9 +31,7 @@ export function HeroSection() {
             transition={{ duration: 0.6, delay: 0.08 }}
             className="text-[2rem] leading-[1.08] sm:text-5xl lg:text-[3.5rem] font-extrabold tracking-[-0.035em] sm:leading-[1.08] mb-5 sm:mb-6 px-1 sm:px-0"
           >
-            Organize sua barbearia, lote sua agenda e{" "}
-            <br className="hidden sm:block" />
-            <span className="text-gradient">nunca mais perca clientes.</span>
+            Sistema completo para barbearias que querem parar de perder clientes.
           </motion.h1>
 
           {/* Subtitle */}
@@ -41,21 +39,46 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.16 }}
-            className="text-[15px] sm:text-lg text-muted-foreground max-w-xl mx-auto mb-9 sm:mb-10 leading-relaxed px-2 sm:px-0"
+            className="text-[15px] sm:text-lg text-muted-foreground max-w-xl mx-auto mb-6 sm:mb-8 leading-relaxed px-2 sm:px-0"
           >
-            O CutFlow ajuda barbearias a gerenciar agendamentos, clientes e faturamento em um único sistema simples e profissional.
+            Organize agenda, reduza faltas e controle seu faturamento em um único lugar.
           </motion.p>
+
+          {/* Benefits checklist */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground mb-8 sm:mb-9 px-2 sm:px-0"
+          >
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              <span>Agenda automática</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              <span>Lembretes WhatsApp</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              <span>Gestão de clientes</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              <span>Relatórios simples</span>
+            </div>
+          </motion.div>
 
           {/* CTA buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.24 }}
+            transition={{ duration: 0.5, delay: 0.28 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-1 sm:px-0"
           >
             <Link to="/signup" className="w-full sm:w-auto">
               <Button variant="hero" size="lg" className="w-full sm:w-auto text-[15px] sm:text-base px-8 sm:px-10 h-13 sm:h-14 shadow-glow">
-                Começar teste gratuito
+                Teste grátis por 7 dias
                 <ArrowRight className="ml-2 h-4.5 w-4.5" />
               </Button>
             </Link>
@@ -71,20 +94,16 @@ export function HeroSection() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.32 }}
+            transition={{ duration: 0.5, delay: 0.36 }}
             className="mt-6 sm:mt-8 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-5 text-xs sm:text-[13px] text-muted-foreground"
           >
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary/60" />
-              <span>Teste gratuito de 7 dias</span>
+              <span>7 dias grátis</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Shield className="h-3.5 w-3.5 text-primary/60" />
-              <span>Pagamento seguro via Stripe</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-primary/60" />
-              <span>Cancele quando quiser</span>
+              <span>Sem cartão de crédito</span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary/60" />
@@ -92,24 +111,6 @@ export function HeroSection() {
             </div>
           </motion.div>
 
-          {/* Social proof */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.45 }}
-            className="mt-10 sm:mt-12 flex flex-col items-center gap-3"
-          >
-            <div className="flex -space-x-2">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-8 w-8 sm:h-9 sm:w-9 rounded-full border-2 border-background bg-gradient-to-br from-primary/25 to-primary/8 flex items-center justify-center text-[10px] font-bold text-primary">
-                  {String.fromCharCode(65 + i)}
-                </div>
-              ))}
-            </div>
-            <p className="text-xs sm:text-[13px] text-muted-foreground">
-              Barbearias estão começando a usar o <span className="font-semibold text-foreground">CutFlow</span> para organizar seus atendimentos.
-            </p>
-          </motion.div>
         </div>
 
         {/* Dashboard mockup */}
