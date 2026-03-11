@@ -81,8 +81,8 @@ export default function PublicBookingPage() {
   useEffect(() => {
     const fetchData = async () => {
       if (!slug) return;
-      const { data: shop } = await supabase
-        .from("barbershops")
+      const { data: shop } = await (supabase as any)
+        .from("barbershops_public")
         .select("*")
         .eq("slug", slug)
         .maybeSingle();
@@ -95,12 +95,12 @@ export default function PublicBookingPage() {
 
       setBarbershop(shop);
 
+      const proIds = (await (supabase as any).from("professionals_public").select("id").eq("barbershop_id", shop.id).eq("active", true)).data?.map((p: any) => p.id) || [];
+
       const [servRes, proRes, availRes] = await Promise.all([
         supabase.from("services").select("*").eq("barbershop_id", shop.id).eq("active", true).order("sort_order"),
-        supabase.from("professionals").select("*").eq("barbershop_id", shop.id).eq("active", true),
-        supabase.from("professional_availability").select("*").in("professional_id",
-          (await supabase.from("professionals").select("id").eq("barbershop_id", shop.id).eq("active", true)).data?.map((p: any) => p.id) || []
-        ),
+        (supabase as any).from("professionals_public").select("*").eq("barbershop_id", shop.id).eq("active", true),
+        supabase.from("professional_availability").select("*").in("professional_id", proIds),
       ]);
 
       setServices(servRes.data || []);
@@ -120,8 +120,8 @@ export default function PublicBookingPage() {
         _barbershop_id: barbershop.id,
         _date: dateStr,
       }),
-      supabase.from("blocked_times").select("*").eq("barbershop_id", barbershop.id).eq("recurring", false).eq("date", dateStr),
-      supabase.from("blocked_times").select("*").eq("barbershop_id", barbershop.id).eq("recurring", true).contains("recurring_days", [dayOfWeek]),
+      (supabase as any).from("blocked_times_public").select("*").eq("barbershop_id", barbershop.id).eq("recurring", false).eq("date", dateStr),
+      (supabase as any).from("blocked_times_public").select("*").eq("barbershop_id", barbershop.id).eq("recurring", true).contains("recurring_days", [dayOfWeek]),
     ]).then(([appRes, blockRes, recurringBlockRes]) => {
       // Map RPC results to match Appointment interface expected by booking logic
       const slots = (appRes.data || []).map((s: any) => ({

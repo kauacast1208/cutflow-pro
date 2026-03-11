@@ -46,9 +46,9 @@ export default function ReschedulePage() {
       setAppointment(appt);
 
       const [{ data: shop }, { data: svc }, { data: pro }, { data: avail }] = await Promise.all([
-        supabase.from("barbershops").select("*").eq("id", appt.barbershop_id).single(),
+        (supabase as any).from("barbershops_public").select("*").eq("id", appt.barbershop_id).single(),
         supabase.from("services").select("*").eq("id", appt.service_id).single(),
-        supabase.from("professionals").select("*").eq("id", appt.professional_id).single(),
+        (supabase as any).from("professionals_public").select("*").eq("id", appt.professional_id).single(),
         supabase.from("professional_availability").select("*").eq("professional_id", appt.professional_id),
       ]);
 
@@ -72,7 +72,7 @@ export default function ReschedulePage() {
         _date: dateStr,
         _professional_id: appointment.professional_id,
       }),
-      supabase.from("blocked_times").select("*").eq("barbershop_id", barbershop.id).eq("date", dateStr),
+      (supabase as any).from("blocked_times_public").select("*").eq("barbershop_id", barbershop.id).eq("date", dateStr),
     ]).then(([{ data: booked }, { data: blocked }]) => {
       setAppointments((booked || []).map((s: any) => ({
         professional_id: s.professional_id,
