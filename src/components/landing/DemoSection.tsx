@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, BarChart3, Users, LayoutDashboard, TrendingUp, Star, Bell, Search, Settings, ChevronRight, Scissors, Clock, CheckCircle2, ArrowUpRight } from "lucide-react";
+import { Calendar, BarChart3, Users, LayoutDashboard, TrendingUp, Star, Bell, Search, Settings, ChevronRight, Scissors, Clock, CheckCircle2, ArrowUpRight, Globe, MapPin, Phone, Check } from "lucide-react";
 import { useState } from "react";
 
 const tabs = [
