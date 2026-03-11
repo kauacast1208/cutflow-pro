@@ -14,10 +14,11 @@ export function ProfessionalStep({ professionals, selectedPro, onSelect }: Profe
     <div className="animate-in fade-in slide-in-from-right-4 duration-300">
       <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-1.5">Escolha o profissional</h2>
       <p className="text-muted-foreground text-sm mb-7">Com quem voce quer ser atendido?</p>
-      {professionals.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground rounded-2xl border border-dashed border-border bg-muted/30">
-          <User className="h-10 w-10 mx-auto mb-3 opacity-30" />
-          <p className="font-semibold">Nenhum profissional disponivel</p>
+    {professionals.length === 0 ? (
+        <div className="text-center py-16 text-muted-foreground rounded-2xl border border-dashed border-border bg-muted/20">
+          <User className="h-8 w-8 mx-auto mb-3 opacity-25" />
+          <p className="font-semibold text-sm">Nenhum profissional disponível no momento.</p>
+          <p className="text-xs mt-1 text-muted-foreground/70">Entre em contato com a barbearia para mais informações.</p>
         </div>
       ) : (
         <div className="space-y-3">
