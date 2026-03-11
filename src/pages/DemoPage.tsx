@@ -81,7 +81,7 @@ export default function DemoPage() {
               Carregando...
             </Button>
           ) : demoSlug ? (
-            <Link to={`/agendar/${demoSlug}`}>
+            <Link to={`/b/${demoSlug}`}>
               <Button variant="outline" size="lg" className="px-8">
                 Ver página de agendamento
               </Button>

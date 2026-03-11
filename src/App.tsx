@@ -93,9 +93,9 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function RedirectToAgendar() {
+function RedirectToBooking() {
   const { slug } = useParams();
-  return <Navigate to={`/agendar/${slug}`} replace />;
+  return <Navigate to={`/b/${slug}`} replace />;
 }
 
 const AppRoutes = () => (

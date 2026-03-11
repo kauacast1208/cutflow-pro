@@ -162,9 +162,9 @@ export function BookingSuccess({
               </Button>
             </div>
 
-            <Link to={`/agendar/${slug}`} onClick={() => window.location.reload()}>
+          <Link to={`/b/${slug}`} onClick={() => window.location.reload()}>
               <Button variant="ghost" size="sm" className="text-muted-foreground font-medium">
-                Agendar outro horario
+                Agendar outro horário
               </Button>
             </Link>
           </motion.div>

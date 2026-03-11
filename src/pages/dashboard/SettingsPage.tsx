@@ -175,7 +175,7 @@ export default function SettingsPage() {
     loadBlockedTimes(); toast({ title: "Bloqueio removido." });
   };
 
-  const bookingUrl = barbershop ? `${window.location.origin}/agendar/${barbershop.slug}` : "";
+  const bookingUrl = barbershop ? `${window.location.origin}/b/${barbershop.slug}` : "";
 
   if (!barbershop) {
     return (

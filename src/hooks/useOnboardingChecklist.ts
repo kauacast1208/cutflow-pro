@@ -103,7 +103,7 @@ export function useOnboardingChecklist() {
       {
         id: "share_link",
         label: "Copiar link público de agendamento",
-        description: `cutflow.app/agendar/${barbershop.slug}`,
+        description: `cutflow.app/b/${barbershop.slug}`,
         completed: false, // This is an action, always available
         route: undefined,
       },
