@@ -80,7 +80,7 @@ export function UpgradePrompt({ feature, currentPlan, onClose }: UpgradePromptPr
 
           <div className="flex gap-2">
             <Button variant="outline" className="flex-1" onClick={onClose}>
-              Agora não
+              Cancelar
             </Button>
             <Button className="flex-1 gap-2" onClick={handleUpgrade}>
               Fazer upgrade <ArrowRight className="h-4 w-4" />
