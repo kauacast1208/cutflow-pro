@@ -153,7 +153,7 @@ export function PricingSection() {
                 <Link to={`/checkout?plan=${plan.slug}`} className="block">
                   <Button
                     variant={isPopular ? "hero" : "outline"}
-                    className={`w-full rounded-xl ${isPopular ? "h-11 sm:h-12 text-sm sm:text-base" : "h-10 sm:h-11 text-sm"}`}
+                    className={`w-full rounded-xl ${isPopular ? "h-14 sm:h-12 text-base sm:text-base" : "h-12 sm:h-11 text-base sm:text-sm"}`}
                   >
                     Iniciar 7 dias gratis
                   </Button>

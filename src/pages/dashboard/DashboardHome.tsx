@@ -325,7 +325,7 @@ export default function DashboardHome() {
     <div className="flex items-center gap-1 rounded-xl bg-muted/50 p-1">
       {periodOptions.map(opt => (
         <button key={opt.value} onClick={() => setPeriod(opt.value)}
-          className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 ${
+          className={`px-4 py-2 text-sm sm:text-xs font-medium rounded-lg transition-all duration-200 ${
             period === opt.value ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
           }`}
         >{opt.label}</button>
@@ -337,13 +337,13 @@ export default function DashboardHome() {
     label: string; value: string; change?: string | null; changePositive?: boolean; icon: React.ElementType; sub?: string; idx: number;
   }) => (
     <motion.div {...fadeUp(idx)}
-      className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 hover:shadow-md transition-shadow duration-300"
+      className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 sm:p-5 hover:shadow-md transition-shadow duration-300"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-accent/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
       <div className="relative flex items-start justify-between">
-        <div className="space-y-1.5">
-          <p className="text-[13px] font-medium text-muted-foreground">{label}</p>
-          <p className="text-2xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <div className="space-y-1.5 min-w-0 flex-1">
+          <p className="text-sm sm:text-[13px] font-medium text-muted-foreground truncate">{label}</p>
+          <p className="text-xl sm:text-2xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             {value}
           </p>
           {change && (
@@ -352,9 +352,9 @@ export default function DashboardHome() {
               {change} vs periodo anterior
             </span>
           )}
-          {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
+          {sub && <p className="text-xs text-muted-foreground truncate">{sub}</p>}
         </div>
-        <div className="h-10 w-10 rounded-xl bg-accent/60 flex items-center justify-center shrink-0">
+        <div className="h-10 w-10 rounded-xl bg-accent/60 flex items-center justify-center shrink-0 ml-2">
           <Icon className="h-5 w-5 text-accent-foreground" />
         </div>
       </div>
@@ -410,7 +410,7 @@ export default function DashboardHome() {
       )}
 
       {/* ── METRICS CARDS ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <MetricCard idx={0} label="Faturamento do mes" value={`R$ ${monthRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`}
           change={monthRevenueChange ? `${Number(monthRevenueChange) >= 0 ? "+" : ""}${monthRevenueChange}%` : null}
           changePositive={monthRevenueChange ? Number(monthRevenueChange) >= 0 : true}
@@ -477,16 +477,16 @@ export default function DashboardHome() {
       </div>
 
       {/* ── REVENUE AREA CHART ── */}
-      <motion.div {...fadeUp(6)} className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow">
+      <motion.div {...fadeUp(6)} className="rounded-2xl border border-border bg-card p-4 sm:p-6 hover:shadow-md transition-shadow">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-semibold text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <h3 className="text-sm sm:text-base font-semibold text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Faturamento diario
           </h3>
           <span className="text-xs text-muted-foreground">Ultimos {Math.min(period, 30)} dias</span>
         </div>
-        <div className="h-64">
+        <div className="h-48 sm:h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={revenueChartData}>
+            <AreaChart data={revenueChartData} margin={{ left: -10, right: 5, top: 5, bottom: 0 }}>
               <defs>
                 <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
@@ -494,8 +494,8 @@ export default function DashboardHome() {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-              <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" interval="preserveStartEnd" />
+              <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={40} />
               <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`R$ ${v}`, "Receita"]} />
               <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#revGrad)" strokeWidth={2} />
             </AreaChart>
@@ -574,24 +574,26 @@ export default function DashboardHome() {
       )}
 
       {/* ── CHARTS: Services Pie + Day of Week Bar + Pro Performance ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Services Pie */}
-        <motion.div {...fadeUp(10)} className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow">
-          <h3 className="text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <motion.div {...fadeUp(10)} className="rounded-2xl border border-border bg-card p-4 sm:p-6 hover:shadow-md transition-shadow">
+          <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Servicos mais vendidos
           </h3>
           {servicePieData.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">Sem dados</p>
           ) : (
-            <div className="h-[280px]">
+            <div className="h-[240px] sm:h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={servicePieData} cx="50%" cy="50%" innerRadius={55} outerRadius={95} paddingAngle={3} dataKey="value" nameKey="name"
-                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                  <Pie data={servicePieData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={3} dataKey="value" nameKey="name"
+                    label={({ name, percent }) => window.innerWidth > 640 ? `${name} (${(percent * 100).toFixed(0)}%)` : `${(percent * 100).toFixed(0)}%`}
+                    labelLine={window.innerWidth > 640}
                   >
                     {servicePieData.map((_, idx) => <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />)}
                   </Pie>
                   <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v} agendamentos`, "Qtd"]} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -599,16 +601,16 @@ export default function DashboardHome() {
         </motion.div>
 
         {/* Day of week */}
-        <motion.div {...fadeUp(11)} className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow">
-          <h3 className="text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <motion.div {...fadeUp(11)} className="rounded-2xl border border-border bg-card p-4 sm:p-6 hover:shadow-md transition-shadow">
+          <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Faturamento por dia da semana
           </h3>
-          <div className="h-[280px]">
+          <div className="h-[240px] sm:h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weekdayChartData}>
+              <BarChart data={weekdayChartData} margin={{ left: -10, right: 5, top: 5, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="day" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={35} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [name === "revenue" ? `R$ ${v}` : v, name === "revenue" ? "Receita" : "Atendimentos"]} />
                 <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
               </BarChart>
@@ -619,19 +621,19 @@ export default function DashboardHome() {
 
       {/* Professional Performance */}
       {proPerfData.length > 0 && (
-        <motion.div {...fadeUp(12)} className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow">
+        <motion.div {...fadeUp(12)} className="rounded-2xl border border-border bg-card p-4 sm:p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <h3 className="text-sm sm:text-base font-semibold text-foreground flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               <Trophy className="h-4 w-4 text-primary" /> Profissionais com mais atendimentos
             </h3>
             <span className="text-xs text-muted-foreground">Ultimos {period} dias</span>
           </div>
-          <div className="h-[220px]">
+          <div className="h-[200px] sm:h-[220px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={proPerfData} layout="vertical">
+              <BarChart data={proPerfData} layout="vertical" margin={{ left: 0, right: 10, top: 5, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" width={100} />
+                <XAxis type="number" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" width={80} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [name === "revenue" ? `R$ ${v}` : v, name === "revenue" ? "Receita" : "Atendimentos"]} />
                 <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 6, 6, 0]} name="Atendimentos" />
               </BarChart>
@@ -663,13 +665,13 @@ export default function DashboardHome() {
       </div>
 
       {/* Quick actions */}
-      <motion.div {...fadeUp(13)} className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow">
-        <h3 className="text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Acoes rapidas</h3>
+      <motion.div {...fadeUp(13)} className="rounded-2xl border border-border bg-card p-4 sm:p-6 hover:shadow-md transition-shadow">
+        <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Acoes rapidas</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Button variant="outline" className="h-auto py-4 flex-col gap-2 rounded-xl" onClick={() => navigate("/dashboard/agenda")}><Calendar className="h-5 w-5 text-primary" /><span className="text-xs">Ver agenda</span></Button>
-          <Button variant="outline" className="h-auto py-4 flex-col gap-2 rounded-xl" onClick={() => navigate("/dashboard/clients")}><Users className="h-5 w-5 text-muted-foreground" /><span className="text-xs">Clientes</span></Button>
-          <Button variant="outline" className="h-auto py-4 flex-col gap-2 rounded-xl" onClick={() => navigate("/dashboard/finance")}><DollarSign className="h-5 w-5 text-primary" /><span className="text-xs">Financeiro</span></Button>
-          <Button variant="outline" className="h-auto py-4 flex-col gap-2 rounded-xl" onClick={copyLink}><ExternalLink className="h-5 w-5 text-muted-foreground" /><span className="text-xs">Copiar link</span></Button>
+          <Button variant="outline" className="h-auto py-5 sm:py-4 flex-col gap-2 rounded-xl text-sm" onClick={() => navigate("/dashboard/agenda")}><Calendar className="h-5 w-5 text-primary" /><span className="text-xs">Ver agenda</span></Button>
+          <Button variant="outline" className="h-auto py-5 sm:py-4 flex-col gap-2 rounded-xl text-sm" onClick={() => navigate("/dashboard/clients")}><Users className="h-5 w-5 text-muted-foreground" /><span className="text-xs">Clientes</span></Button>
+          <Button variant="outline" className="h-auto py-5 sm:py-4 flex-col gap-2 rounded-xl text-sm" onClick={() => navigate("/dashboard/finance")}><DollarSign className="h-5 w-5 text-primary" /><span className="text-xs">Financeiro</span></Button>
+          <Button variant="outline" className="h-auto py-5 sm:py-4 flex-col gap-2 rounded-xl text-sm" onClick={copyLink}><ExternalLink className="h-5 w-5 text-muted-foreground" /><span className="text-xs">Copiar link</span></Button>
         </div>
       </motion.div>
     </div>

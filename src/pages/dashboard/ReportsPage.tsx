@@ -189,7 +189,7 @@ export default function ReportsPage() {
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -200,27 +200,29 @@ export default function ReportsPage() {
               )
             }
             disabled={loading}
-            className="gap-1.5"
+            className="gap-1.5 text-xs"
           >
             <FileText className="h-4 w-4" />
-            CSV Metricas
+            <span className="hidden sm:inline">CSV Metricas</span>
+            <span className="sm:hidden">CSV</span>
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => exportAppointmentsCsv(appointments, period)}
             disabled={loading}
-            className="gap-1.5"
+            className="gap-1.5 text-xs"
           >
             <Download className="h-4 w-4" />
-            CSV Agendamentos
+            <span className="hidden sm:inline">CSV Agendamentos</span>
+            <span className="sm:hidden">Agend.</span>
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={exportReportPdf}
             disabled={loading}
-            className="gap-1.5"
+            className="gap-1.5 text-xs"
           >
             <Printer className="h-4 w-4" />
             PDF
@@ -234,7 +236,7 @@ export default function ReportsPage() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {metrics.cards.map((m, i) => {
               const Icon = m.icon;
               const colors = iconBg[m.colorKey] || iconBg.primary;
@@ -269,24 +271,25 @@ export default function ReportsPage() {
           {metrics.serviceDistribution.length > 0 && (
             <motion.div
               {...fadeUp(8)}
-              className="rounded-2xl border border-border bg-card p-6"
+              className="rounded-2xl border border-border bg-card p-4 sm:p-6"
             >
-              <h3 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                Distribuição de serviços
+              <h3 className="text-sm sm:text-lg font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                Distribuicao de servicos
               </h3>
-              <div className="h-[320px]">
+              <div className="h-[280px] sm:h-[320px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={metrics.serviceDistribution}
                       cx="50%"
                       cy="50%"
-                      innerRadius={60}
-                      outerRadius={110}
+                      innerRadius={45}
+                      outerRadius={85}
                       paddingAngle={3}
                       dataKey="value"
                       nameKey="name"
-                      label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                      label={({ name, percent }) => window.innerWidth > 640 ? `${name} (${(percent * 100).toFixed(0)}%)` : `${(percent * 100).toFixed(0)}%`}
+                      labelLine={window.innerWidth > 640}
                     >
                       {metrics.serviceDistribution.map((_, idx) => (
                         <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
@@ -301,7 +304,7 @@ export default function ReportsPage() {
                       }}
                       formatter={(value: number) => [`${value} agendamentos`, "Qtd"]}
                     />
-                    <Legend />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
