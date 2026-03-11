@@ -44,16 +44,41 @@ export function HeroSection() {
             Organize agenda, reduza faltas e controle seu faturamento em um único lugar.
           </motion.p>
 
+          {/* Benefits checklist */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground mb-8 sm:mb-9 px-2 sm:px-0"
+          >
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              <span>Agenda automática</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              <span>Lembretes WhatsApp</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              <span>Gestão de clientes</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              <span>Relatórios simples</span>
+            </div>
+          </motion.div>
+
           {/* CTA buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.24 }}
+            transition={{ duration: 0.5, delay: 0.28 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-1 sm:px-0"
           >
             <Link to="/signup" className="w-full sm:w-auto">
               <Button variant="hero" size="lg" className="w-full sm:w-auto text-[15px] sm:text-base px-8 sm:px-10 h-13 sm:h-14 shadow-glow">
-                Começar teste gratuito
+                Teste grátis por 7 dias
                 <ArrowRight className="ml-2 h-4.5 w-4.5" />
               </Button>
             </Link>
