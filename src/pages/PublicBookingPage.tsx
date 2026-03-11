@@ -120,8 +120,8 @@ export default function PublicBookingPage() {
         _barbershop_id: barbershop.id,
         _date: dateStr,
       }),
-      supabase.from("blocked_times").select("*").eq("barbershop_id", barbershop.id).eq("recurring", false).eq("date", dateStr),
-      supabase.from("blocked_times").select("*").eq("barbershop_id", barbershop.id).eq("recurring", true).contains("recurring_days", [dayOfWeek]),
+      supabase.from("blocked_times_public" as any).select("*").eq("barbershop_id", barbershop.id).eq("recurring", false).eq("date", dateStr),
+      supabase.from("blocked_times_public" as any).select("*").eq("barbershop_id", barbershop.id).eq("recurring", true).contains("recurring_days", [dayOfWeek]),
     ]).then(([appRes, blockRes, recurringBlockRes]) => {
       // Map RPC results to match Appointment interface expected by booking logic
       const slots = (appRes.data || []).map((s: any) => ({
