@@ -623,26 +623,40 @@ export function DemoSection() {
               </div>
             </div>
 
-            {/* App content with sidebar */}
-            <div className="flex min-h-[340px] sm:min-h-[400px]">
-              <Sidebar activeTab={activeTab} />
-              <div className="flex-1 flex flex-col min-w-0">
-                <TopBar />
-                <div className="flex-1 bg-muted/5 overflow-hidden">
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={activeTab}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -6 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ActiveMockup />
-                    </motion.div>
-                  </AnimatePresence>
+            {/* App content */}
+            {activeTab === "booking" ? (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ActiveMockup />
+                </motion.div>
+              </AnimatePresence>
+            ) : (
+              <div className="flex min-h-[340px] sm:min-h-[400px]">
+                <Sidebar activeTab={activeTab} />
+                <div className="flex-1 flex flex-col min-w-0">
+                  <TopBar />
+                  <div className="flex-1 bg-muted/5 overflow-hidden">
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={activeTab}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ActiveMockup />
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </motion.div>
       </div>

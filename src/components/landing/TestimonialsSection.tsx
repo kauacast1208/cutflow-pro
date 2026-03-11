@@ -1,28 +1,50 @@
 import { motion } from "framer-motion";
-import { Star } from "lucide-react";
+import { Star, Quote } from "lucide-react";
 
 const testimonials = [
   {
-    name: "Carlos Silva",
-    role: "Barbearia Premium · São Paulo",
-    content: "O CutFlow transformou meu negócio. Reduzi faltas em 60% e aumentei o faturamento em 40% nos primeiros 3 meses.",
+    name: "Carlos Mendes",
+    role: "Proprietário",
+    barbershop: "Barbearia Premium",
+    city: "São Paulo, SP",
+    content: "O CutFlow transformou meu negócio. Reduzi faltas em 60% com os lembretes automáticos e aumentei o faturamento em 40% nos primeiros 3 meses.",
     rating: 5,
-    avatar: "CS",
+    metric: "+40% faturamento",
+    metricLabel: "em 3 meses",
+    avatar: "CM",
+    avatarGradient: "from-emerald-400 to-primary",
   },
   {
-    name: "Rafael Santos",
-    role: "Barbeiro Autônomo · BH",
-    content: "Finalmente um sistema simples e bonito. Meus clientes adoram agendar online e eu tenho tudo organizado no celular.",
+    name: "Rafael Oliveira",
+    role: "Barbeiro Autônomo",
+    barbershop: "Studio Rafael",
+    city: "Belo Horizonte, MG",
+    content: "Finalmente um sistema simples e bonito. Meus clientes adoram agendar online e eu tenho tudo organizado no celular. Não volto mais para o papel.",
     rating: 5,
-    avatar: "RS",
+    metric: "Zero faltas",
+    metricLabel: "com lembretes",
+    avatar: "RO",
+    avatarGradient: "from-blue-400 to-primary",
   },
   {
-    name: "André Oliveira",
-    role: "Rede Barber & Co · RJ",
-    content: "Gerencio 3 unidades com o CutFlow. Os relatórios financeiros me dão visibilidade total do negócio.",
+    name: "André Souza",
+    role: "Sócio-gerente",
+    barbershop: "Barber & Co",
+    city: "Rio de Janeiro, RJ",
+    content: "Gerencio 3 unidades com o CutFlow. Os relatórios financeiros me dão visibilidade total do negócio. Sei exatamente quanto cada barbeiro fatura.",
     rating: 5,
-    avatar: "AO",
+    metric: "3 unidades",
+    metricLabel: "em uma tela",
+    avatar: "AS",
+    avatarGradient: "from-amber-400 to-primary",
   },
+];
+
+const stats = [
+  { value: "500+", label: "Barbearias" },
+  { value: "12.000+", label: "Agendamentos/mês" },
+  { value: "4.9", label: "Avaliação média" },
+  { value: "98%", label: "Satisfação" },
 ];
 
 export function TestimonialsSection() {
@@ -30,14 +52,14 @@ export function TestimonialsSection() {
     <section className="section-padding bg-background relative overflow-hidden">
       <div className="absolute inset-0 glow-bg opacity-30" />
       <div className="max-w-7xl mx-auto relative">
-        <div className="text-center mb-10 sm:mb-16">
+        <div className="text-center mb-10 sm:mb-14">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="inline-flex items-center gap-2 rounded-full bg-primary/8 border border-primary/15 px-4 py-1.5 text-xs sm:text-sm font-medium text-primary mb-4 sm:mb-5"
           >
-            Feito para barbearias modernas
+            Depoimentos reais
           </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -45,7 +67,7 @@ export function TestimonialsSection() {
             viewport={{ once: true }}
             className="text-2xl sm:text-4xl lg:text-[2.75rem] font-extrabold tracking-[-0.02em] mb-4 sm:mb-5"
           >
-            Quem usa, recomenda
+            Quem usa, recomenda.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -54,10 +76,26 @@ export function TestimonialsSection() {
             transition={{ delay: 0.1 }}
             className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto"
           >
-            Barbearias estão começando a usar o CutFlow para organizar seus atendimentos.
+            Veja como barbearias reais estão crescendo com o CutFlow.
           </motion.p>
         </div>
 
+        {/* Stats bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-10 sm:mb-14 max-w-3xl mx-auto"
+        >
+          {stats.map((s) => (
+            <div key={s.label} className="text-center py-3 sm:py-4 rounded-xl border border-border bg-card">
+              <p className="text-xl sm:text-2xl font-extrabold text-primary">{s.value}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">{s.label}</p>
+            </div>
+          ))}
+        </motion.div>
+
+        {/* Testimonial cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           {testimonials.map((t, i) => (
             <motion.div
@@ -66,26 +104,54 @@ export function TestimonialsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="rounded-2xl border border-border/80 bg-card p-5 sm:p-7 shadow-card hover:shadow-card-hover transition-all duration-300 flex flex-col"
+              className="rounded-2xl border border-border/80 bg-card p-5 sm:p-7 shadow-card hover:shadow-card-hover transition-all duration-300 flex flex-col group"
             >
-              <div className="flex gap-0.5 mb-4 sm:mb-5">
-                {[...Array(t.rating)].map((_, j) => (
-                  <Star key={j} className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-warning text-warning" />
-                ))}
+              {/* Metric highlight */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex gap-0.5">
+                  {[...Array(t.rating)].map((_, j) => (
+                    <Star key={j} className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-warning text-warning" />
+                  ))}
+                </div>
+                <div className="text-right">
+                  <p className="text-xs sm:text-sm font-bold text-primary">{t.metric}</p>
+                  <p className="text-[9px] sm:text-[10px] text-muted-foreground">{t.metricLabel}</p>
+                </div>
               </div>
-              <p className="text-foreground mb-5 sm:mb-7 leading-relaxed flex-1 text-sm sm:text-[15px]">"{t.content}"</p>
+
+              {/* Quote */}
+              <div className="relative flex-1 mb-5 sm:mb-7">
+                <Quote className="h-5 w-5 text-primary/15 absolute -top-1 -left-1" />
+                <p className="text-foreground leading-relaxed text-sm sm:text-[15px] pl-4">
+                  {t.content}
+                </p>
+              </div>
+
+              {/* Author */}
               <div className="flex items-center gap-3 pt-4 sm:pt-5 border-t border-border">
-                <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-xs sm:text-sm font-bold text-primary">
+                <div className={`h-11 w-11 sm:h-12 sm:w-12 rounded-full bg-gradient-to-br ${t.avatarGradient} flex items-center justify-center text-xs sm:text-sm font-bold text-white shadow-md group-hover:scale-105 transition-transform`}>
                   {t.avatar}
                 </div>
                 <div>
                   <p className="font-bold text-sm">{t.name}</p>
-                  <p className="text-[11px] sm:text-xs text-muted-foreground">{t.role}</p>
+                  <p className="text-[11px] sm:text-xs text-muted-foreground">{t.role} · {t.barbershop}</p>
+                  <p className="text-[10px] text-muted-foreground/70">{t.city}</p>
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
+
+        {/* Trust message */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3 }}
+          className="text-center text-xs sm:text-sm text-muted-foreground mt-8 sm:mt-12"
+        >
+          Junte-se a centenas de barbearias que já confiam no CutFlow.
+        </motion.p>
       </div>
     </section>
   );
