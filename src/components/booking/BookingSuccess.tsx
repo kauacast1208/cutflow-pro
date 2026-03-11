@@ -171,7 +171,7 @@ export function BookingSuccess({
             {/* Viral CutFlow branding */}
             <div className="mt-6 pt-4 border-t border-border">
               <p className="text-xs text-muted-foreground text-center">
-                Agendamento realizado via{" "}
+                Sistema de agendamento profissional:{" "}
                 <a
                   href="https://cutflow.app"
                   target="_blank"
