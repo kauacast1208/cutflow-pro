@@ -246,6 +246,7 @@ Deno.serve(async (req) => {
             status: emailRes.ok ? "sent" : "failed",
             sent_at: emailRes.ok ? new Date().toISOString() : null,
             error_message: emailRes.ok ? null : `HTTP ${emailRes.status}`,
+            provider: "resend",
           })
           .eq("appointment_id", appointmentId)
           .eq("type", "appointment_created")
