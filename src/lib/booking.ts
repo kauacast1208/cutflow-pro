@@ -123,7 +123,7 @@ export function generateTimeSlots(
 
     if (!isBefore(current, minTime)) {
       const conflict = hasAppointmentConflict(timeStr, endTimeWithBuffer, professionalId, appointments);
-      const blocked = isTimeBlocked(timeStr, endTime, professionalId, blockedTimes);
+      const blocked = isTimeBlocked(timeStr, endTime, professionalId, blockedTimes, date);
 
       if (!conflict && !blocked) {
         slots.push(timeStr);
