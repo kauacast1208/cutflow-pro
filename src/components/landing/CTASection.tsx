@@ -31,13 +31,13 @@ export function CTASection() {
           <p className="text-primary-foreground/70 text-base sm:text-lg mb-8 sm:mb-10 max-w-xl mx-auto leading-relaxed">
             Comece agora com 7 dias gratis. Sem cartao de credito, sem compromisso.
           </p>
-          <Link to="/signup">
+          <Link to="/signup" className="block w-full sm:w-auto">
             <Button
               size="lg"
-              className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-bold text-sm sm:text-base px-8 sm:px-12 h-12 sm:h-14 shadow-lg rounded-xl w-full sm:w-auto"
+              className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-bold text-base px-8 sm:px-12 h-14 sm:h-14 shadow-lg rounded-xl w-full sm:w-auto"
             >
               Comecar teste gratuito
-              <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+              <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
           <div className="mt-6 sm:mt-8 flex items-center justify-center gap-2 text-primary-foreground/50 text-xs sm:text-sm">

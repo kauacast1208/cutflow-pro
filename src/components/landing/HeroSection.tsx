@@ -12,14 +12,14 @@ export function HeroSection() {
       <div className="absolute inset-0 bg-[linear-gradient(hsl(var(--border)/0.15)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--border)/0.15)_1px,transparent_1px)] bg-[size:64px_64px] sm:bg-[size:80px_80px]" />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16 sm:pt-36 sm:pb-24 lg:pt-48 lg:pb-36">
+      <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-32 pb-20 sm:pt-36 sm:pb-24 lg:pt-48 lg:pb-36">
         <div className="max-w-4xl mx-auto text-center">
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm text-primary font-medium mb-7 sm:mb-10 backdrop-blur-sm"
+            className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm text-primary font-medium mb-8 sm:mb-10 backdrop-blur-sm"
           >
             <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span className="hidden sm:inline">Teste gratis por 7 dias — sem cartao de credito</span>
@@ -31,7 +31,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.08 }}
-            className="text-[2rem] leading-[1.1] sm:text-5xl lg:text-6xl xl:text-[4.5rem] font-extrabold tracking-[-0.03em] sm:leading-[1.05] mb-5 sm:mb-7 px-2 sm:px-0"
+            className="text-[2rem] leading-[1.1] sm:text-5xl lg:text-6xl xl:text-[4.5rem] font-extrabold tracking-[-0.03em] sm:leading-[1.05] mb-6 sm:mb-7 px-1 sm:px-0"
           >
             Gerencie sua barbearia com{" "}
             <br className="hidden sm:block" />
@@ -43,7 +43,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.16 }}
-            className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 sm:mb-12 leading-relaxed px-2 sm:px-0"
+            className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 sm:mb-12 leading-relaxed px-1 sm:px-0"
           >
             Agenda, clientes, financeiro e relatorios em um so sistema.
             Tudo em uma plataforma profissional e facil de usar.
@@ -54,16 +54,16 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.24 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 px-2 sm:px-0"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-5 px-1 sm:px-0"
           >
             <Link to="/signup" className="w-full sm:w-auto">
-              <Button variant="hero" size="lg" className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-12 h-13 sm:h-[60px] shadow-glow">
+              <Button variant="hero" size="lg" className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-12 h-14 sm:h-[60px] shadow-glow">
                 Comecar gratis
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link to="/demo" className="w-full sm:w-auto">
-              <Button variant="hero-outline" size="lg" className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-12 h-13 sm:h-[60px]">
+              <Button variant="hero-outline" size="lg" className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-12 h-14 sm:h-[60px]">
                 <Play className="mr-2 h-5 w-5" />
                 Ver demonstracao
               </Button>

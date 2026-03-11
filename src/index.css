@@ -140,11 +140,24 @@
   }
 
   .section-padding {
-    @apply px-4 sm:px-6 lg:px-8 py-14 sm:py-24 lg:py-32;
+    @apply px-5 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32;
   }
 
   .container-tight {
     @apply max-w-5xl mx-auto;
+  }
+
+  /* Mobile-first chart improvements */
+  @media (max-width: 640px) {
+    .recharts-wrapper {
+      font-size: 10px;
+    }
+    .recharts-legend-wrapper {
+      font-size: 11px !important;
+    }
+    .recharts-pie-label-text {
+      font-size: 10px !important;
+    }
   }
 
   .glow-bg {

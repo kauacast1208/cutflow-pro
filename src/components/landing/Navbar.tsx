@@ -95,15 +95,15 @@ export function Navbar() {
                   )
                 )}
               </nav>
-              <div className="space-y-2.5">
+              <div className="space-y-3 pt-2">
                 <Link to="/signup" className="block" onClick={() => setOpen(false)}>
-                  <Button variant="default" className="w-full h-12 rounded-xl text-base font-semibold">
+                  <Button variant="default" className="w-full h-14 rounded-xl text-base font-semibold">
                     Teste gratis
                     <ArrowRight className="h-4 w-4 ml-1.5" />
                   </Button>
                 </Link>
                 <Link to="/login" className="block" onClick={() => setOpen(false)}>
-                  <Button variant="outline" className="w-full h-12 rounded-xl text-base font-medium">Entrar</Button>
+                  <Button variant="outline" className="w-full h-14 rounded-xl text-base font-medium">Entrar</Button>
                 </Link>
               </div>
             </div>
