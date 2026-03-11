@@ -337,7 +337,7 @@ export default function DashboardHome() {
     label: string; value: string; change?: string | null; changePositive?: boolean; icon: React.ElementType; sub?: string; idx: number;
   }) => (
     <motion.div {...fadeUp(idx)}
-      className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 sm:p-5 hover:shadow-md transition-shadow duration-300"
+      className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card p-5 sm:p-5 shadow-card hover:shadow-card-hover transition-all duration-300"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-accent/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
       <div className="relative flex items-start justify-between">
