@@ -231,6 +231,65 @@ serve(async (req) => {
         break;
       }
 
+      case "customer.subscription.created": {
+        const subscription = event.data.object as Stripe.Subscription;
+        logStep("Processing customer.subscription.created", {
+          subscriptionId: subscription.id,
+          status: subscription.status,
+        });
+
+        const priceId = subscription.items.data[0]?.price?.id;
+        const plan = priceId ? (PRICE_TO_PLAN[priceId] || "starter") : "starter";
+        const dbStatus = mapStripeStatus(subscription.status);
+        const periodEnd = new Date(subscription.current_period_end * 1000).toISOString();
+        const periodStart = new Date(subscription.current_period_start * 1000).toISOString();
+
+        // Try to find barbershop from metadata or customer email
+        const customerId = subscription.customer as string;
+        const customer = await stripe.customers.retrieve(customerId);
+        const customerEmail = (customer as any).email;
+
+        let barbershopId: string | undefined;
+        if (subscription.metadata?.barbershop_id) {
+          barbershopId = subscription.metadata.barbershop_id;
+        } else if (subscription.metadata?.user_id) {
+          const { data: bs } = await supabase
+            .from("barbershops")
+            .select("id")
+            .eq("owner_id", subscription.metadata.user_id)
+            .maybeSingle();
+          barbershopId = bs?.id;
+        }
+
+        if (barbershopId) {
+          const trialEnd = subscription.trial_end
+            ? new Date(subscription.trial_end * 1000).toISOString()
+            : undefined;
+
+          const { error } = await supabase
+            .from("subscriptions")
+            .update({
+              stripe_customer_id: customerId,
+              stripe_subscription_id: subscription.id,
+              plan,
+              status: dbStatus,
+              current_period_start: periodStart,
+              current_period_end: periodEnd,
+              ...(trialEnd ? { trial_ends_at: trialEnd } : {}),
+            })
+            .eq("barbershop_id", barbershopId);
+
+          if (error) {
+            logStep("ERROR syncing new subscription", { error: error.message });
+          } else {
+            logStep("New subscription synced", { barbershopId, plan, dbStatus });
+          }
+        } else {
+          logStep("Could not find barbershop for new subscription", { customerId });
+        }
+        break;
+      }
+
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
         logStep("Processing customer.subscription.deleted", { subscriptionId: subscription.id });
@@ -247,6 +306,33 @@ serve(async (req) => {
           logStep("ERROR cancelling subscription in DB", { error: error.message });
         } else {
           logStep("Subscription cancelled in database", { subscriptionId: subscription.id });
+        }
+        break;
+      }
+
+      case "invoice.payment_failed": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const subscriptionId = invoice.subscription as string;
+        logStep("Processing invoice.payment_failed", {
+          invoiceId: invoice.id,
+          subscriptionId,
+          attemptCount: invoice.attempt_count,
+        });
+
+        if (!subscriptionId) {
+          logStep("No subscription ID on failed invoice, skipping");
+          break;
+        }
+
+        const { error } = await supabase
+          .from("subscriptions")
+          .update({ status: "past_due" })
+          .eq("stripe_subscription_id", subscriptionId);
+
+        if (error) {
+          logStep("ERROR updating to past_due", { error: error.message });
+        } else {
+          logStep("Subscription marked as past_due", { subscriptionId });
         }
         break;
       }
