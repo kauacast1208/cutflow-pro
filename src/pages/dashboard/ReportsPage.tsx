@@ -269,24 +269,25 @@ export default function ReportsPage() {
           {metrics.serviceDistribution.length > 0 && (
             <motion.div
               {...fadeUp(8)}
-              className="rounded-2xl border border-border bg-card p-6"
+              className="rounded-2xl border border-border bg-card p-4 sm:p-6"
             >
-              <h3 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                Distribuição de serviços
+              <h3 className="text-sm sm:text-lg font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                Distribuicao de servicos
               </h3>
-              <div className="h-[320px]">
+              <div className="h-[280px] sm:h-[320px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={metrics.serviceDistribution}
                       cx="50%"
                       cy="50%"
-                      innerRadius={60}
-                      outerRadius={110}
+                      innerRadius={45}
+                      outerRadius={85}
                       paddingAngle={3}
                       dataKey="value"
                       nameKey="name"
-                      label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                      label={({ name, percent }) => window.innerWidth > 640 ? `${name} (${(percent * 100).toFixed(0)}%)` : `${(percent * 100).toFixed(0)}%`}
+                      labelLine={window.innerWidth > 640}
                     >
                       {metrics.serviceDistribution.map((_, idx) => (
                         <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
@@ -301,7 +302,7 @@ export default function ReportsPage() {
                       }}
                       formatter={(value: number) => [`${value} agendamentos`, "Qtd"]}
                     />
-                    <Legend />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
