@@ -224,7 +224,7 @@ export default function BillingPage() {
                           <span className="text-3xl sm:text-4xl font-bold">R${plan.price}</span>
                           <span className="text-muted-foreground text-sm">/mês</span>
                         </div>
-                        {!hasStripeSubscription && !isTrial && (
+                        {!isCurrentActivePlan && (
                           <p className="text-[11px] text-primary font-medium">7 dias grátis · Sem cobrança hoje</p>
                         )}
                       </div>
