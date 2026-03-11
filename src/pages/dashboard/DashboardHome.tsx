@@ -574,24 +574,26 @@ export default function DashboardHome() {
       )}
 
       {/* ── CHARTS: Services Pie + Day of Week Bar + Pro Performance ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Services Pie */}
-        <motion.div {...fadeUp(10)} className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow">
-          <h3 className="text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <motion.div {...fadeUp(10)} className="rounded-2xl border border-border bg-card p-4 sm:p-6 hover:shadow-md transition-shadow">
+          <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Servicos mais vendidos
           </h3>
           {servicePieData.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">Sem dados</p>
           ) : (
-            <div className="h-[280px]">
+            <div className="h-[240px] sm:h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={servicePieData} cx="50%" cy="50%" innerRadius={55} outerRadius={95} paddingAngle={3} dataKey="value" nameKey="name"
-                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                  <Pie data={servicePieData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={3} dataKey="value" nameKey="name"
+                    label={({ name, percent }) => window.innerWidth > 640 ? `${name} (${(percent * 100).toFixed(0)}%)` : `${(percent * 100).toFixed(0)}%`}
+                    labelLine={window.innerWidth > 640}
                   >
                     {servicePieData.map((_, idx) => <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />)}
                   </Pie>
                   <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v} agendamentos`, "Qtd"]} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -599,16 +601,16 @@ export default function DashboardHome() {
         </motion.div>
 
         {/* Day of week */}
-        <motion.div {...fadeUp(11)} className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow">
-          <h3 className="text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <motion.div {...fadeUp(11)} className="rounded-2xl border border-border bg-card p-4 sm:p-6 hover:shadow-md transition-shadow">
+          <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Faturamento por dia da semana
           </h3>
-          <div className="h-[280px]">
+          <div className="h-[240px] sm:h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weekdayChartData}>
+              <BarChart data={weekdayChartData} margin={{ left: -10, right: 5, top: 5, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="day" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={35} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [name === "revenue" ? `R$ ${v}` : v, name === "revenue" ? "Receita" : "Atendimentos"]} />
                 <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
               </BarChart>
