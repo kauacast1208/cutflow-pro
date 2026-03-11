@@ -224,79 +224,50 @@ export default function PublicBookingPage() {
     const sanitizedEmail = clientEmail.trim().slice(0, 255);
     const sanitizedNotes = clientNotes.trim().slice(0, 500);
 
-    // Upsert client
-    if (sanitizedName) {
-      const { data: existingClients } = await supabase
-        .from("clients")
-        .select("id")
-        .eq("barbershop_id", barbershop.id)
-        .eq("phone", sanitizedPhone)
-        .limit(1);
-
-      if (existingClients && existingClients.length > 0) {
-        await supabase.from("clients").update({
-          name: sanitizedName,
-          email: sanitizedEmail || null,
-        }).eq("id", existingClients[0].id);
-      } else {
-        await supabase.from("clients").insert({
+    try {
+      const { data: result, error: fnError } = await supabase.functions.invoke("public-booking", {
+        body: {
           barbershop_id: barbershop.id,
-          name: sanitizedName,
-          phone: sanitizedPhone,
-          email: sanitizedEmail || null,
-        });
-      }
-    }
-
-    // Create one appointment per service, chaining times
-    let currentTime = selectedTime;
-    let firstAppointmentId: string | null = null;
-
-    for (const svc of selectedServiceObjects) {
-      const endTime = format(
-        addMinutes(parse(currentTime, "HH:mm", selectedDate), svc.duration_minutes),
-        "HH:mm"
-      );
-
-      const { data, error } = await supabase.from("appointments").insert({
-        barbershop_id: barbershop.id,
-        service_id: svc.id,
-        professional_id: professional.id,
-        client_name: sanitizedName,
-        client_phone: sanitizedPhone,
-        client_email: sanitizedEmail,
-        notes: sanitizedNotes || null,
-        date: format(selectedDate, "yyyy-MM-dd"),
-        start_time: currentTime,
-        end_time: endTime,
-        price: svc.price,
-        status: barbershop.auto_confirm ? "confirmed" : "scheduled",
-      }).select("id").single();
-
-      if (!error && data) {
-        if (!firstAppointmentId) firstAppointmentId = data.id;
-      }
-
-      currentTime = endTime;
-    }
-
-    setSubmitting(false);
-    if (firstAppointmentId) {
-      setAppointmentId(firstAppointmentId);
-      setConfirmed(true);
-      sendBookingEmail({
-        type: "confirmed",
-        clientName: sanitizedName,
-        clientEmail: sanitizedEmail,
-        service: firstService,
-        professional,
-        selectedDate,
-        selectedTime,
-        barbershop,
+          services: selectedServiceObjects.map((svc) => ({ id: svc.id })),
+          professional_id: professional.id,
+          client_name: sanitizedName,
+          client_phone: sanitizedPhone,
+          client_email: sanitizedEmail,
+          client_notes: sanitizedNotes,
+          date: format(selectedDate, "yyyy-MM-dd"),
+          start_time: selectedTime,
+          auto_confirm: barbershop.auto_confirm,
+        },
       });
-      supabase.functions.invoke("send-booking-confirmation", {
-        body: { appointmentId: firstAppointmentId },
-      }).catch(() => {});
+
+      setSubmitting(false);
+
+      if (fnError || !result?.success) {
+        console.error("Booking error:", fnError || result?.error);
+        return;
+      }
+
+      const firstAppointmentId = result.appointment_id;
+      if (firstAppointmentId) {
+        setAppointmentId(firstAppointmentId);
+        setConfirmed(true);
+        sendBookingEmail({
+          type: "confirmed",
+          clientName: sanitizedName,
+          clientEmail: sanitizedEmail,
+          service: firstService,
+          professional,
+          selectedDate,
+          selectedTime,
+          barbershop,
+        });
+        supabase.functions.invoke("send-booking-confirmation", {
+          body: { appointmentId: firstAppointmentId },
+        }).catch(() => {});
+      }
+    } catch (err) {
+      console.error("Booking failed:", err);
+      setSubmitting(false);
     }
   };
 
