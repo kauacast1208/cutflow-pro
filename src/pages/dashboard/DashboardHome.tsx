@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format, subDays, startOfWeek, addDays, parseISO, differenceInDays, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
+import { WelcomeModal } from "@/components/dashboard/WelcomeModal";
 import { ProfessionalRanking } from "@/components/dashboard/ProfessionalRanking";
 import { useNavigate } from "react-router-dom";
 import WeeklySchedule from "@/components/admin/WeeklySchedule";
