@@ -44,6 +44,20 @@ export function HeroSection() {
             O CutFlow organiza sua agenda, envia lembretes automáticos e ajuda você a controlar sua barbearia — sem estresse.
           </motion.p>
 
+          {/* Results line */}
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.17 }}
+            className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-sm sm:text-base font-semibold text-foreground mb-5 sm:mb-6 px-2 sm:px-0"
+          >
+            <span>Menos faltas.</span>
+            <span className="text-muted-foreground/40">·</span>
+            <span>Mais clientes retornando.</span>
+            <span className="text-muted-foreground/40">·</span>
+            <span>Mais controle financeiro.</span>
+          </motion.div>
+
           {/* Value props */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
