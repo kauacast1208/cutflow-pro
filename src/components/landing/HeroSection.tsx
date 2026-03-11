@@ -30,7 +30,8 @@ export function HeroSection() {
             transition={{ duration: 0.6, delay: 0.08 }}
             className="text-[1.75rem] leading-[1.1] sm:text-4xl lg:text-[3rem] font-extrabold tracking-[-0.03em] sm:leading-[1.08] mb-4 sm:mb-5 px-1 sm:px-0"
           >
-            Pare de perder clientes por falta de organização.
+            Pare de perder clientes por falta de{" "}
+            <span className="text-primary">organização.</span>
           </motion.h1>
 
           {/* Subheadline */}
@@ -40,7 +41,7 @@ export function HeroSection() {
             transition={{ duration: 0.5, delay: 0.14 }}
             className="text-[15px] sm:text-lg text-muted-foreground max-w-xl mx-auto mb-6 sm:mb-7 leading-relaxed px-2 sm:px-0"
           >
-            O CutFlow ajuda barbearias a organizar agendamentos, enviar lembretes automáticos, controlar clientes e acompanhar faturamento sem complicação.
+            O CutFlow organiza sua agenda, envia lembretes automáticos e ajuda você a controlar sua barbearia — sem estresse.
           </motion.p>
 
           {/* Value props */}
