@@ -23,6 +23,8 @@ export interface BlockedTime {
   all_day: boolean;
   start_time: string | null;
   end_time: string | null;
+  recurring?: boolean;
+  recurring_days?: number[] | null;
 }
 
 export interface ProfessionalAvailability {
