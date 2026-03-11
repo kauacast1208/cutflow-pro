@@ -116,7 +116,7 @@ export function UpgradeBanner({
         {featureLabels[feature]} não está incluído no seu plano atual ({planConfig[currentPlan].label}).
         Faça upgrade para desbloquear.
       </p>
-      <Button onClick={() => navigate("/checkout")} className="gap-2">
+      <Button onClick={() => navigate("/billing")} className="gap-2">
         <Sparkles className="h-4 w-4" /> Ver planos a partir de {formatCurrency(targetConfig.price)}/mês
       </Button>
     </div>
