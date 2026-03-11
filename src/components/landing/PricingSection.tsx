@@ -45,7 +45,7 @@ const planHighlights: Record<string, string[]> = {
 
 const planDescriptions: Record<string, string> = {
   starter: "Ideal para barbeiros autônomos",
-  pro: "Ideal para barbearias em crescimento",
+  pro: "O plano ideal para barbearias em crescimento",
   premium: "Para barbearias profissionais",
 };
 
@@ -90,7 +90,7 @@ export function PricingSection() {
             Escolha o plano ideal para sua barbearia
           </h2>
           <p className="text-muted-foreground text-[15px] sm:text-lg max-w-lg mx-auto">
-            Todos os planos incluem 7 dias grátis. Cancele quando quiser.
+            Teste grátis por 7 dias. Nenhuma cobrança hoje.
           </p>
         </div>
 
@@ -170,7 +170,6 @@ export function PricingSection() {
           })}
         </div>
 
-        {/* Trust signals */}
         <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 mt-8 sm:mt-10 text-xs sm:text-[13px] text-muted-foreground">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 text-primary/60" />

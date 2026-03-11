@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Shield, Sparkles } from "lucide-react";
+import { ArrowRight, Shield, Sparkles, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function CTASection() {
@@ -12,7 +12,6 @@ export function CTASection() {
         viewport={{ once: true }}
         className="max-w-3xl mx-auto text-center rounded-3xl bg-primary p-8 sm:p-12 lg:p-16 shadow-premium relative overflow-hidden"
       >
-        {/* Glow circles */}
         <div className="absolute -top-24 -right-24 h-48 w-48 rounded-full bg-primary-foreground/5 blur-3xl" />
         <div className="absolute -bottom-24 -left-24 h-48 w-48 rounded-full bg-primary-foreground/5 blur-3xl" />
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px]" />
@@ -28,14 +27,14 @@ export function CTASection() {
             sua barbearia?
           </h2>
           <p className="text-primary-foreground/65 text-sm sm:text-base mb-7 sm:mb-8 max-w-md mx-auto leading-relaxed">
-            Comece agora com 7 dias grátis. Sem cartão de crédito, sem compromisso.
+            Leva menos de 2 minutos para criar sua conta. Comece agora com 7 dias grátis.
           </p>
           <Link to="/signup" className="block w-full sm:w-auto sm:inline-block">
             <Button
               size="lg"
               className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-bold text-[15px] px-8 sm:px-10 h-13 sm:h-14 shadow-lg rounded-xl w-full sm:w-auto"
             >
-              Começar teste gratuito
+              Começar teste gratuito agora
               <ArrowRight className="ml-2 h-4.5 w-4.5" />
             </Button>
           </Link>

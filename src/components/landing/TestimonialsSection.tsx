@@ -4,22 +4,22 @@ import { Star } from "lucide-react";
 const testimonials = [
   {
     name: "Carlos Silva",
-    role: "Barbearia Premium · Sao Paulo",
-    content: "O CutFlow transformou meu negocio. Reduzi faltas em 60% e aumentei o faturamento em 40% nos primeiros 3 meses.",
+    role: "Barbearia Premium · São Paulo",
+    content: "O CutFlow transformou meu negócio. Reduzi faltas em 60% e aumentei o faturamento em 40% nos primeiros 3 meses.",
     rating: 5,
     avatar: "CS",
   },
   {
     name: "Rafael Santos",
-    role: "Barbeiro Autonomo · BH",
+    role: "Barbeiro Autônomo · BH",
     content: "Finalmente um sistema simples e bonito. Meus clientes adoram agendar online e eu tenho tudo organizado no celular.",
     rating: 5,
     avatar: "RS",
   },
   {
-    name: "Andre Oliveira",
+    name: "André Oliveira",
     role: "Rede Barber & Co · RJ",
-    content: "Gerencio 3 unidades com o CutFlow. Os relatorios financeiros me dao visibilidade total do negocio.",
+    content: "Gerencio 3 unidades com o CutFlow. Os relatórios financeiros me dão visibilidade total do negócio.",
     rating: 5,
     avatar: "AO",
   },
@@ -37,7 +37,7 @@ export function TestimonialsSection() {
             viewport={{ once: true }}
             className="inline-flex items-center gap-2 rounded-full bg-primary/8 border border-primary/15 px-4 py-1.5 text-xs sm:text-sm font-medium text-primary mb-4 sm:mb-5"
           >
-            Depoimentos
+            Feito para barbearias modernas
           </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -54,7 +54,7 @@ export function TestimonialsSection() {
             transition={{ delay: 0.1 }}
             className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto"
           >
-            +1.200 barbearias ja confiam no CutFlow.
+            Barbearias estão começando a usar o CutFlow para organizar seus atendimentos.
           </motion.p>
         </div>
 

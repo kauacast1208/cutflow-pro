@@ -1,14 +1,12 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Play, Calendar, Clock, Users, CheckCircle2, Sparkles } from "lucide-react";
+import { ArrowRight, Play, Calendar, Clock, Users, CheckCircle2, Sparkles, Shield, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function HeroSection() {
   return (
     <section className="relative overflow-hidden bg-background">
-      {/* Glow effect */}
       <div className="absolute inset-0 glow-bg" />
-      {/* Refined subtle grid */}
       <div className="absolute inset-0 bg-[linear-gradient(hsl(var(--border)/0.06)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--border)/0.06)_1px,transparent_1px)] bg-[size:72px_72px] sm:bg-[size:80px_80px]" />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
 
@@ -33,9 +31,9 @@ export function HeroSection() {
             transition={{ duration: 0.6, delay: 0.08 }}
             className="text-[2rem] leading-[1.08] sm:text-5xl lg:text-[3.5rem] font-extrabold tracking-[-0.035em] sm:leading-[1.08] mb-5 sm:mb-6 px-1 sm:px-0"
           >
-            Gerencie sua barbearia com{" "}
+            Organize sua barbearia, lote sua agenda e{" "}
             <br className="hidden sm:block" />
-            <span className="text-gradient">eficiência profissional.</span>
+            <span className="text-gradient">nunca mais perca clientes.</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -45,9 +43,7 @@ export function HeroSection() {
             transition={{ duration: 0.5, delay: 0.16 }}
             className="text-[15px] sm:text-lg text-muted-foreground max-w-xl mx-auto mb-9 sm:mb-10 leading-relaxed px-2 sm:px-0"
           >
-            Agenda, clientes, financeiro e relatórios em um só lugar.
-            <br className="hidden sm:block" />
-            Simples, profissional e pronto para usar.
+            O CutFlow ajuda barbearias a gerenciar agendamentos, clientes e faturamento em um único sistema simples e profissional.
           </motion.p>
 
           {/* CTA buttons */}
@@ -71,15 +67,30 @@ export function HeroSection() {
             </Link>
           </motion.div>
 
-          {/* Trust line */}
-          <motion.p
+          {/* Trust indicators */}
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.32 }}
-            className="mt-4 text-xs sm:text-[13px] text-muted-foreground/70"
+            className="mt-6 sm:mt-8 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-5 text-xs sm:text-[13px] text-muted-foreground"
           >
-            7 dias grátis · Sem cartão · Cancele quando quiser
-          </motion.p>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-primary/60" />
+              <span>Teste gratuito de 7 dias</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Shield className="h-3.5 w-3.5 text-primary/60" />
+              <span>Pagamento seguro via Stripe</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-primary/60" />
+              <span>Cancele quando quiser</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-primary/60" />
+              <span>Sem fidelidade</span>
+            </div>
+          </motion.div>
 
           {/* Social proof */}
           <motion.div
@@ -96,7 +107,7 @@ export function HeroSection() {
               ))}
             </div>
             <p className="text-xs sm:text-[13px] text-muted-foreground">
-              <span className="font-semibold text-foreground">+1.200 barbearias</span> já usam o CutFlow
+              Barbearias estão começando a usar o <span className="font-semibold text-foreground">CutFlow</span> para organizar seus atendimentos.
             </p>
           </motion.div>
         </div>
@@ -109,7 +120,6 @@ export function HeroSection() {
           className="mt-14 sm:mt-20 max-w-5xl mx-auto"
         >
           <div className="rounded-2xl border border-border/50 bg-card shadow-xl overflow-hidden ring-1 ring-border/20">
-            {/* Browser chrome */}
             <div className="flex items-center gap-2 px-4 sm:px-5 py-3 border-b border-border/50 bg-muted/15">
               <div className="flex gap-1.5 sm:gap-2">
                 <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-destructive/20" />
@@ -122,7 +132,6 @@ export function HeroSection() {
                 </div>
               </div>
             </div>
-            {/* Mock content — cards */}
             <div className="p-4 sm:p-6 lg:p-8 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {[
                 { icon: Calendar, label: "Agendamentos hoje", value: "12", color: "text-primary" },
@@ -137,7 +146,6 @@ export function HeroSection() {
                 </div>
               ))}
             </div>
-            {/* Mock agenda rows */}
             <div className="hidden sm:block px-6 lg:px-8 pb-6 lg:pb-8 space-y-2">
               {["09:00 — Carlos Silva · Corte + Barba", "10:00 — Rafael Santos · Corte Masculino", "11:00 — André Oliveira · Barba"].map((row, i) => (
                 <div key={i} className="flex items-center gap-3 rounded-xl border border-border/40 bg-background px-4 py-3 text-sm">

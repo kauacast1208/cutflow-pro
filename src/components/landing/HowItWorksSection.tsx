@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
-import { UserPlus, Settings, CalendarCheck } from "lucide-react";
+import { Settings, Share2, CalendarCheck } from "lucide-react";
 
 const steps = [
-  { icon: UserPlus, step: "01", title: "Crie sua conta", description: "Cadastre sua barbearia em menos de 2 minutos. Gratis por 7 dias." },
-  { icon: Settings, step: "02", title: "Configure sua barbearia", description: "Adicione seus servicos, precos e equipe de barbeiros." },
-  { icon: CalendarCheck, step: "03", title: "Comece a receber agendamentos", description: "Compartilhe o link e seus clientes agendam sozinhos." },
+  { icon: Settings, step: "01", title: "Configure sua barbearia", description: "Adicione serviços, preços e equipe de barbeiros em poucos minutos." },
+  { icon: Share2, step: "02", title: "Compartilhe sua página de agendamento", description: "Envie o link exclusivo para seus clientes agendarem online." },
+  { icon: CalendarCheck, step: "03", title: "Receba clientes automaticamente", description: "Clientes agendam sozinhos e sua agenda fica sempre organizada." },
 ];
 
 export function HowItWorksSection() {
@@ -19,7 +19,7 @@ export function HowItWorksSection() {
             Comece em 3 passos simples
           </h2>
           <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
-            Configuracao simples, resultados imediatos.
+            Configuração simples, resultados imediatos.
           </p>
         </div>
 
@@ -33,7 +33,6 @@ export function HowItWorksSection() {
               transition={{ delay: i * 0.12 }}
               className="text-center relative"
             >
-              {/* Connector line — only on desktop */}
               {i < steps.length - 1 && (
                 <div className="hidden sm:block absolute top-8 left-[calc(50%+32px)] w-[calc(100%-64px)] h-px bg-gradient-to-r from-border to-border/30" />
               )}

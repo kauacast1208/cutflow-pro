@@ -1,21 +1,21 @@
 import { motion } from "framer-motion";
-import { Calendar, Users, Globe, BarChart3, UserCheck, Zap, Bell } from "lucide-react";
+import { Calendar, Users, BarChart3, Globe, Bell, UserCheck } from "lucide-react";
 
 const features = [
   {
     icon: Calendar,
     title: "Agenda inteligente",
-    description: "Controle total da agenda com visualização por dia, semana e profissional. Sem conflitos.",
+    description: "Visualize sua agenda semanal e organize horários facilmente. Sem conflitos, sem confusão.",
   },
   {
     icon: Users,
     title: "Gestão de clientes",
-    description: "Histórico completo, preferências e anotações. Conheça seus clientes de verdade.",
+    description: "Acompanhe histórico de atendimentos, preferências e anotações de cada cliente.",
   },
   {
     icon: BarChart3,
-    title: "Relatórios e financeiro",
-    description: "Faturamento, ticket médio, ranking de profissionais e desempenho em tempo real.",
+    title: "Relatórios e faturamento",
+    description: "Entenda quanto sua barbearia está faturando com relatórios claros e detalhados.",
   },
   {
     icon: UserCheck,
@@ -30,7 +30,7 @@ const features = [
   {
     icon: Globe,
     title: "Agendamento online",
-    description: "Link exclusivo para seus clientes agendarem 24h por dia, direto pelo celular.",
+    description: "Clientes agendam horários em poucos segundos, direto pelo celular, 24h por dia.",
   },
 ];
 
@@ -46,15 +46,17 @@ export function FeaturesSection() {
             viewport={{ once: true }}
             className="inline-flex items-center gap-2 rounded-full bg-primary/[0.06] border border-primary/12 px-4 py-1.5 text-xs sm:text-sm font-medium text-primary mb-4 sm:mb-5"
           >
-            Benefícios
+            A solução
           </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-2xl sm:text-4xl font-extrabold tracking-[-0.025em] mb-3 sm:mb-4"
+            className="text-2xl sm:text-4xl lg:text-[2.75rem] font-extrabold tracking-[-0.02em] mb-3 sm:mb-4"
           >
-            Tudo que sua barbearia precisa
+            Uma plataforma completa para{" "}
+            <br className="hidden sm:block" />
+            barbearias modernas.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
