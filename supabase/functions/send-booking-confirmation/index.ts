@@ -279,6 +279,7 @@ Deno.serve(async (req) => {
             status: waResult.success ? "sent" : "failed",
             sent_at: waResult.success ? new Date().toISOString() : null,
             error_message: waResult.success ? null : `[${waResult.provider || "whatsapp"}] ${waResult.error || "unknown"}`.slice(0, 500),
+            provider: waResult.provider || "z_api",
           })
           .eq("appointment_id", appointmentId)
           .eq("type", "appointment_created")
