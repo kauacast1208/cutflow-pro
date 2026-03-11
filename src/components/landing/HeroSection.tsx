@@ -92,21 +92,21 @@ export function HeroSection() {
 
         {/* Dashboard mockup */}
         <motion.div
-          initial={{ opacity: 0, y: 60 }}
+          initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.55 }}
           className="mt-16 sm:mt-24 max-w-5xl mx-auto"
         >
-          <div className="rounded-xl sm:rounded-2xl border border-border/80 bg-card shadow-xl overflow-hidden ring-1 ring-border/50">
+          <div className="rounded-2xl border border-border/60 bg-card shadow-xl overflow-hidden ring-1 ring-border/30">
             {/* Browser chrome */}
-            <div className="flex items-center gap-2 px-4 sm:px-5 py-3 border-b border-border bg-muted/30">
+            <div className="flex items-center gap-2 px-4 sm:px-5 py-3 sm:py-3.5 border-b border-border/60 bg-muted/20">
               <div className="flex gap-1.5 sm:gap-2">
-                <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-destructive/30" />
-                <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-warning/30" />
-                <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-primary/30" />
+                <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-destructive/25" />
+                <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-warning/25" />
+                <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-primary/25" />
               </div>
               <div className="flex-1 flex justify-center">
-                <div className="bg-background rounded-lg px-4 sm:px-5 py-1.5 text-[10px] sm:text-xs text-muted-foreground border border-border font-medium">
+                <div className="bg-background/80 rounded-lg px-4 sm:px-5 py-1.5 text-[10px] sm:text-xs text-muted-foreground border border-border/50 font-medium">
                   cutflow.app/dashboard
                 </div>
               </div>
@@ -119,18 +119,18 @@ export function HeroSection() {
                 { icon: Clock, label: "Proximo horario", value: "14:30", color: "text-warning" },
                 { icon: CheckCircle2, label: "Taxa de presenca", value: "94%", color: "text-success" },
               ].map((stat) => (
-                <div key={stat.label} className="rounded-xl border border-border bg-background p-3 sm:p-4 hover:shadow-md transition-shadow">
+                <div key={stat.label} className="rounded-xl border border-border/60 bg-background p-3 sm:p-4 hover:shadow-md transition-shadow">
                   <stat.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${stat.color} mb-2 sm:mb-3`} />
                   <p className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight">{stat.value}</p>
                   <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">{stat.label}</p>
                 </div>
               ))}
             </div>
-            {/* Mock agenda rows — hide on very small screens */}
+            {/* Mock agenda rows */}
             <div className="hidden sm:block px-6 lg:px-8 pb-6 lg:pb-8 space-y-2">
               {["09:00 — Carlos Silva · Corte + Barba", "10:00 — Rafael Santos · Corte Masculino", "11:00 — Andre Oliveira · Barba"].map((row, i) => (
-                <div key={i} className="flex items-center gap-3 rounded-xl border border-border bg-background px-4 py-3 text-sm group hover:border-primary/20 transition-colors">
-                  <div className="h-2 w-2 rounded-full bg-primary/80" />
+                <div key={i} className="flex items-center gap-3 rounded-xl border border-border/50 bg-background px-4 py-3 text-sm group hover:border-primary/15 transition-colors">
+                  <div className="h-2 w-2 rounded-full bg-primary/70" />
                   <span className="text-muted-foreground group-hover:text-foreground transition-colors">{row}</span>
                 </div>
               ))}
