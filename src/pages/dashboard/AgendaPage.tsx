@@ -829,14 +829,34 @@ export default function AgendaPage() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Quick presets */}
             <div>
-              <Label className="text-xs">Data</Label>
-              <Input
-                type="date"
-                value={blockForm.date}
-                onChange={e => setBlockForm(f => ({ ...f, date: e.target.value }))}
-                className="rounded-xl mt-1"
-              />
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tipo</Label>
+              <div className="grid grid-cols-3 gap-2 mt-1.5">
+                {[
+                  { label: "Almoço", icon: "🍽️", start: "12:00", end: "13:00", reason: "Almoço" },
+                  { label: "Pausa", icon: "☕", start: "", end: "", reason: "Pausa" },
+                  { label: "Folga", icon: "🏖️", start: "", end: "", reason: "Folga", allDay: true },
+                ].map(preset => (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => setBlockForm(f => ({
+                      ...f,
+                      start_time: preset.start,
+                      end_time: preset.end,
+                      reason: preset.reason,
+                      all_day: preset.allDay || false,
+                    }))}
+                    className={`flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl border text-xs font-medium transition-all hover:border-primary/40 hover:bg-accent/50 ${
+                      blockForm.reason === preset.reason ? "border-primary bg-primary/5 text-primary" : "border-border bg-card text-muted-foreground"
+                    }`}
+                  >
+                    <span className="text-base">{preset.icon}</span>
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div>
@@ -852,6 +872,16 @@ export default function AgendaPage() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div>
+              <Label className="text-xs">Data</Label>
+              <Input
+                type="date"
+                value={blockForm.date}
+                onChange={e => setBlockForm(f => ({ ...f, date: e.target.value }))}
+                className="rounded-xl mt-1"
+              />
             </div>
 
             <div className="flex items-center gap-2">
@@ -888,8 +918,45 @@ export default function AgendaPage() {
               </div>
             )}
 
+            {/* Recurring toggle */}
+            <div className="rounded-xl border border-border/60 bg-muted/20 p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-foreground">Recorrente</p>
+                  <p className="text-[10px] text-muted-foreground">Repetir toda semana nos dias selecionados</p>
+                </div>
+                <Switch
+                  checked={blockForm.recurring}
+                  onCheckedChange={v => setBlockForm(f => ({ ...f, recurring: v, recurring_days: v ? [new Date(f.date || Date.now()).getDay()] : [] }))}
+                />
+              </div>
+              {blockForm.recurring && (
+                <div className="flex gap-1.5">
+                  {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((d, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setBlockForm(f => ({
+                        ...f,
+                        recurring_days: (f.recurring_days || []).includes(i)
+                          ? (f.recurring_days || []).filter(x => x !== i)
+                          : [...(f.recurring_days || []), i].sort()
+                      }))}
+                      className={`flex-1 py-2 rounded-lg text-[10px] font-medium transition-all ${
+                        (blockForm.recurring_days || []).includes(i)
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "bg-card text-muted-foreground hover:bg-accent/50 border border-border/40"
+                      }`}
+                    >
+                      {d}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div>
-              <Label className="text-xs">Motivo (opcional)</Label>
+              <Label className="text-xs">Motivo</Label>
               <Input
                 placeholder="Ex: Almoço, Folga, Reunião"
                 value={blockForm.reason}
