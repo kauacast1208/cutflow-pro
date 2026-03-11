@@ -33,9 +33,9 @@ export default function ReschedulePage() {
       const { data: appt } = await supabase
         .from("appointments")
         .select("*")
-        .eq("reschedule_token" as any, token)
-        .in("status", ["scheduled", "confirmed"])
-        .maybeSingle();
+        .eq("reschedule_token" as any, token as any)
+        .in("status", ["scheduled", "confirmed"] as any)
+        .maybeSingle() as any;
 
       if (!appt) { setNotFound(true); setLoading(false); return; }
 
