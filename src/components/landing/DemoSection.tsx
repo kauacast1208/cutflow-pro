@@ -618,7 +618,7 @@ export function DemoSection() {
               </div>
               <div className="flex-1 flex justify-center">
                 <div className="text-[10px] sm:text-[11px] text-muted-foreground bg-background/60 rounded-md px-4 py-1 border border-border/50 font-mono">
-                  cutflow.app/dashboard
+                  {activeTab === "booking" ? "cutflow.app/b/barbearia-central" : "cutflow.app/dashboard"}
                 </div>
               </div>
             </div>
