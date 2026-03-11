@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format, subDays, startOfWeek, addDays, parseISO, differenceInDays, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
+import { WelcomeModal } from "@/components/dashboard/WelcomeModal";
 import { ProfessionalRanking } from "@/components/dashboard/ProfessionalRanking";
 import { useNavigate } from "react-router-dom";
 import WeeklySchedule from "@/components/admin/WeeklySchedule";
@@ -363,6 +364,7 @@ export default function DashboardHome() {
 
   return (
     <div className="space-y-6 pb-24 sm:pb-6">
+      <WelcomeModal />
       {/* Trial Banner */}
       {subscription?.status === "trial" && daysRemaining !== null && daysRemaining <= 3 && (
         <motion.div {...fadeUp(0)} className="flex items-center gap-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-4">
