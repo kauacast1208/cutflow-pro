@@ -30,7 +30,8 @@ export function HeroSection() {
             transition={{ duration: 0.6, delay: 0.08 }}
             className="text-[1.75rem] leading-[1.1] sm:text-4xl lg:text-[3rem] font-extrabold tracking-[-0.03em] sm:leading-[1.08] mb-4 sm:mb-5 px-1 sm:px-0"
           >
-            Pare de perder clientes por falta de organização.
+            Pare de perder clientes por falta de{" "}
+            <span className="text-primary">organização.</span>
           </motion.h1>
 
           {/* Subheadline */}
@@ -40,8 +41,22 @@ export function HeroSection() {
             transition={{ duration: 0.5, delay: 0.14 }}
             className="text-[15px] sm:text-lg text-muted-foreground max-w-xl mx-auto mb-6 sm:mb-7 leading-relaxed px-2 sm:px-0"
           >
-            O CutFlow ajuda barbearias a organizar agendamentos, enviar lembretes automáticos, controlar clientes e acompanhar faturamento sem complicação.
+            O CutFlow organiza sua agenda, envia lembretes automáticos e ajuda você a controlar sua barbearia — sem estresse.
           </motion.p>
+
+          {/* Results line */}
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.17 }}
+            className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-sm sm:text-base font-semibold text-foreground mb-5 sm:mb-6 px-2 sm:px-0"
+          >
+            <span>Menos faltas.</span>
+            <span className="text-muted-foreground/40">·</span>
+            <span>Mais clientes retornando.</span>
+            <span className="text-muted-foreground/40">·</span>
+            <span>Mais controle financeiro.</span>
+          </motion.div>
 
           {/* Value props */}
           <motion.div
@@ -52,23 +67,19 @@ export function HeroSection() {
           >
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              <span>Menos faltas</span>
+              <span>Agenda online automática</span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              <span>Menos estresse</span>
+              <span>Lembretes por WhatsApp</span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              <span>Mais organização</span>
+              <span>Gestão de clientes</span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              <span>Mais clientes retornando</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              <span>Mais controle financeiro</span>
+              <span>Controle financeiro</span>
             </div>
           </motion.div>
 
@@ -81,7 +92,7 @@ export function HeroSection() {
           >
             <Link to="/signup" className="w-full sm:w-auto">
               <Button variant="hero" size="lg" className="w-full sm:w-auto text-[15px] sm:text-base px-8 sm:px-10 h-14 sm:h-14 shadow-glow">
-                Criar minha agenda grátis
+                Teste grátis por 7 dias
                 <ArrowRight className="ml-2 h-4.5 w-4.5" />
               </Button>
             </Link>
