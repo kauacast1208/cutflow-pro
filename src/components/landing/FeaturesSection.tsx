@@ -75,7 +75,7 @@ export function FeaturesSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08 }}
-              className="group rounded-xl sm:rounded-2xl border border-border bg-card p-5 sm:p-7 shadow-card hover:shadow-elevated hover:border-primary/20 transition-all duration-300"
+              className="group rounded-2xl border border-border/80 bg-card p-5 sm:p-7 shadow-card hover:shadow-card-hover hover:border-primary/15 transition-all duration-300"
             >
               <div className="mb-4 sm:mb-5 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-primary/8 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
                 <feature.icon className="h-5 w-5 sm:h-6 sm:w-6 text-primary group-hover:text-primary-foreground transition-colors" />

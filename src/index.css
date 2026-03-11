@@ -6,43 +6,43 @@
 
 @layer base {
   :root {
-    --background: 150 10% 98%;
-    --foreground: 160 20% 8%;
+    --background: 150 10% 98.5%;
+    --foreground: 160 25% 6%;
 
     --card: 0 0% 100%;
-    --card-foreground: 160 20% 8%;
+    --card-foreground: 160 25% 6%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 160 20% 8%;
+    --popover-foreground: 160 25% 6%;
 
     --primary: 152 58% 28%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 150 8% 94%;
-    --secondary-foreground: 160 20% 15%;
+    --secondary: 150 8% 95%;
+    --secondary-foreground: 160 20% 12%;
 
-    --muted: 150 8% 94%;
-    --muted-foreground: 160 8% 45%;
+    --muted: 150 6% 94.5%;
+    --muted-foreground: 160 8% 42%;
 
-    --accent: 152 45% 92%;
-    --accent-foreground: 152 58% 22%;
+    --accent: 152 40% 93%;
+    --accent-foreground: 152 58% 20%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 150 12% 90%;
-    --input: 150 12% 90%;
+    --border: 150 10% 91%;
+    --input: 150 10% 91%;
     --ring: 152 58% 28%;
 
-    --radius: 0.625rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 160 20% 15%;
+    --sidebar-foreground: 160 20% 12%;
     --sidebar-primary: 152 58% 28%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 152 45% 95%;
-    --sidebar-accent-foreground: 152 58% 22%;
-    --sidebar-border: 150 12% 92%;
+    --sidebar-accent: 152 40% 96%;
+    --sidebar-accent-foreground: 152 58% 20%;
+    --sidebar-border: 150 10% 93%;
     --sidebar-ring: 152 58% 28%;
 
     /* Custom tokens */
@@ -53,17 +53,19 @@
     --info: 210 100% 52%;
     --info-foreground: 0 0% 100%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(152, 58%, 28%), hsl(160, 50%, 36%));
-    --gradient-hero: linear-gradient(135deg, hsl(152, 58%, 28%) 0%, hsl(170, 50%, 30%) 100%);
-    --gradient-surface: linear-gradient(180deg, hsl(150, 10%, 98%) 0%, hsl(150, 12%, 95%) 100%);
-    --gradient-glow: radial-gradient(ellipse 80% 50% at 50% -20%, hsl(152, 58%, 28%, 0.12), transparent);
+    --gradient-primary: linear-gradient(135deg, hsl(152, 58%, 28%), hsl(162, 48%, 34%));
+    --gradient-hero: linear-gradient(135deg, hsl(152, 58%, 28%) 0%, hsl(168, 48%, 32%) 100%);
+    --gradient-surface: linear-gradient(180deg, hsl(150, 10%, 99%) 0%, hsl(150, 8%, 96%) 100%);
+    --gradient-glow: radial-gradient(ellipse 80% 50% at 50% -20%, hsl(152, 58%, 28%, 0.1), transparent);
 
-    --shadow-sm: 0 1px 2px 0 hsl(160 20% 8% / 0.04);
-    --shadow-md: 0 4px 6px -1px hsl(160 20% 8% / 0.06), 0 2px 4px -2px hsl(160 20% 8% / 0.04);
-    --shadow-lg: 0 10px 25px -3px hsl(160 20% 8% / 0.08), 0 4px 6px -4px hsl(160 20% 8% / 0.04);
-    --shadow-xl: 0 20px 50px -10px hsl(152 58% 28% / 0.12);
-    --shadow-card: 0 1px 3px hsl(160 20% 8% / 0.04), 0 1px 2px hsl(160 20% 8% / 0.06);
-    --shadow-glow: 0 0 40px -10px hsl(152 58% 28% / 0.2);
+    --shadow-xs: 0 1px 2px 0 hsl(160 20% 8% / 0.03);
+    --shadow-sm: 0 1px 3px 0 hsl(160 20% 8% / 0.04), 0 1px 2px -1px hsl(160 20% 8% / 0.03);
+    --shadow-md: 0 4px 8px -2px hsl(160 20% 8% / 0.05), 0 2px 4px -2px hsl(160 20% 8% / 0.03);
+    --shadow-lg: 0 12px 28px -6px hsl(160 20% 8% / 0.08), 0 4px 8px -4px hsl(160 20% 8% / 0.03);
+    --shadow-xl: 0 24px 56px -12px hsl(152 58% 28% / 0.1);
+    --shadow-card: 0 1px 3px hsl(160 20% 8% / 0.03), 0 1px 2px -1px hsl(160 20% 8% / 0.04);
+    --shadow-card-hover: 0 8px 24px -4px hsl(160 20% 8% / 0.08), 0 2px 6px -2px hsl(160 20% 8% / 0.04);
+    --shadow-glow: 0 0 48px -12px hsl(152 58% 28% / 0.18);
   }
 
   .dark {
@@ -105,11 +107,13 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-    @apply font-bold tracking-tight;
+    @apply font-bold tracking-tight text-foreground;
   }
 }
 
@@ -121,6 +125,10 @@
 
   .shadow-card {
     box-shadow: var(--shadow-card);
+  }
+
+  .shadow-card-hover {
+    box-shadow: var(--shadow-card-hover);
   }
 
   .shadow-elevated {
@@ -147,7 +155,21 @@
     @apply max-w-5xl mx-auto;
   }
 
-  /* Mobile-first chart improvements */
+  .glow-bg {
+    background-image: var(--gradient-glow);
+  }
+
+  /* Premium card pattern */
+  .card-premium {
+    @apply rounded-2xl border border-border bg-card;
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+  .card-premium:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  /* Mobile chart refinements */
   @media (max-width: 640px) {
     .recharts-wrapper {
       font-size: 10px;
@@ -158,9 +180,5 @@
     .recharts-pie-label-text {
       font-size: 10px !important;
     }
-  }
-
-  .glow-bg {
-    background-image: var(--gradient-glow);
   }
 }

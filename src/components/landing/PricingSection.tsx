@@ -104,10 +104,10 @@ export function PricingSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className={`rounded-xl sm:rounded-2xl border flex flex-col relative transition-all duration-300 ${
+                className={`rounded-2xl border flex flex-col relative transition-all duration-300 ${
                   isPopular
-                    ? "border-primary bg-card shadow-lg ring-2 ring-primary/20 md:scale-105 z-10 p-6 sm:p-8 lg:p-9"
-                    : "border-border bg-card shadow-sm hover:shadow-md p-5 sm:p-7 lg:p-8"
+                    ? "border-primary bg-card shadow-lg ring-2 ring-primary/15 md:scale-105 z-10 p-6 sm:p-8 lg:p-9"
+                    : "border-border/80 bg-card shadow-card hover:shadow-card-hover p-5 sm:p-7 lg:p-8"
                 }`}
               >
                 {isPopular && (

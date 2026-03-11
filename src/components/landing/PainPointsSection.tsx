@@ -64,7 +64,7 @@ export function PainPointsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08 }}
-              className="flex gap-3.5 sm:gap-4 rounded-xl sm:rounded-2xl border border-destructive/10 bg-destructive/[0.02] p-4 sm:p-6 hover:border-destructive/20 transition-all duration-300"
+              className="flex gap-3.5 sm:gap-4 rounded-2xl border border-destructive/10 bg-destructive/[0.02] p-4 sm:p-6 hover:border-destructive/20 transition-all duration-300"
             >
               <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-destructive/8">
                 <p.icon className="h-5 w-5 sm:h-6 sm:w-6 text-destructive" />

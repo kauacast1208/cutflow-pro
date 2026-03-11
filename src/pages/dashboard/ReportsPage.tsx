@@ -244,7 +244,7 @@ export default function ReportsPage() {
                 <motion.div
                   key={m.label}
                   {...fadeUp(i + 1)}
-                  className="group relative overflow-hidden rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow duration-300"
+                  className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-accent/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                   <div className="relative">
@@ -271,7 +271,7 @@ export default function ReportsPage() {
           {metrics.serviceDistribution.length > 0 && (
             <motion.div
               {...fadeUp(8)}
-              className="rounded-2xl border border-border bg-card p-4 sm:p-6"
+              className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-card"
             >
               <h3 className="text-sm sm:text-lg font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                 Distribuicao de servicos

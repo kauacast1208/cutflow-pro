@@ -337,7 +337,7 @@ export default function DashboardHome() {
     label: string; value: string; change?: string | null; changePositive?: boolean; icon: React.ElementType; sub?: string; idx: number;
   }) => (
     <motion.div {...fadeUp(idx)}
-      className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 sm:p-5 hover:shadow-md transition-shadow duration-300"
+      className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card p-5 sm:p-5 shadow-card hover:shadow-card-hover transition-all duration-300"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-accent/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
       <div className="relative flex items-start justify-between">
@@ -430,7 +430,7 @@ export default function DashboardHome() {
 
       {/* ── TODAY SUMMARY + UPCOMING ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <motion.div {...fadeUp(4)} className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow">
+        <motion.div {...fadeUp(4)} className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
           <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             <Zap className="h-4 w-4 text-primary" /> Resumo de hoje
           </h3>
@@ -442,7 +442,7 @@ export default function DashboardHome() {
           </div>
         </motion.div>
 
-        <motion.div {...fadeUp(5)} className="lg:col-span-2 rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow">
+        <motion.div {...fadeUp(5)} className="lg:col-span-2 rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-semibold text-foreground flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               <Clock className="h-4 w-4 text-primary" /> Agenda de hoje
@@ -477,7 +477,7 @@ export default function DashboardHome() {
       </div>
 
       {/* ── REVENUE AREA CHART ── */}
-      <motion.div {...fadeUp(6)} className="rounded-2xl border border-border bg-card p-4 sm:p-6 hover:shadow-md transition-shadow">
+      <motion.div {...fadeUp(6)} className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm sm:text-base font-semibold text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Faturamento diario
@@ -506,7 +506,7 @@ export default function DashboardHome() {
       {/* ── INSIGHTS + INACTIVE CLIENTS ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Smart Insights */}
-        <motion.div {...fadeUp(7)} className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow">
+        <motion.div {...fadeUp(7)} className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
           <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             <Lightbulb className="h-4 w-4 text-primary" /> Insights do negocio
           </h3>
@@ -528,7 +528,7 @@ export default function DashboardHome() {
         </motion.div>
 
         {/* Inactive Clients */}
-        <motion.div {...fadeUp(8)} className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow">
+        <motion.div {...fadeUp(8)} className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
           <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             <UserX className="h-4 w-4 text-amber-600" /> Clientes inativos
           </h3>
@@ -557,7 +557,7 @@ export default function DashboardHome() {
 
       {/* ── IDLE HOURS ── */}
       {idleHours.length > 0 && (
-        <motion.div {...fadeUp(9)} className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow">
+        <motion.div {...fadeUp(9)} className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
           <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             <BarChart3 className="h-4 w-4 text-muted-foreground" /> Horarios ociosos
           </h3>
@@ -576,7 +576,7 @@ export default function DashboardHome() {
       {/* ── CHARTS: Services Pie + Day of Week Bar + Pro Performance ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Services Pie */}
-        <motion.div {...fadeUp(10)} className="rounded-2xl border border-border bg-card p-4 sm:p-6 hover:shadow-md transition-shadow">
+        <motion.div {...fadeUp(10)} className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
           <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Servicos mais vendidos
           </h3>
@@ -601,7 +601,7 @@ export default function DashboardHome() {
         </motion.div>
 
         {/* Day of week */}
-        <motion.div {...fadeUp(11)} className="rounded-2xl border border-border bg-card p-4 sm:p-6 hover:shadow-md transition-shadow">
+        <motion.div {...fadeUp(11)} className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
           <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Faturamento por dia da semana
           </h3>
@@ -621,7 +621,7 @@ export default function DashboardHome() {
 
       {/* Professional Performance */}
       {proPerfData.length > 0 && (
-        <motion.div {...fadeUp(12)} className="rounded-2xl border border-border bg-card p-4 sm:p-6 hover:shadow-md transition-shadow">
+        <motion.div {...fadeUp(12)} className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm sm:text-base font-semibold text-foreground flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               <Trophy className="h-4 w-4 text-primary" /> Profissionais com mais atendimentos
@@ -665,7 +665,7 @@ export default function DashboardHome() {
       </div>
 
       {/* Quick actions */}
-      <motion.div {...fadeUp(13)} className="rounded-2xl border border-border bg-card p-4 sm:p-6 hover:shadow-md transition-shadow">
+      <motion.div {...fadeUp(13)} className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
         <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Acoes rapidas</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Button variant="outline" className="h-auto py-5 sm:py-4 flex-col gap-2 rounded-xl text-sm" onClick={() => navigate("/dashboard/agenda")}><Calendar className="h-5 w-5 text-primary" /><span className="text-xs">Ver agenda</span></Button>
