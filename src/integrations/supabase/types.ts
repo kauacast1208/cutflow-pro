@@ -559,9 +559,11 @@ export type Database = {
           barbershop_id: string
           body: string | null
           channel: string
+          client_id: string | null
           created_at: string
           error_message: string | null
           id: string
+          provider: string | null
           recipient_email: string | null
           recipient_name: string | null
           recipient_phone: string | null
@@ -576,9 +578,11 @@ export type Database = {
           barbershop_id: string
           body?: string | null
           channel?: string
+          client_id?: string | null
           created_at?: string
           error_message?: string | null
           id?: string
+          provider?: string | null
           recipient_email?: string | null
           recipient_name?: string | null
           recipient_phone?: string | null
@@ -593,9 +597,11 @@ export type Database = {
           barbershop_id?: string
           body?: string | null
           channel?: string
+          client_id?: string | null
           created_at?: string
           error_message?: string | null
           id?: string
+          provider?: string | null
           recipient_email?: string | null
           recipient_name?: string | null
           recipient_phone?: string | null
@@ -618,6 +624,13 @@ export type Database = {
             columns: ["barbershop_id"]
             isOneToOne: false
             referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
             referencedColumns: ["id"]
           },
         ]
