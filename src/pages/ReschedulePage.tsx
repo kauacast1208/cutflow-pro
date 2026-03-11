@@ -72,7 +72,7 @@ export default function ReschedulePage() {
         _date: dateStr,
         _professional_id: appointment.professional_id,
       }),
-      supabase.from("blocked_times").select("*").eq("barbershop_id", barbershop.id).eq("date", dateStr),
+      (supabase as any).from("blocked_times_public").select("*").eq("barbershop_id", barbershop.id).eq("date", dateStr),
     ]).then(([{ data: booked }, { data: blocked }]) => {
       setAppointments((booked || []).map((s: any) => ({
         professional_id: s.professional_id,
