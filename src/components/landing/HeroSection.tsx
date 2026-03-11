@@ -8,8 +8,8 @@ export function HeroSection() {
     <section className="relative overflow-hidden bg-background">
       {/* Glow effect */}
       <div className="absolute inset-0 glow-bg" />
-      {/* Subtle grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(hsl(var(--border)/0.15)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--border)/0.15)_1px,transparent_1px)] bg-[size:64px_64px] sm:bg-[size:80px_80px]" />
+      {/* Refined subtle grid */}
+      <div className="absolute inset-0 bg-[linear-gradient(hsl(var(--border)/0.08)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--border)/0.08)_1px,transparent_1px)] bg-[size:72px_72px] sm:bg-[size:80px_80px]" />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
 
       <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-32 pb-20 sm:pt-36 sm:pb-24 lg:pt-48 lg:pb-36">
