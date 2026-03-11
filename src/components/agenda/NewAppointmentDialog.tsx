@@ -109,21 +109,24 @@ export default function NewAppointmentDialog({
 
       if (error) throw error;
 
-      // Send WhatsApp confirmation (fire-and-forget)
-      if (form.client_phone) {
-        const selectedPro = professionals.find((p: any) => p.id === form.professional_id);
-        sendAppointmentConfirmation({
-          clientName: form.client_name,
-          clientPhone: form.client_phone,
-          barbershopName: barbershop.name,
-          serviceName: selectedService?.name || "",
-          date: form.date,
-          startTime: form.start_time,
-          endTime,
-          price: selectedService?.price,
-          professionalName: selectedPro?.name,
-          type: "confirmed",
-        }).catch((err) => console.warn("[whatsapp] confirmation failed:", err));
+      // Fetch the created appointment ID for notification pipeline
+      const { data: createdAppt } = await supabase
+        .from("appointments")
+        .select("id")
+        .eq("barbershop_id", barbershop.id)
+        .eq("date", form.date)
+        .eq("start_time", form.start_time)
+        .eq("professional_id", form.professional_id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      // Trigger full notification pipeline (confirmation + scheduled reminders)
+      // Fire-and-forget: never blocks the UI
+      if (createdAppt?.id) {
+        supabase.functions.invoke("send-booking-confirmation", {
+          body: { appointmentId: createdAppt.id },
+        }).catch((err) => console.warn("[notifications] pipeline error:", err));
       }
 
       toast({ title: "Agendamento criado com sucesso!" });

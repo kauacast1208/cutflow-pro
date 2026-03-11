@@ -483,9 +483,9 @@ export default function SettingsPage() {
             <SubscriptionManager />
           </TabsContent>
 
-          {/* WHATSAPP TEST */}
+          {/* WHATSAPP SETTINGS */}
           <TabsContent value="whatsapp">
-            <WhatsAppTestPanel />
+            <WhatsAppSettingsPanel />
           </TabsContent>
 
           {/* PREFERENCES */}
