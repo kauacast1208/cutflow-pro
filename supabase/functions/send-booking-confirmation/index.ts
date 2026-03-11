@@ -1,10 +1,9 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 function replacePlaceholders(template: string, vars: Record<string, string>): string {
@@ -15,7 +14,7 @@ function replacePlaceholders(template: string, vars: Record<string, string>): st
   return result;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -78,14 +77,13 @@ serve(async (req) => {
 
     // Confirmation message — respect automation config
     const autoConfirm = autoMap.get("appointment_confirmation");
-    const confirmEnabled = autoConfirm ? autoConfirm.enabled : true; // default enabled
+    const confirmEnabled = autoConfirm ? autoConfirm.enabled : true;
     const confirmChannel = autoConfirm?.config?.channel || (appointment.client_phone ? "whatsapp" : "email");
     const customConfirmMsg = autoConfirm?.config?.message;
     const confirmationBody = customConfirmMsg
       ? replacePlaceholders(customConfirmMsg, templateVars)
       : `Olá ${appointment.client_name}!\n\nSeu horário foi confirmado.\n\nServiço: ${serviceName}\nData: ${formattedDate}\nHora: ${startTime}\n\n${barbershopName}`;
 
-    // Determine preferred channel (WhatsApp if phone, email if email)
     const preferredChannel = appointment.client_phone ? "whatsapp" : "email";
 
     const notifications: any[] = [];
@@ -106,9 +104,9 @@ serve(async (req) => {
       });
     }
 
-    // 24h reminder — respect automation config
+    // 24h reminder
     const auto24 = autoMap.get("appointment_reminder_24h");
-    const enabled24 = auto24 ? auto24.enabled : true; // default enabled
+    const enabled24 = auto24 ? auto24.enabled : true;
     if (enabled24 && reminder24h > now) {
       const channel24 = auto24?.config?.channel || preferredChannel;
       const customMsg = auto24?.config?.message;
@@ -131,9 +129,9 @@ serve(async (req) => {
       });
     }
 
-    // 2h reminder — respect automation config
+    // 2h reminder
     const auto2h = autoMap.get("appointment_reminder_2h");
-    const enabled2h = auto2h ? auto2h.enabled : true; // default enabled
+    const enabled2h = auto2h ? auto2h.enabled : true;
     if (enabled2h && reminder2h > now) {
       const channel2h = auto2h?.config?.channel || preferredChannel;
       const customMsg = auto2h?.config?.message;
@@ -156,11 +154,11 @@ serve(async (req) => {
       });
     }
 
-    // 1h reminder — always WhatsApp, default enabled
+    // 1h reminder
     const auto1h = autoMap.get("appointment_reminder_1h");
     const enabled1h = auto1h ? auto1h.enabled : true;
     if (enabled1h && reminder1h > now) {
-      const channel1h = "whatsapp"; // 1h reminder always via WhatsApp
+      const channel1h = "whatsapp";
       const customMsg1h = auto1h?.config?.message;
       const body1h = customMsg1h
         ? replacePlaceholders(customMsg1h, templateVars)
@@ -181,7 +179,7 @@ serve(async (req) => {
       });
     }
 
-    // Check for duplicate notifications
+    // Idempotency: check for duplicate notifications
     const { data: existing } = await supabase
       .from("notifications")
       .select("type")
@@ -195,61 +193,95 @@ serve(async (req) => {
       await supabase.from("notifications").insert(newNotifications);
     }
 
+    // ── Immediate sends (fire-and-forget, never block response) ─────────
+
     // Send confirmation email immediately
-    if (resendKey && appointment.client_email) {
-      const price = appointment.services?.price
-        ? `R$ ${Number(appointment.services.price).toFixed(2)}`
-        : null;
+    if (resendKey && appointment.client_email && confirmEnabled) {
+      try {
+        const price = appointment.services?.price
+          ? `R$ ${Number(appointment.services.price).toFixed(2)}`
+          : null;
 
-      const emailRes = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${resendKey}`,
-        },
-        body: JSON.stringify({
-          from: `${barbershopName} via CutFlow <onboarding@resend.dev>`,
-          to: [appointment.client_email],
-          subject: `✅ Agendamento confirmado - ${barbershopName}`,
-          html: `
-            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; background: #ffffff;">
-              <div style="text-align: center; margin-bottom: 32px;">
-                <div style="display: inline-block; background: #16a34a15; border-radius: 50%; width: 56px; height: 56px; line-height: 56px; font-size: 28px;">✅</div>
+        const emailRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${resendKey}`,
+          },
+          body: JSON.stringify({
+            from: `${barbershopName} via CutFlow <onboarding@resend.dev>`,
+            to: [appointment.client_email],
+            subject: `✅ Agendamento confirmado - ${barbershopName}`,
+            html: `
+              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; background: #ffffff;">
+                <div style="text-align: center; margin-bottom: 32px;">
+                  <div style="display: inline-block; background: #16a34a15; border-radius: 50%; width: 56px; height: 56px; line-height: 56px; font-size: 28px;">✅</div>
+                </div>
+                <h1 style="color: #1a1a1a; font-size: 22px; text-align: center; margin-bottom: 8px;">Agendamento Confirmado!</h1>
+                <p style="color: #666; text-align: center; margin-bottom: 28px;">Olá, <strong>${appointment.client_name}</strong>! Seu horário foi confirmado.</p>
+                <div style="background: #f8faf8; border: 1px solid #e5e7eb; border-radius: 16px; padding: 24px; margin-bottom: 28px;">
+                  <table style="width: 100%; border-collapse: collapse;">
+                    <tr><td style="padding: 8px 0; color: #888; font-size: 13px;">📋 Serviço</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1a1a1a;">${serviceName}</td></tr>
+                    <tr><td style="padding: 8px 0; color: #888; font-size: 13px;">✂️ Profissional</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1a1a1a;">${professionalName}</td></tr>
+                    <tr><td style="padding: 8px 0; color: #888; font-size: 13px;">📅 Data</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1a1a1a;">${formattedDate}</td></tr>
+                    <tr><td style="padding: 8px 0; color: #888; font-size: 13px;">🕐 Horário</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1a1a1a;">${startTime}</td></tr>
+                    ${price ? `<tr><td style="padding: 8px 0; color: #888; font-size: 13px;">💰 Valor</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #16a34a;">${price}</td></tr>` : ""}
+                  </table>
+                </div>
+                <p style="color: #999; font-size: 13px; text-align: center;">Até lá! 👋</p>
+                <hr style="border: none; border-top: 1px solid #f0f0f0; margin: 24px 0;" />
+                <p style="color: #bbb; font-size: 11px; text-align: center;">${barbershopName} · Enviado via CutFlow</p>
               </div>
-              <h1 style="color: #1a1a1a; font-size: 22px; text-align: center; margin-bottom: 8px;">Agendamento Confirmado!</h1>
-              <p style="color: #666; text-align: center; margin-bottom: 28px;">Olá, <strong>${appointment.client_name}</strong>! Seu horário foi confirmado.</p>
-              <div style="background: #f8faf8; border: 1px solid #e5e7eb; border-radius: 16px; padding: 24px; margin-bottom: 28px;">
-                <table style="width: 100%; border-collapse: collapse;">
-                  <tr><td style="padding: 8px 0; color: #888; font-size: 13px;">📋 Serviço</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1a1a1a;">${serviceName}</td></tr>
-                  <tr><td style="padding: 8px 0; color: #888; font-size: 13px;">✂️ Profissional</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1a1a1a;">${professionalName}</td></tr>
-                  <tr><td style="padding: 8px 0; color: #888; font-size: 13px;">📅 Data</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1a1a1a;">${formattedDate}</td></tr>
-                  <tr><td style="padding: 8px 0; color: #888; font-size: 13px;">🕐 Horário</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1a1a1a;">${startTime}</td></tr>
-                  ${price ? `<tr><td style="padding: 8px 0; color: #888; font-size: 13px;">💰 Valor</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #16a34a;">${price}</td></tr>` : ""}
-                </table>
-              </div>
-              <p style="color: #999; font-size: 13px; text-align: center;">Até lá! 👋</p>
-              <hr style="border: none; border-top: 1px solid #f0f0f0; margin: 24px 0;" />
-              <p style="color: #bbb; font-size: 11px; text-align: center;">${barbershopName} · Enviado via CutFlow</p>
-            </div>
-          `,
-        }),
-      });
+            `,
+          }),
+        });
 
-      await supabase
-        .from("notifications")
-        .update({
-          status: emailRes.ok ? "sent" : "failed",
-          sent_at: emailRes.ok ? new Date().toISOString() : null,
-          error_message: emailRes.ok ? null : `HTTP ${emailRes.status}`,
-        })
-        .eq("appointment_id", appointmentId)
-        .eq("type", "appointment_created");
+        await supabase
+          .from("notifications")
+          .update({
+            status: emailRes.ok ? "sent" : "failed",
+            sent_at: emailRes.ok ? new Date().toISOString() : null,
+            error_message: emailRes.ok ? null : `HTTP ${emailRes.status}`,
+          })
+          .eq("appointment_id", appointmentId)
+          .eq("type", "appointment_created")
+          .eq("channel", "email");
+      } catch (emailErr) {
+        console.error("[email] confirmation error:", emailErr);
+      }
     }
 
-    // WhatsApp — log ready for provider integration
-    if (appointment.client_phone) {
-      console.log(`[WhatsApp Ready] Confirmation for ${appointment.client_phone}`);
-      // When WhatsApp provider is connected, send here and update notification status
+    // Send WhatsApp confirmation immediately via send-whatsapp function
+    if (appointment.client_phone && confirmEnabled && (confirmChannel === "whatsapp" || confirmChannel === "both")) {
+      try {
+        const waRes = await fetch(`${supabaseUrl}/functions/v1/send-whatsapp`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${supabaseKey}`,
+          },
+          body: JSON.stringify({
+            phone: appointment.client_phone,
+            message: confirmationBody,
+          }),
+        });
+
+        const waResult = await waRes.json();
+
+        await supabase
+          .from("notifications")
+          .update({
+            status: waResult.success ? "sent" : "failed",
+            sent_at: waResult.success ? new Date().toISOString() : null,
+            error_message: waResult.success ? null : `[${waResult.provider || "whatsapp"}] ${waResult.error || "unknown"}`.slice(0, 500),
+          })
+          .eq("appointment_id", appointmentId)
+          .eq("type", "appointment_created")
+          .eq("channel", "whatsapp");
+      } catch (waErr) {
+        console.error("[whatsapp] confirmation error:", waErr);
+        // Never break the flow — just log
+      }
     }
 
     return new Response(
@@ -257,7 +289,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
-    console.error("Error:", err);
+    console.error("send-booking-confirmation error:", err);
     return new Response(JSON.stringify({ error: (err as Error).message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
