@@ -17,11 +17,10 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 rounded-full border border-primary/12 bg-primary/[0.04] px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm text-primary font-medium mb-6 sm:mb-7"
+            className="inline-flex items-center gap-2 rounded-full border border-primary/12 bg-primary/[0.04] px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm text-primary font-medium mb-5 sm:mb-6"
           >
             <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">Teste gratuito por 7 dias — sem cartão de crédito</span>
-            <span className="sm:hidden">7 dias grátis — sem cartão</span>
+            <span>Configuração em menos de 5 minutos</span>
           </motion.div>
 
           {/* Headline */}
