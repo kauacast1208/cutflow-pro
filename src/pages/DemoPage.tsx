@@ -1,18 +1,39 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Scissors, ArrowRight, Play, Calendar, Users, BarChart3, Clock } from "lucide-react";
+import { Scissors, ArrowRight, Play, Calendar, Users, BarChart3, Clock, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function DemoPage() {
+  const [demoSlug, setDemoSlug] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Try to find any barbershop to use as demo
+    supabase
+      .from("barbershops")
+      .select("slug")
+      .limit(1)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setDemoSlug(data[0].slug);
+        }
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
         <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4">
           <Link to="/" className="flex items-center gap-2 font-bold text-lg">
-            <Scissors className="h-5 w-5 text-primary" />
+            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+              <Scissors className="h-4 w-4 text-primary-foreground" />
+            </div>
             CutFlow
           </Link>
           <Link to="/signup">
-            <Button size="sm">Começar grátis</Button>
+            <Button size="sm">Começar teste gratuito</Button>
           </Link>
         </div>
       </header>
@@ -51,14 +72,27 @@ export default function DemoPage() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link to="/signup">
             <Button variant="hero" size="lg" className="px-8">
-              Começar grátis agora <ArrowRight className="h-4 w-4 ml-1" />
+              Começar teste gratuito <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </Link>
-          <Link to="/agendar/demo">
-            <Button variant="outline" size="lg" className="px-8">
-              Ver página de agendamento
+          {loading ? (
+            <Button variant="outline" size="lg" className="px-8" disabled>
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              Carregando...
             </Button>
-          </Link>
+          ) : demoSlug ? (
+            <Link to={`/agendar/${demoSlug}`}>
+              <Button variant="outline" size="lg" className="px-8">
+                Ver página de agendamento
+              </Button>
+            </Link>
+          ) : (
+            <Link to="/signup">
+              <Button variant="outline" size="lg" className="px-8">
+                Criar sua barbearia
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </div>

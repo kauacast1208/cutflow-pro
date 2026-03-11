@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Check, Star, Shield, CreditCard, X } from "lucide-react";
+import { Check, Star, Shield, CreditCard, X, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -18,32 +18,35 @@ const planHighlights: Record<string, string[]> = {
   starter: [
     "1 profissional",
     "Agenda online",
-    "Gestao de clientes",
-    "Relatorios basicos",
-    "Agendamento online",
+    "Gestão de clientes",
+    "Histórico de atendimentos",
+    "Relatórios básicos",
+    "Página pública de agendamento",
   ],
   pro: [
-    "Ate 5 profissionais",
+    "Até 5 profissionais",
     "Tudo do Starter",
     "Controle financeiro",
     "Campanhas simples",
-    "Mala direta",
-    "Relatorios avancados",
+    "Mala direta para clientes",
+    "Relatórios avançados",
+    "Métricas de faturamento",
   ],
   premium: [
     "Profissionais ilimitados",
     "Tudo do Pro",
     "Campanhas completas",
-    "Automacoes de marketing",
-    "Suporte prioritario",
-    "Integracoes e API",
+    "Automações de marketing",
+    "Integrações e API",
+    "Suporte prioritário",
+    "Relatórios estratégicos",
   ],
 };
 
 const planDescriptions: Record<string, string> = {
-  starter: "Ideal para quem esta comecando",
-  pro: "Para barbearias em crescimento",
-  premium: "Gestao completa e ilimitada",
+  starter: "Ideal para barbeiros autônomos",
+  pro: "Ideal para barbearias em crescimento",
+  premium: "Para barbearias profissionais",
 };
 
 const fallbackPlans: PlanRow[] = [
@@ -81,13 +84,13 @@ export function PricingSection() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-10 sm:mb-14">
           <span className="inline-flex items-center gap-2 rounded-full bg-primary/8 border border-primary/15 px-4 py-1.5 text-xs sm:text-sm font-medium text-primary mb-4 sm:mb-5">
-            Planos e precos
+            Planos e preços
           </span>
           <h2 className="text-2xl sm:text-4xl font-extrabold tracking-[-0.02em] mb-3 sm:mb-4">
             Escolha o plano ideal para sua barbearia
           </h2>
           <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto">
-            Todos os planos incluem 7 dias gratis. Cancele quando quiser.
+            Todos os planos incluem 7 dias grátis. Cancele quando quiser.
           </p>
         </div>
 
@@ -113,7 +116,7 @@ export function PricingSection() {
                 {isPopular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-primary px-4 sm:px-5 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-primary-foreground shadow-md whitespace-nowrap">
                     <Star className="h-3 w-3 fill-current" />
-                    Mais escolhido
+                    Mais popular
                   </div>
                 )}
 
@@ -130,10 +133,10 @@ export function PricingSection() {
                     <span className={`font-extrabold tracking-tight ${isPopular ? "text-4xl sm:text-5xl" : "text-3xl sm:text-4xl"}`}>
                       {plan.price}
                     </span>
-                    <span className="text-muted-foreground text-xs sm:text-sm">/mes</span>
+                    <span className="text-muted-foreground text-xs sm:text-sm">/mês</span>
                   </div>
                   <p className="text-[11px] sm:text-xs text-primary mt-1.5 font-medium">
-                    7 dias gratis para testar
+                    7 dias grátis para testar
                   </p>
                 </div>
 
@@ -155,7 +158,7 @@ export function PricingSection() {
                     variant={isPopular ? "hero" : "outline"}
                     className={`w-full rounded-xl ${isPopular ? "h-14 sm:h-12 text-base sm:text-base" : "h-12 sm:h-11 text-base sm:text-sm"}`}
                   >
-                    Iniciar 7 dias gratis
+                    Começar teste gratuito
                   </Button>
                 </Link>
               </motion.div>
@@ -164,18 +167,22 @@ export function PricingSection() {
         </div>
 
         {/* Trust signals */}
-        <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 mt-8 sm:mt-10 text-xs sm:text-sm text-muted-foreground">
+        <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-8 mt-8 sm:mt-12 text-xs sm:text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-primary" />
+            <CheckCircle2 className="h-4 w-4 text-primary" />
             <span>Pagamento seguro via Stripe</span>
           </div>
           <div className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4 text-primary" />
-            <span>Nenhuma cobranca hoje</span>
+            <CheckCircle2 className="h-4 w-4 text-primary" />
+            <span>Teste gratuito de 7 dias</span>
           </div>
           <div className="flex items-center gap-2">
-            <X className="h-4 w-4 text-primary" />
+            <CheckCircle2 className="h-4 w-4 text-primary" />
             <span>Cancele quando quiser</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-primary" />
+            <span>Sem fidelidade</span>
           </div>
         </div>
       </div>

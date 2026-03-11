@@ -33,7 +33,7 @@ export function UpgradePrompt({ feature, currentPlan, onClose }: UpgradePromptPr
 
   const handleUpgrade = () => {
     onClose();
-    navigate("/checkout");
+    navigate("/billing");
   };
 
   return (
@@ -47,10 +47,10 @@ export function UpgradePrompt({ feature, currentPlan, onClose }: UpgradePromptPr
             <Crown className="h-8 w-8 text-white" />
           </div>
 
-          <h2 className="text-xl font-bold mb-2">Recurso Premium</h2>
+          <h2 className="text-xl font-bold mb-2">Recurso indisponível</h2>
           <p className="text-muted-foreground text-sm mb-6">
-            <strong>{featureLabel}</strong> está disponível a partir do plano{" "}
-            <span className="font-semibold text-foreground">{targetConfig.label}</span>.
+            Esse recurso está disponível apenas no plano{" "}
+            <span className="font-semibold text-foreground">{targetConfig.label}</span> ou superior.
           </p>
 
           <div className="rounded-xl border border-border bg-card p-4 mb-6 text-left">
@@ -80,10 +80,10 @@ export function UpgradePrompt({ feature, currentPlan, onClose }: UpgradePromptPr
 
           <div className="flex gap-2">
             <Button variant="outline" className="flex-1" onClick={onClose}>
-              Agora não
+              Cancelar
             </Button>
             <Button className="flex-1 gap-2" onClick={handleUpgrade}>
-              Fazer upgrade <ArrowRight className="h-4 w-4" />
+              Ver planos <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
 
@@ -116,7 +116,7 @@ export function UpgradeBanner({
         {featureLabels[feature]} não está incluído no seu plano atual ({planConfig[currentPlan].label}).
         Faça upgrade para desbloquear.
       </p>
-      <Button onClick={() => navigate("/checkout")} className="gap-2">
+      <Button onClick={() => navigate("/billing")} className="gap-2">
         <Sparkles className="h-4 w-4" /> Ver planos a partir de {formatCurrency(targetConfig.price)}/mês
       </Button>
     </div>

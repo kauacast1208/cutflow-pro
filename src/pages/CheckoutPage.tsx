@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import {
   Scissors, ArrowLeft, Check, Shield, Loader2,
-  Crown, Sparkles, Zap, CreditCard, X,
-  Calendar, Bell, DollarSign, Users, BarChart3,
+  Crown, Sparkles, Zap, CreditCard,
+  Calendar, Bell, DollarSign, Users, BarChart3, CheckCircle2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,11 +19,11 @@ const planIcons: Record<StripePlanKey, React.ReactNode> = {
 };
 
 const benefits = [
-  { icon: Calendar, text: "Agendamentos online automaticos" },
-  { icon: Bell, text: "Lembretes automaticos para clientes" },
+  { icon: Calendar, text: "Agendamentos online automáticos" },
+  { icon: Bell, text: "Lembretes automáticos para clientes" },
   { icon: DollarSign, text: "Controle financeiro completo" },
-  { icon: Users, text: "Gestao de profissionais" },
-  { icon: BarChart3, text: "Relatorios da barbearia" },
+  { icon: Users, text: "Gestão de profissionais" },
+  { icon: BarChart3, text: "Relatórios da barbearia" },
 ];
 
 export default function CheckoutPage() {
@@ -91,10 +91,10 @@ export default function CheckoutPage() {
           className="text-center mb-12"
         >
           <h1 className="text-3xl sm:text-4xl font-bold mb-3">
-            Comece a organizar sua barbearia hoje
+            Teste gratuito de 7 dias
           </h1>
           <p className="text-muted-foreground text-lg max-w-lg mx-auto">
-            Teste gratis por 7 dias. Sem cobranca ate decidir continuar.
+            Você não será cobrado hoje. O pagamento será iniciado apenas após o período de teste.
           </p>
         </motion.div>
 
@@ -147,13 +147,13 @@ export default function CheckoutPage() {
                               )}
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5">
-                              {p.features[0]}
+                              {p.description}
                             </p>
                           </div>
                         </div>
                         <span className="font-bold text-sm whitespace-nowrap">
                           R${p.price}
-                          <span className="text-xs font-normal text-muted-foreground">/mes</span>
+                          <span className="text-xs font-normal text-muted-foreground">/mês</span>
                         </span>
                       </button>
                     );
@@ -165,16 +165,19 @@ export default function CheckoutPage() {
               <div className="border-t border-border pt-4 space-y-2.5">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Plano {plan.name}</span>
-                  <span>R$ {plan.price}/mes</span>
+                  <span>R$ {plan.price}/mês</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Trial (7 dias gratis)</span>
+                  <span className="text-muted-foreground">Trial (7 dias grátis)</span>
                   <span className="text-primary font-medium">- R$ {plan.price}</span>
                 </div>
                 <div className="border-t border-dashed border-border pt-3 flex justify-between font-bold">
                   <span>Total hoje</span>
                   <span className="text-2xl text-primary">R$ 0,00</span>
                 </div>
+                <p className="text-[11px] text-muted-foreground text-center pt-1">
+                  Cancelamento a qualquer momento.
+                </p>
               </div>
             </div>
           </motion.div>
@@ -189,10 +192,10 @@ export default function CheckoutPage() {
             <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-sm">
               {/* Plan features */}
               <h3 className="font-semibold text-lg mb-1">
-                O que esta incluso no {plan.name}
+                O que está incluso no {plan.name}
               </h3>
               <p className="text-sm text-muted-foreground mb-5">
-                Acesso completo durante o periodo de teste.
+                Acesso completo durante o período de teste.
               </p>
 
               <div className="rounded-xl bg-accent/40 border border-border/50 p-5 mb-6">
@@ -210,7 +213,7 @@ export default function CheckoutPage() {
 
               {/* Benefits */}
               <h4 className="text-sm font-semibold mb-3 text-muted-foreground">
-                Beneficios inclusos em todos os planos
+                Benefícios inclusos em todos os planos
               </h4>
               <div className="space-y-2.5 mb-8">
                 {benefits.map(({ icon: Icon, text }) => (
@@ -232,7 +235,7 @@ export default function CheckoutPage() {
                 {submitting ? (
                   <Loader2 className="h-5 w-5 animate-spin mr-2" />
                 ) : null}
-                Iniciar 7 dias gratis
+                Começar teste gratuito
               </Button>
 
               {/* Trust signals */}
@@ -243,16 +246,16 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <CreditCard className="h-4 w-4 text-primary shrink-0" />
-                  <span>Nenhuma cobranca hoje</span>
+                  <span>Nenhuma cobrança hoje</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <X className="h-4 w-4 text-primary shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
                   <span>Cancele quando quiser</span>
                 </div>
               </div>
 
               <p className="text-center text-xs text-muted-foreground mt-5">
-                Ao continuar, voce concorda com os Termos de Uso e Politica de Privacidade.
+                Ao continuar, você concorda com os Termos de Uso e Política de Privacidade.
               </p>
             </div>
           </motion.div>
