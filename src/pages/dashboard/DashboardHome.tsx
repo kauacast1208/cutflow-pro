@@ -337,13 +337,13 @@ export default function DashboardHome() {
     label: string; value: string; change?: string | null; changePositive?: boolean; icon: React.ElementType; sub?: string; idx: number;
   }) => (
     <motion.div {...fadeUp(idx)}
-      className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 hover:shadow-md transition-shadow duration-300"
+      className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 sm:p-5 hover:shadow-md transition-shadow duration-300"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-accent/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
       <div className="relative flex items-start justify-between">
-        <div className="space-y-1.5">
-          <p className="text-[13px] font-medium text-muted-foreground">{label}</p>
-          <p className="text-2xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <div className="space-y-1.5 min-w-0 flex-1">
+          <p className="text-sm sm:text-[13px] font-medium text-muted-foreground truncate">{label}</p>
+          <p className="text-xl sm:text-2xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             {value}
           </p>
           {change && (
@@ -352,9 +352,9 @@ export default function DashboardHome() {
               {change} vs periodo anterior
             </span>
           )}
-          {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
+          {sub && <p className="text-xs text-muted-foreground truncate">{sub}</p>}
         </div>
-        <div className="h-10 w-10 rounded-xl bg-accent/60 flex items-center justify-center shrink-0">
+        <div className="h-10 w-10 rounded-xl bg-accent/60 flex items-center justify-center shrink-0 ml-2">
           <Icon className="h-5 w-5 text-accent-foreground" />
         </div>
       </div>
