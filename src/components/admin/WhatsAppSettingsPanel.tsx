@@ -87,6 +87,10 @@ export default function WhatsAppSettingsPanel() {
   // Stats
   const [stats, setStats] = useState({ sent: 0, pending: 0, failed: 0 });
 
+  // Manual reminder processing
+  const [processingReminders, setProcessingReminders] = useState(false);
+  const [reminderResult, setReminderResult] = useState<{ sent: number; failed: number; cancelled: number; processed: number } | null>(null);
+
   const automationDefs = [
     {
       type: "appointment_confirmation",
