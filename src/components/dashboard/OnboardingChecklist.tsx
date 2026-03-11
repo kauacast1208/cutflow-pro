@@ -27,7 +27,7 @@ export function OnboardingChecklist() {
   if (loading || dismissed) return null;
 
   const bookingUrl = barbershop
-    ? `${window.location.origin}/agendar/${barbershop.slug}`
+    ? `${window.location.origin}/b/${barbershop.slug}`
     : "";
 
   const copyLink = () => {

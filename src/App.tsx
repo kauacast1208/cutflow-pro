@@ -93,9 +93,9 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function RedirectToAgendar() {
+function RedirectToBooking() {
   const { slug } = useParams();
-  return <Navigate to={`/agendar/${slug}`} replace />;
+  return <Navigate to={`/b/${slug}`} replace />;
 }
 
 const AppRoutes = () => (
@@ -114,9 +114,9 @@ const AppRoutes = () => (
     <Route path="/billing/success" element={<ProtectedRoute><BillingSuccessPage /></ProtectedRoute>} />
     <Route path="/billing/cancel" element={<BillingCancelPage />} />
     <Route path="/settings/billing" element={<Navigate to="/billing" replace />} />
-    <Route path="/agendar/:slug" element={<PublicBookingPage />} />
-    <Route path="/book/:slug" element={<RedirectToAgendar />} />
-    <Route path="/b/:slug" element={<RedirectToAgendar />} />
+    <Route path="/b/:slug" element={<PublicBookingPage />} />
+    <Route path="/agendar/:slug" element={<RedirectToBooking />} />
+    <Route path="/book/:slug" element={<RedirectToBooking />} />
     <Route path="/booking" element={<Navigate to="/signup" replace />} />
     <Route
       path="/dashboard"

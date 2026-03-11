@@ -22,8 +22,8 @@ export function ServiceStep({ services, selectedServices, onToggle }: ServiceSte
       {services.length === 0 ? (
         <div className="text-center py-20 text-muted-foreground rounded-2xl border border-dashed border-border bg-muted/30">
           <Scissors className="h-10 w-10 mx-auto mb-3 opacity-30" />
-          <p className="font-semibold">Nenhum serviço disponível</p>
-          <p className="text-xs mt-1">Esta barbearia ainda não cadastrou serviços.</p>
+          <p className="font-semibold">Esta barbearia ainda não adicionou serviços.</p>
+          <p className="text-xs mt-1">Entre em contato com a barbearia para mais informações.</p>
         </div>
       ) : (
         <>

@@ -135,8 +135,8 @@ export default function ServicesPage() {
             <div className="h-14 w-14 rounded-2xl bg-secondary/60 flex items-center justify-center mx-auto mb-4">
               <Scissors className="h-6 w-6 text-muted-foreground/40" />
             </div>
-            <p className="text-sm font-medium text-muted-foreground">Nenhum serviço cadastrado</p>
-            <p className="text-xs text-muted-foreground/60 mt-1">Adicione seu primeiro serviço para começar.</p>
+            <p className="text-sm font-medium text-muted-foreground">Esta barbearia ainda não adicionou serviços.</p>
+            <p className="text-xs text-muted-foreground/60 mt-1">Adicione seu primeiro serviço para começar a receber agendamentos.</p>
             <Button size="sm" className="mt-4 gap-1.5 rounded-lg" onClick={() => setShowNew(true)}>
               <Plus className="h-4 w-4" /> Adicionar serviço
             </Button>

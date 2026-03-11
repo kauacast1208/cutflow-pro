@@ -129,7 +129,7 @@ export default function DashboardHome() {
     });
   }, [barbershop, period]);
 
-  const bookingUrl = barbershop ? `${window.location.origin}/agendar/${barbershop.slug}` : "";
+  const bookingUrl = barbershop ? `${window.location.origin}/b/${barbershop.slug}` : "";
   const copyLink = () => {
     navigator.clipboard.writeText(bookingUrl);
     toast({ title: "Link copiado!" });
