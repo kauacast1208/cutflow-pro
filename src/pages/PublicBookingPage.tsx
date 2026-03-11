@@ -97,9 +97,9 @@ export default function PublicBookingPage() {
 
       const [servRes, proRes, availRes] = await Promise.all([
         supabase.from("services").select("*").eq("barbershop_id", shop.id).eq("active", true).order("sort_order"),
-        supabase.from("professionals").select("*").eq("barbershop_id", shop.id).eq("active", true),
+        supabase.from("professionals_public" as any).select("*").eq("barbershop_id", shop.id).eq("active", true),
         supabase.from("professional_availability").select("*").in("professional_id",
-          (await supabase.from("professionals").select("id").eq("barbershop_id", shop.id).eq("active", true)).data?.map((p: any) => p.id) || []
+          (await supabase.from("professionals_public" as any).select("id").eq("barbershop_id", shop.id).eq("active", true)).data?.map((p: any) => p.id) || []
         ),
       ]);
 
