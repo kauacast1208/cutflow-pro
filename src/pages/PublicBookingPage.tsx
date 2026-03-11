@@ -447,24 +447,29 @@ export default function PublicBookingPage() {
 
       <div className="max-w-2xl mx-auto px-4 py-6 sm:py-8">
         {/* Progress steps */}
-        <div className="flex items-center gap-1 mb-8">
-          {stepsMeta.map((s, i) => {
-            const isDone = i < step;
-            const isActive = i === step;
-            return (
-              <div key={s.label} className="flex-1 flex flex-col items-center gap-2">
-                <div className={`h-1.5 w-full rounded-full transition-all duration-500 ${
-                  isDone ? "bg-primary" : isActive ? "bg-primary" : "bg-border"
-                }`} />
-                <div className="hidden sm:flex items-center gap-1.5">
-                  <s.icon className={`h-3.5 w-3.5 ${isDone || isActive ? "text-primary" : "text-muted-foreground/40"}`} />
-                  <span className={`text-[11px] font-medium ${isDone || isActive ? "text-primary" : "text-muted-foreground/40"}`}>
-                    {s.label}
-                  </span>
+        <div className="mb-8">
+          <div className="flex items-center gap-1 mb-2">
+            {stepsMeta.map((s, i) => {
+              const isDone = i < step;
+              const isActive = i === step;
+              return (
+                <div key={s.label} className="flex-1 flex flex-col items-center gap-2">
+                  <div className={`h-1.5 w-full rounded-full transition-all duration-500 ${
+                    isDone ? "bg-primary" : isActive ? "bg-primary" : "bg-border"
+                  }`} />
+                  <div className="hidden sm:flex items-center gap-1.5">
+                    <s.icon className={`h-3.5 w-3.5 ${isDone || isActive ? "text-primary" : "text-muted-foreground/40"}`} />
+                    <span className={`text-[11px] font-medium ${isDone || isActive ? "text-primary" : "text-muted-foreground/40"}`}>
+                      {s.label}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+          <p className="text-xs text-muted-foreground text-center sm:hidden">
+            Passo {step + 1} de {stepsMeta.length}
+          </p>
         </div>
 
         {/* Step content with animation */}
