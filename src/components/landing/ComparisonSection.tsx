@@ -5,14 +5,14 @@ const before = [
   "Agenda no WhatsApp",
   "Clientes esquecendo horários",
   "Horários perdidos",
-  "Falta de controle financeiro",
+  "Falta de controle",
 ];
 
 const after = [
   "Agenda profissional",
   "Lembretes automáticos",
   "Mais comparecimento",
-  "Controle do faturamento",
+  "Controle total",
 ];
 
 export function ComparisonSection() {
@@ -39,7 +39,7 @@ export function ComparisonSection() {
             className="rounded-2xl border border-destructive/20 bg-destructive/[0.03] p-6 sm:p-8"
           >
             <p className="text-sm font-bold text-destructive uppercase tracking-wider mb-5">
-              Sem CutFlow
+              Antes do CutFlow
             </p>
             <ul className="space-y-4">
               {before.map((item) => (
@@ -61,7 +61,7 @@ export function ComparisonSection() {
             className="rounded-2xl border border-primary/20 bg-primary/[0.03] p-6 sm:p-8"
           >
             <p className="text-sm font-bold text-primary uppercase tracking-wider mb-5">
-              Com CutFlow
+              Depois do CutFlow
             </p>
             <ul className="space-y-4">
               {after.map((item) => (

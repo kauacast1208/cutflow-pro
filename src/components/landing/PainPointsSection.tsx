@@ -1,21 +1,32 @@
 import { motion } from "framer-motion";
-import { MessageSquare, Clock, DollarSign } from "lucide-react";
+import { MessageSquare, Clock, DollarSign, AlarmClock, MessageCircleWarning } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 const problems = [
   {
     icon: MessageSquare,
-    title: "Horários esquecidos ou perdidos",
-    description: "Mensagens no WhatsApp se perdem, horários confusos e clientes ficam sem resposta.",
+    title: "Agenda perdida no WhatsApp",
+    description: "Mensagens se perdem, horários confusos e clientes ficam sem resposta.",
+  },
+  {
+    icon: AlarmClock,
+    title: "Clientes esquecendo horários",
+    description: "Sem lembretes automáticos, faltas constantes geram prejuízo.",
   },
   {
     icon: Clock,
-    title: "Clientes que faltam sem avisar",
-    description: "Faltas constantes geram prejuízo e tempo ocioso na cadeira.",
+    title: "Horários vazios na cadeira",
+    description: "Cada horário vazio é dinheiro que você está deixando na mesa.",
   },
   {
     icon: DollarSign,
     title: "Falta de controle financeiro",
-    description: "Sem dados claros de faturamento, ticket médio e desempenho do negócio.",
+    description: "Sem dados claros de faturamento, ticket médio e desempenho.",
+  },
+  {
+    icon: MessageCircleWarning,
+    title: "Tempo perdido organizando",
+    description: "Horas gastas respondendo mensagens ao invés de atender clientes.",
   },
 ];
 
@@ -51,17 +62,19 @@ export function PainPointsSection() {
           </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5 max-w-4xl mx-auto mb-8 sm:mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 max-w-5xl mx-auto mb-10 sm:mb-14">
           {problems.map((p, i) => (
             <motion.div
               key={p.title}
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
-              className="rounded-2xl border border-destructive/10 bg-destructive/[0.02] p-5 sm:p-6 hover:border-destructive/20 transition-all duration-300 text-center sm:text-left"
+              transition={{ delay: i * 0.06 }}
+              className={`rounded-2xl border border-destructive/10 bg-destructive/[0.02] p-5 sm:p-6 hover:border-destructive/20 transition-all duration-300 ${
+                i === 4 ? "sm:col-span-2 lg:col-span-1" : ""
+              }`}
             >
-              <div className="flex h-11 w-11 sm:h-12 sm:w-12 mx-auto sm:mx-0 items-center justify-center rounded-xl sm:rounded-2xl bg-destructive/8 mb-4">
+              <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-destructive/8 mb-4">
                 <p.icon className="h-5 w-5 sm:h-6 sm:w-6 text-destructive" />
               </div>
               <h3 className="font-bold text-sm sm:text-base mb-1.5">{p.title}</h3>
@@ -89,8 +102,9 @@ export function PainPointsSection() {
             R$ 60 × 2 faltas × 4 semanas
           </p>
           <div className="mt-4 pt-4 border-t border-border">
-            <p className="text-sm font-semibold text-primary">
-              CutFlow ajuda você a evitar isso.
+            <p className="text-sm font-semibold text-primary flex items-center justify-center gap-1.5">
+              CutFlow ajuda você a evitar isso
+              <ArrowRight className="h-3.5 w-3.5" />
             </p>
           </div>
         </motion.div>
