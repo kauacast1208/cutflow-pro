@@ -30,12 +30,13 @@ export default function ReschedulePage() {
     if (!token) { setNotFound(true); setLoading(false); return; }
 
     (async () => {
-      const { data: appt } = await supabase
+      // reschedule_token is a new column not yet in types.ts, use raw query
+      const { data: appt } = (await (supabase as any)
         .from("appointments")
         .select("*")
-        .eq("reschedule_token" as any, token as any)
-        .in("status", ["scheduled", "confirmed"] as any)
-        .maybeSingle() as any;
+        .eq("reschedule_token", token)
+        .in("status", ["scheduled", "confirmed"])
+        .maybeSingle());
 
       if (!appt) { setNotFound(true); setLoading(false); return; }
 
