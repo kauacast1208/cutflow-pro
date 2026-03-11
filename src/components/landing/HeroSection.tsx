@@ -44,28 +44,24 @@ export function HeroSection() {
             O CutFlow organiza sua agenda, envia lembretes automáticos e ajuda sua barbearia crescer.
           </motion.p>
 
-          {/* Benefits checklist */}
+          {/* Benefits */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground mb-8 sm:mb-9 px-2 sm:px-0"
+            className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-foreground font-medium mb-8 sm:mb-9 px-2 sm:px-0"
           >
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span>Agenda automática</span>
+              <span className="text-primary">↓</span>
+              <span>Menos faltas</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span>Lembretes WhatsApp</span>
+              <span className="text-primary">↑</span>
+              <span>Mais clientes</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span>Gestão de clientes</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span>Relatórios simples</span>
+              <span className="text-primary">✓</span>
+              <span>Mais controle</span>
             </div>
           </motion.div>
 
