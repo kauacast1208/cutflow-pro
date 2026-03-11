@@ -119,8 +119,8 @@ export function HeroSection() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.36 }}
-            className="mt-6 sm:mt-8 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-5 text-xs sm:text-[13px] text-muted-foreground"
+            transition={{ duration: 0.5, delay: 0.46 }}
+            className="mt-6 sm:mt-7 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-5 text-xs sm:text-[13px] text-muted-foreground"
           >
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary/60" />
@@ -128,11 +128,11 @@ export function HeroSection() {
             </div>
             <div className="flex items-center gap-1.5">
               <Shield className="h-3.5 w-3.5 text-primary/60" />
-              <span>Sem cartão de crédito</span>
+              <span>Sem fidelidade</span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary/60" />
-              <span>Sem fidelidade</span>
+              <span>Sem complicação</span>
             </div>
           </motion.div>
 
