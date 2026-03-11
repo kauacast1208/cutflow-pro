@@ -82,7 +82,7 @@ export default function PublicBookingPage() {
     const fetchData = async () => {
       if (!slug) return;
       const { data: shop } = await supabase
-        .from("barbershops")
+        .from("barbershops_public" as any)
         .select("*")
         .eq("slug", slug)
         .maybeSingle();
