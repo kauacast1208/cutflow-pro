@@ -430,7 +430,7 @@ export default function DashboardHome() {
 
       {/* ── TODAY SUMMARY + UPCOMING ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <motion.div {...fadeUp(4)} className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow">
+        <motion.div {...fadeUp(4)} className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
           <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             <Zap className="h-4 w-4 text-primary" /> Resumo de hoje
           </h3>
