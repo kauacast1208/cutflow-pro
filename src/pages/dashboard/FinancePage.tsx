@@ -190,7 +190,7 @@ export default function FinancePage() {
           </div>
 
           {/* Revenue chart */}
-          <motion.div {...fadeUp(7)} className="rounded-2xl border border-border bg-card p-4 sm:p-6">
+          <motion.div {...fadeUp(7)} className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-card">
             <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               Evolucao do faturamento
             </h3>
