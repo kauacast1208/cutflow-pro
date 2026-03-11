@@ -87,6 +87,10 @@ export default function WhatsAppSettingsPanel() {
   // Stats
   const [stats, setStats] = useState({ sent: 0, pending: 0, failed: 0 });
 
+  // Manual reminder processing
+  const [processingReminders, setProcessingReminders] = useState(false);
+  const [reminderResult, setReminderResult] = useState<{ sent: number; failed: number; cancelled: number; processed: number } | null>(null);
+
   const automationDefs = [
     {
       type: "appointment_confirmation",
@@ -230,6 +234,26 @@ export default function WhatsAppSettingsPanel() {
     if (res.success) fetchLogs();
   };
 
+  const handleProcessReminders = async () => {
+    setProcessingReminders(true);
+    setReminderResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-whatsapp", {
+        body: { processPending: true },
+      });
+      if (error) throw error;
+      setReminderResult(data);
+      toast({
+        title: `Lembretes processados`,
+        description: `Enviados: ${data?.sent || 0} | Falhas: ${data?.failed || 0} | Cancelados: ${data?.cancelled || 0}`,
+      });
+      fetchLogs();
+    } catch (err) {
+      toast({ title: "Erro ao processar lembretes", description: (err as Error).message, variant: "destructive" });
+    }
+    setProcessingReminders(false);
+  };
+
   return (
     <div className="space-y-6">
       {/* ── Integration Status ────────────────────────────────────────── */}
@@ -340,13 +364,30 @@ export default function WhatsAppSettingsPanel() {
               );
             })}
 
-            {/* Reminder notice */}
+            {/* Reminder notice + manual trigger */}
             <div className="mt-4 rounded-lg bg-accent/50 border border-accent p-3 flex items-start gap-2">
-              <AlertTriangle className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+              <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 shrink-0" />
               <p className="text-xs text-muted-foreground">
-                Os lembretes automáticos serão processados quando o cron job estiver ativo. As confirmações são enviadas imediatamente ao criar o agendamento.
+                Cron job ativo: lembretes são processados automaticamente a cada minuto. Confirmações são enviadas imediatamente ao criar o agendamento.
               </p>
             </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full mt-3 gap-2"
+              onClick={handleProcessReminders}
+              disabled={processingReminders}
+            >
+              {processingReminders ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+              Processar lembretes agora
+            </Button>
+
+            {reminderResult && (
+              <div className="mt-2 rounded-lg bg-muted/50 border border-border p-3 text-xs text-muted-foreground">
+                Processados: {reminderResult.processed} · Enviados: {reminderResult.sent} · Falhas: {reminderResult.failed} · Cancelados: {reminderResult.cancelled}
+              </div>
+            )}
           </CardContent>
         </Card>
       </motion.div>
