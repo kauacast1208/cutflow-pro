@@ -477,7 +477,7 @@ export default function DashboardHome() {
       </div>
 
       {/* ── REVENUE AREA CHART ── */}
-      <motion.div {...fadeUp(6)} className="rounded-2xl border border-border bg-card p-4 sm:p-6 hover:shadow-md transition-shadow">
+      <motion.div {...fadeUp(6)} className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm sm:text-base font-semibold text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Faturamento diario
