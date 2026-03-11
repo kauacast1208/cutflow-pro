@@ -665,13 +665,13 @@ export default function DashboardHome() {
       </div>
 
       {/* Quick actions */}
-      <motion.div {...fadeUp(13)} className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow">
-        <h3 className="text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Acoes rapidas</h3>
+      <motion.div {...fadeUp(13)} className="rounded-2xl border border-border bg-card p-4 sm:p-6 hover:shadow-md transition-shadow">
+        <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Acoes rapidas</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Button variant="outline" className="h-auto py-4 flex-col gap-2 rounded-xl" onClick={() => navigate("/dashboard/agenda")}><Calendar className="h-5 w-5 text-primary" /><span className="text-xs">Ver agenda</span></Button>
-          <Button variant="outline" className="h-auto py-4 flex-col gap-2 rounded-xl" onClick={() => navigate("/dashboard/clients")}><Users className="h-5 w-5 text-muted-foreground" /><span className="text-xs">Clientes</span></Button>
-          <Button variant="outline" className="h-auto py-4 flex-col gap-2 rounded-xl" onClick={() => navigate("/dashboard/finance")}><DollarSign className="h-5 w-5 text-primary" /><span className="text-xs">Financeiro</span></Button>
-          <Button variant="outline" className="h-auto py-4 flex-col gap-2 rounded-xl" onClick={copyLink}><ExternalLink className="h-5 w-5 text-muted-foreground" /><span className="text-xs">Copiar link</span></Button>
+          <Button variant="outline" className="h-auto py-5 sm:py-4 flex-col gap-2 rounded-xl text-sm" onClick={() => navigate("/dashboard/agenda")}><Calendar className="h-5 w-5 text-primary" /><span className="text-xs">Ver agenda</span></Button>
+          <Button variant="outline" className="h-auto py-5 sm:py-4 flex-col gap-2 rounded-xl text-sm" onClick={() => navigate("/dashboard/clients")}><Users className="h-5 w-5 text-muted-foreground" /><span className="text-xs">Clientes</span></Button>
+          <Button variant="outline" className="h-auto py-5 sm:py-4 flex-col gap-2 rounded-xl text-sm" onClick={() => navigate("/dashboard/finance")}><DollarSign className="h-5 w-5 text-primary" /><span className="text-xs">Financeiro</span></Button>
+          <Button variant="outline" className="h-auto py-5 sm:py-4 flex-col gap-2 rounded-xl text-sm" onClick={copyLink}><ExternalLink className="h-5 w-5 text-muted-foreground" /><span className="text-xs">Copiar link</span></Button>
         </div>
       </motion.div>
     </div>
