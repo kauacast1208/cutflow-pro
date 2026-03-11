@@ -53,23 +53,19 @@ export function HeroSection() {
           >
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              <span>Menos faltas</span>
+              <span>Agenda online automática</span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              <span>Menos estresse</span>
+              <span>Lembretes por WhatsApp</span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              <span>Mais organização</span>
+              <span>Gestão de clientes</span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              <span>Mais clientes retornando</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              <span>Mais controle financeiro</span>
+              <span>Controle financeiro</span>
             </div>
           </motion.div>
 
