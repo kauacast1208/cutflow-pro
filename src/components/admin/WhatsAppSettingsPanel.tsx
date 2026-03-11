@@ -234,6 +234,26 @@ export default function WhatsAppSettingsPanel() {
     if (res.success) fetchLogs();
   };
 
+  const handleProcessReminders = async () => {
+    setProcessingReminders(true);
+    setReminderResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-whatsapp", {
+        body: { processPending: true },
+      });
+      if (error) throw error;
+      setReminderResult(data);
+      toast({
+        title: `Lembretes processados`,
+        description: `Enviados: ${data?.sent || 0} | Falhas: ${data?.failed || 0} | Cancelados: ${data?.cancelled || 0}`,
+      });
+      fetchLogs();
+    } catch (err) {
+      toast({ title: "Erro ao processar lembretes", description: (err as Error).message, variant: "destructive" });
+    }
+    setProcessingReminders(false);
+  };
+
   return (
     <div className="space-y-6">
       {/* ── Integration Status ────────────────────────────────────────── */}
