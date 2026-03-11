@@ -410,7 +410,7 @@ export default function DashboardHome() {
       )}
 
       {/* ── METRICS CARDS ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <MetricCard idx={0} label="Faturamento do mes" value={`R$ ${monthRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`}
           change={monthRevenueChange ? `${Number(monthRevenueChange) >= 0 ? "+" : ""}${monthRevenueChange}%` : null}
           changePositive={monthRevenueChange ? Number(monthRevenueChange) >= 0 : true}
