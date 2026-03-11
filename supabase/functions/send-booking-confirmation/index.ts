@@ -38,6 +38,19 @@ Deno.serve(async (req) => {
       throw new Error(`Appointment not found: ${error?.message}`);
     }
 
+    // Resolve client_id for notification logging
+    let clientId: string | null = null;
+    if (appointment.client_phone || appointment.client_email) {
+      const { data: matched } = await supabase.rpc("match_client_for_booking", {
+        _barbershop_id: appointment.barbershop_id,
+        _phone: appointment.client_phone || undefined,
+        _email: appointment.client_email || undefined,
+      });
+      if (matched && matched.length > 0) {
+        clientId = matched[0].id;
+      }
+    }
+
     const formattedDate = new Date(appointment.date + "T00:00:00").toLocaleDateString("pt-BR", {
       weekday: "long", day: "numeric", month: "long",
     });
@@ -88,18 +101,24 @@ Deno.serve(async (req) => {
 
     const notifications: any[] = [];
 
+    // Base fields shared by all notifications for this appointment
+    const baseNotif = {
+      barbershop_id: appointment.barbershop_id,
+      appointment_id: appointmentId,
+      client_id: clientId,
+      recipient_name: appointment.client_name,
+      recipient_email: appointment.client_email,
+      recipient_phone: appointment.client_phone,
+      status: "pending",
+    };
+
     if (confirmEnabled) {
       notifications.push({
-        barbershop_id: appointment.barbershop_id,
-        appointment_id: appointmentId,
+        ...baseNotif,
         channel: confirmChannel,
         type: "appointment_created",
-        recipient_name: appointment.client_name,
-        recipient_email: appointment.client_email,
-        recipient_phone: appointment.client_phone,
         subject: `✅ Agendamento confirmado - ${barbershopName}`,
         body: confirmationBody,
-        status: "pending",
         scheduled_for: now.toISOString(),
       });
     }
@@ -115,16 +134,11 @@ Deno.serve(async (req) => {
         : `Lembrete: seu agendamento é amanhã às ${startTime}.\n${barbershopName}.`;
 
       notifications.push({
-        barbershop_id: appointment.barbershop_id,
-        appointment_id: appointmentId,
+        ...baseNotif,
         channel: channel24,
         type: "appointment_reminder_24h",
-        recipient_name: appointment.client_name,
-        recipient_email: appointment.client_email,
-        recipient_phone: appointment.client_phone,
         subject: `⏰ Lembrete: seu horário é amanhã - ${barbershopName}`,
         body,
-        status: "pending",
         scheduled_for: reminder24h.toISOString(),
       });
     }
@@ -140,16 +154,11 @@ Deno.serve(async (req) => {
         : `Faltam 2 horas para seu agendamento às ${startTime}.\n${barbershopName}.`;
 
       notifications.push({
-        barbershop_id: appointment.barbershop_id,
-        appointment_id: appointmentId,
+        ...baseNotif,
         channel: channel2h,
         type: "appointment_reminder_2h",
-        recipient_name: appointment.client_name,
-        recipient_email: appointment.client_email,
-        recipient_phone: appointment.client_phone,
         subject: `⏰ Faltam 2 horas para seu horário - ${barbershopName}`,
         body,
-        status: "pending",
         scheduled_for: reminder2h.toISOString(),
       });
     }
@@ -165,16 +174,11 @@ Deno.serve(async (req) => {
         : `Olá ${appointment.client_name}! Falta 1 hora para seu horário às ${startTime}.\n\nServiço: ${serviceName}\nProfissional: ${professionalName}\n\n${barbershopName} te espera!`;
 
       notifications.push({
-        barbershop_id: appointment.barbershop_id,
-        appointment_id: appointmentId,
+        ...baseNotif,
         channel: channel1h,
         type: "appointment_reminder_1h",
-        recipient_name: appointment.client_name,
-        recipient_email: appointment.client_email,
-        recipient_phone: appointment.client_phone,
         subject: `⏰ Falta 1 hora para seu horário - ${barbershopName}`,
         body: body1h,
-        status: "pending",
         scheduled_for: reminder1h.toISOString(),
       });
     }
@@ -242,6 +246,7 @@ Deno.serve(async (req) => {
             status: emailRes.ok ? "sent" : "failed",
             sent_at: emailRes.ok ? new Date().toISOString() : null,
             error_message: emailRes.ok ? null : `HTTP ${emailRes.status}`,
+            provider: "resend",
           })
           .eq("appointment_id", appointmentId)
           .eq("type", "appointment_created")
@@ -274,6 +279,7 @@ Deno.serve(async (req) => {
             status: waResult.success ? "sent" : "failed",
             sent_at: waResult.success ? new Date().toISOString() : null,
             error_message: waResult.success ? null : `[${waResult.provider || "whatsapp"}] ${waResult.error || "unknown"}`.slice(0, 500),
+            provider: waResult.provider || "z_api",
           })
           .eq("appointment_id", appointmentId)
           .eq("type", "appointment_created")

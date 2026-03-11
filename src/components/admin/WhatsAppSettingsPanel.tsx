@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,7 @@ import { useBarbershop } from "@/hooks/useBarbershop";
 import { useToast } from "@/hooks/use-toast";
 import {
   Loader2, Send, CheckCircle2, XCircle, MessageCircle, Wifi, WifiOff,
-  Bell, Clock, AlertTriangle, RefreshCw,
+  Bell, Clock, AlertTriangle, RefreshCw, CalendarCheck,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -28,6 +28,7 @@ interface NotificationLog {
   created_at: string;
   error_message: string | null;
   scheduled_for: string | null;
+  provider: string | null;
 }
 
 const statusColors: Record<string, string> = {
@@ -47,6 +48,12 @@ const typeLabels: Record<string, string> = {
   reactivation_campaign: "Reativação",
 };
 
+interface AutomationToggle {
+  type: string;
+  enabled: boolean;
+  id?: string;
+}
+
 export default function WhatsAppSettingsPanel() {
   const { barbershop } = useBarbershop();
   const { toast } = useToast();
@@ -57,10 +64,15 @@ export default function WhatsAppSettingsPanel() {
     "Olá! 👋 Este é um teste do CutFlow. Se você recebeu esta mensagem, a integração WhatsApp está funcionando! ✅"
   );
   const [sending, setSending] = useState(false);
-  const [testResult, setTestResult] = useState<{ success: boolean; error?: string; messageId?: string; provider?: string } | null>(null);
+  const [testResult, setTestResult] = useState<{
+    success: boolean;
+    error?: string;
+    messageId?: string;
+    provider?: string;
+  } | null>(null);
 
   // Integration status
-  const [checkingStatus, setCheckingStatus] = useState(false);
+  const [checkingStatus, setCheckingStatus] = useState(true);
   const [integrationStatus, setIntegrationStatus] = useState<"connected" | "disconnected" | "unknown">("unknown");
   const [providerName, setProviderName] = useState<string>("");
 
@@ -68,35 +80,60 @@ export default function WhatsAppSettingsPanel() {
   const [logs, setLogs] = useState<NotificationLog[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(true);
 
-  // WhatsApp automation toggle
-  const [whatsappEnabled, setWhatsappEnabled] = useState(true);
-  const [savingToggle, setSavingToggle] = useState(false);
+  // Automation toggles
+  const [automationToggles, setAutomationToggles] = useState<Map<string, AutomationToggle>>(new Map());
+  const [savingToggle, setSavingToggle] = useState<string | null>(null);
 
   // Stats
-  const [stats, setStats] = useState({ sent: 0, pending: 0, failed: 0, total: 0 });
+  const [stats, setStats] = useState({ sent: 0, pending: 0, failed: 0 });
+
+  const automationDefs = [
+    {
+      type: "appointment_confirmation",
+      label: "Confirmação automática",
+      description: "Envia WhatsApp quando um agendamento é criado",
+      icon: CalendarCheck,
+    },
+    {
+      type: "appointment_reminder_24h",
+      label: "Lembrete 24h antes",
+      description: "Envia lembrete 1 dia antes do agendamento",
+      icon: Bell,
+    },
+    {
+      type: "appointment_reminder_2h",
+      label: "Lembrete 2h antes",
+      description: "Envia lembrete 2 horas antes do agendamento",
+      icon: Clock,
+    },
+    {
+      type: "appointment_reminder_1h",
+      label: "Lembrete 1h antes",
+      description: "Envia lembrete 1 hora antes do agendamento",
+      icon: Clock,
+    },
+  ];
 
   useEffect(() => {
-    checkIntegration();
-    fetchLogs();
-    fetchWhatsappToggle();
+    if (barbershop) {
+      checkIntegration();
+      fetchLogs();
+      fetchAutomations();
+    }
   }, [barbershop]);
 
   const checkIntegration = async () => {
     setCheckingStatus(true);
     try {
-      // Ping the send-whatsapp function with a dry-run style check
       const { data, error } = await supabase.functions.invoke("send-whatsapp", {
         body: { phone: "test", message: "ping" },
       });
 
       if (error?.message?.includes("503") || data?.error?.includes("No WhatsApp provider")) {
         setIntegrationStatus("disconnected");
-      } else if (data?.success || data?.error) {
-        // Even if sending fails (e.g. invalid number), provider is connected
-        setIntegrationStatus("connected");
-        setProviderName(data?.provider || "");
       } else {
         setIntegrationStatus("connected");
+        setProviderName(data?.provider || "");
       }
     } catch {
       setIntegrationStatus("unknown");
@@ -104,7 +141,7 @@ export default function WhatsAppSettingsPanel() {
     setCheckingStatus(false);
   };
 
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     if (!barbershop) return;
     setLoadingLogs(true);
     const { data } = await supabase
@@ -118,50 +155,69 @@ export default function WhatsAppSettingsPanel() {
     const notifs = (data || []) as NotificationLog[];
     setLogs(notifs);
 
-    const sent = notifs.filter((n) => n.status === "sent").length;
-    const pending = notifs.filter((n) => n.status === "pending").length;
-    const failed = notifs.filter((n) => n.status === "failed").length;
-    setStats({ sent, pending, failed, total: notifs.length });
+    setStats({
+      sent: notifs.filter((n) => n.status === "sent").length,
+      pending: notifs.filter((n) => n.status === "pending").length,
+      failed: notifs.filter((n) => n.status === "failed").length,
+    });
     setLoadingLogs(false);
-  };
+  }, [barbershop]);
 
-  const fetchWhatsappToggle = async () => {
+  const fetchAutomations = async () => {
     if (!barbershop) return;
     const { data } = await supabase
       .from("automations")
-      .select("enabled")
+      .select("id, type, enabled")
       .eq("barbershop_id", barbershop.id)
-      .eq("type", "appointment_confirmation")
-      .single();
-    // Default to enabled if no record
-    setWhatsappEnabled(data ? data.enabled : true);
+      .in("type", automationDefs.map((a) => a.type));
+
+    const map = new Map<string, AutomationToggle>();
+    (data || []).forEach((a: any) => map.set(a.type, { type: a.type, enabled: a.enabled, id: a.id }));
+    setAutomationToggles(map);
   };
 
-  const handleToggleWhatsapp = async (enabled: boolean) => {
+  const isEnabled = (type: string) => {
+    const toggle = automationToggles.get(type);
+    return toggle ? toggle.enabled : true; // default enabled
+  };
+
+  const handleToggle = async (type: string, enabled: boolean) => {
     if (!barbershop) return;
-    setSavingToggle(true);
-    setWhatsappEnabled(enabled);
+    setSavingToggle(type);
 
-    const { data: existing } = await supabase
-      .from("automations")
-      .select("id")
-      .eq("barbershop_id", barbershop.id)
-      .eq("type", "appointment_confirmation")
-      .single();
-
-    if (existing) {
+    const existing = automationToggles.get(type);
+    if (existing?.id) {
       await supabase.from("automations").update({ enabled } as any).eq("id", existing.id);
     } else {
-      await supabase.from("automations").insert({
-        barbershop_id: barbershop.id,
-        type: "appointment_confirmation",
-        enabled,
-        config: { channel: "whatsapp" },
-      } as any);
+      const def = automationDefs.find((a) => a.type === type);
+      const { data } = await supabase
+        .from("automations")
+        .insert({
+          barbershop_id: barbershop.id,
+          type,
+          enabled,
+          config: {
+            message: "",
+            channel: "whatsapp",
+          },
+        } as any)
+        .select("id, type, enabled")
+        .single();
+      if (data) {
+        const map = new Map(automationToggles);
+        map.set(type, { type, enabled, id: data.id });
+        setAutomationToggles(map);
+        setSavingToggle(null);
+        toast({ title: enabled ? "Ativado!" : "Desativado" });
+        return;
+      }
     }
 
-    setSavingToggle(false);
-    toast({ title: enabled ? "WhatsApp ativado!" : "WhatsApp desativado" });
+    const map = new Map(automationToggles);
+    map.set(type, { ...(existing || { type }), enabled });
+    setAutomationToggles(map);
+    setSavingToggle(null);
+    toast({ title: enabled ? "Ativado!" : "Desativado" });
   };
 
   const handleSendTest = async () => {
@@ -176,7 +232,7 @@ export default function WhatsAppSettingsPanel() {
 
   return (
     <div className="space-y-6">
-      {/* Integration Status */}
+      {/* ── Integration Status ────────────────────────────────────────── */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
         <Card>
           <CardHeader className="pb-3">
@@ -195,8 +251,8 @@ export default function WhatsAppSettingsPanel() {
                     <Wifi className="h-5 w-5 text-green-600" />
                   </div>
                 ) : (
-                  <div className="h-10 w-10 rounded-xl bg-red-500/10 flex items-center justify-center">
-                    <WifiOff className="h-5 w-5 text-red-500" />
+                  <div className="h-10 w-10 rounded-xl bg-destructive/10 flex items-center justify-center">
+                    <WifiOff className="h-5 w-5 text-destructive" />
                   </div>
                 )}
                 <div>
@@ -211,8 +267,8 @@ export default function WhatsAppSettingsPanel() {
                     {integrationStatus === "connected" && providerName
                       ? `Provedor: ${providerName.replace("_", " ").toUpperCase()}`
                       : integrationStatus === "disconnected"
-                      ? "Nenhum provedor configurado"
-                      : "Clique para verificar"}
+                      ? "Nenhum provedor WhatsApp configurado"
+                      : "Clique para verificar a conexão"}
                   </p>
                 </div>
               </div>
@@ -233,8 +289,8 @@ export default function WhatsAppSettingsPanel() {
                   <p className="text-lg font-bold text-yellow-600">{stats.pending}</p>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Pendentes</p>
                 </div>
-                <div className="rounded-xl bg-red-500/5 border border-red-500/10 p-3 text-center">
-                  <p className="text-lg font-bold text-red-600">{stats.failed}</p>
+                <div className="rounded-xl bg-destructive/5 border border-destructive/10 p-3 text-center">
+                  <p className="text-lg font-bold text-destructive">{stats.failed}</p>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Falhas</p>
                 </div>
               </div>
@@ -243,45 +299,59 @@ export default function WhatsAppSettingsPanel() {
         </Card>
       </motion.div>
 
-      {/* Enable/Disable Toggle */}
+      {/* ── Automation Toggles ────────────────────────────────────────── */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Bell className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">Envios automáticos via WhatsApp</p>
-                  <p className="text-xs text-muted-foreground">
-                    Confirmações, lembretes e notificações
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {savingToggle && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
-                <Switch
-                  checked={whatsappEnabled}
-                  onCheckedChange={handleToggleWhatsapp}
-                  disabled={savingToggle}
-                />
-              </div>
-            </div>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Bell className="h-4 w-4 text-primary" />
+              Envios Automáticos
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1">
+            {automationDefs.map((def) => {
+              const Icon = def.icon;
+              const enabled = isEnabled(def.type);
+              const isSaving = savingToggle === def.type;
 
-            {!whatsappEnabled && (
-              <div className="mt-4 rounded-lg bg-yellow-500/5 border border-yellow-500/10 p-3 flex items-start gap-2">
-                <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 shrink-0" />
-                <p className="text-xs text-yellow-700 dark:text-yellow-400">
-                  Com os envios desativados, nenhuma mensagem WhatsApp será enviada automaticamente. Você ainda pode enviar mensagens manuais pelo teste abaixo.
-                </p>
-              </div>
-            )}
+              return (
+                <div
+                  key={def.type}
+                  className="flex items-center justify-between py-3 border-b border-border/50 last:border-b-0"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-lg bg-primary/5 flex items-center justify-center">
+                      <Icon className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{def.label}</p>
+                      <p className="text-xs text-muted-foreground">{def.description}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {isSaving && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+                    <Switch
+                      checked={enabled}
+                      onCheckedChange={(v) => handleToggle(def.type, v)}
+                      disabled={isSaving}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Reminder notice */}
+            <div className="mt-4 rounded-lg bg-accent/50 border border-accent p-3 flex items-start gap-2">
+              <AlertTriangle className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+              <p className="text-xs text-muted-foreground">
+                Os lembretes automáticos serão processados quando o cron job estiver ativo. As confirmações são enviadas imediatamente ao criar o agendamento.
+              </p>
+            </div>
           </CardContent>
         </Card>
       </motion.div>
 
-      {/* Test Panel */}
+      {/* ── Test Panel ────────────────────────────────────────────────── */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <Card>
           <CardHeader className="pb-3">
@@ -330,9 +400,12 @@ export default function WhatsAppSettingsPanel() {
                 <div>
                   {testResult.success ? (
                     <p>
-                      Mensagem enviada! ID: <code className="text-xs">{testResult.messageId}</code>
+                      Mensagem enviada! ID:{" "}
+                      <code className="text-xs">{testResult.messageId}</code>
                       {testResult.provider && (
-                        <span className="text-xs ml-1 opacity-70">via {testResult.provider}</span>
+                        <span className="text-xs ml-1 opacity-70">
+                          via {testResult.provider}
+                        </span>
                       )}
                     </p>
                   ) : (
@@ -345,14 +418,14 @@ export default function WhatsAppSettingsPanel() {
         </Card>
       </motion.div>
 
-      {/* Recent Logs */}
+      {/* ── Recent Logs ───────────────────────────────────────────────── */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
                 <Clock className="h-4 w-4 text-primary" />
-                Últimas Mensagens
+                Histórico de Mensagens
               </CardTitle>
               <Button size="sm" variant="ghost" onClick={fetchLogs} disabled={loadingLogs}>
                 <RefreshCw className={`h-3.5 w-3.5 ${loadingLogs ? "animate-spin" : ""}`} />
@@ -366,7 +439,9 @@ export default function WhatsAppSettingsPanel() {
               </div>
             ) : logs.length === 0 ? (
               <div className="flex items-center justify-center py-8 rounded-xl bg-muted/30 border border-border/50">
-                <p className="text-sm text-muted-foreground">Nenhuma mensagem WhatsApp enviada ainda.</p>
+                <p className="text-sm text-muted-foreground">
+                  Nenhuma mensagem WhatsApp enviada ainda.
+                </p>
               </div>
             ) : (
               <div className="space-y-2 max-h-[400px] overflow-y-auto">
@@ -377,29 +452,51 @@ export default function WhatsAppSettingsPanel() {
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${statusColors[log.status] || ""}`}>
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] px-1.5 py-0 ${statusColors[log.status] || ""}`}
+                        >
                           {log.status}
                         </Badge>
                         <span className="text-[10px] text-muted-foreground">
                           {typeLabels[log.type] || log.type}
                         </span>
+                        {log.provider && (
+                          <span className="text-[10px] text-muted-foreground opacity-60">
+                            via {log.provider}
+                          </span>
+                        )}
                       </div>
                       <p className="text-xs font-medium text-foreground truncate">
                         {log.recipient_name || log.recipient_phone || "—"}
                       </p>
                       {log.body && (
-                        <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{log.body}</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                          {log.body}
+                        </p>
                       )}
                       {log.error_message && (
-                        <p className="text-[11px] text-red-500 mt-0.5 truncate">{log.error_message}</p>
+                        <p className="text-[11px] text-destructive mt-0.5 truncate">
+                          {log.error_message}
+                        </p>
                       )}
                     </div>
                     <div className="text-right ml-3 shrink-0">
                       <p className="text-[10px] text-muted-foreground">
                         {log.sent_at
-                          ? new Date(log.sent_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
+                          ? new Date(log.sent_at).toLocaleString("pt-BR", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
                           : log.scheduled_for
-                          ? `Agendado: ${new Date(log.scheduled_for).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}`
+                          ? `Agendado: ${new Date(log.scheduled_for).toLocaleString("pt-BR", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}`
                           : "—"}
                       </p>
                     </div>
