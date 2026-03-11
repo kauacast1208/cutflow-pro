@@ -13,7 +13,7 @@ import {
   Trash2, Save, Copy, ExternalLink, CreditCard, MessageCircle,
 } from "lucide-react";
 import SubscriptionManager from "@/components/billing/SubscriptionManager";
-import WhatsAppTestPanel from "@/components/admin/WhatsAppTestPanel";
+import WhatsAppSettingsPanel from "@/components/admin/WhatsAppSettingsPanel";
 
 const fadeUp = (i: number) => ({
   initial: { opacity: 0, y: 14 },
