@@ -621,19 +621,19 @@ export default function DashboardHome() {
 
       {/* Professional Performance */}
       {proPerfData.length > 0 && (
-        <motion.div {...fadeUp(12)} className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow">
+        <motion.div {...fadeUp(12)} className="rounded-2xl border border-border bg-card p-4 sm:p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <h3 className="text-sm sm:text-base font-semibold text-foreground flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               <Trophy className="h-4 w-4 text-primary" /> Profissionais com mais atendimentos
             </h3>
             <span className="text-xs text-muted-foreground">Ultimos {period} dias</span>
           </div>
-          <div className="h-[220px]">
+          <div className="h-[200px] sm:h-[220px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={proPerfData} layout="vertical">
+              <BarChart data={proPerfData} layout="vertical" margin={{ left: 0, right: 10, top: 5, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" width={100} />
+                <XAxis type="number" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" width={80} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [name === "revenue" ? `R$ ${v}` : v, name === "revenue" ? "Receita" : "Atendimentos"]} />
                 <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 6, 6, 0]} name="Atendimentos" />
               </BarChart>
