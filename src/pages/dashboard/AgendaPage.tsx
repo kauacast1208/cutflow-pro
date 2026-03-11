@@ -155,13 +155,15 @@ export default function AgendaPage() {
       reason: blockForm.reason || null,
       professional_id: blockForm.professional_id === "all" ? null : blockForm.professional_id,
       all_day: blockForm.all_day,
+      recurring: blockForm.recurring,
+      recurring_days: blockForm.recurring ? blockForm.recurring_days : null,
     });
     if (error) {
       toast({ title: "Erro ao bloquear horário", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Horário bloqueado com sucesso" });
+      toast({ title: blockForm.recurring ? "Bloqueio recorrente criado" : "Horário bloqueado com sucesso" });
       setShowBlockDialog(false);
-      setBlockForm({ date: "", start_time: "", end_time: "", reason: "", professional_id: "all", all_day: false });
+      setBlockForm({ date: "", start_time: "", end_time: "", reason: "", professional_id: "all", all_day: false, recurring: false, recurring_days: [] });
       await fetchData();
     }
   };
