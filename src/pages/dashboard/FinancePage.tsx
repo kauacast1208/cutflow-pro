@@ -166,8 +166,8 @@ export default function FinancePage() {
             {cards.map((card, i) => {
               const Icon = card.icon;
               return (
-                <motion.div key={card.label} {...fadeUp(i + 1)}
-                  className="group relative overflow-hidden rounded-2xl border border-border bg-card p-4 hover:shadow-md transition-shadow"
+                 <motion.div key={card.label} {...fadeUp(i + 1)}
+                  className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card p-4 shadow-card hover:shadow-card-hover transition-all duration-300"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-[11px] font-medium text-muted-foreground">{card.label}</p>
