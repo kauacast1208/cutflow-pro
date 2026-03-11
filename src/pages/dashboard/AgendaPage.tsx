@@ -491,7 +491,11 @@ export default function AgendaPage() {
                       <span className="text-[11px] font-medium text-muted-foreground/60">{hour}</span>
                     </div>
                     <div className={`flex-1 py-2 px-2 min-h-[56px] border-l border-border/30 ${
-                      slotBlocks.length > 0 && slotAppts.length === 0 ? "bg-muted/20" : ""
+                      slotBlocks.length > 0 && slotAppts.length === 0
+                        ? (slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "bg-amber-500/5" :
+                          (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "bg-blue-500/5" :
+                          "bg-muted/20"
+                        : ""
                     }`}>
                       {slotAppts.length > 0 ? (
                         <div className="space-y-1.5">
@@ -501,9 +505,13 @@ export default function AgendaPage() {
                         </div>
                       ) : slotBlocks.length > 0 ? (
                         <div className="flex items-center gap-2 py-2">
-                          <Ban className="h-3 w-3 text-muted-foreground/40" />
+                          <span className="text-xs">
+                            {(slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "🍽️" :
+                             (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "☕" : "🚫"}
+                          </span>
                           <span className="text-[10px] text-muted-foreground/60">
                             {slotBlocks[0]?.reason || "Bloqueado"}
+                            {slotBlocks[0]?.recurring && " · Recorrente"}
                           </span>
                           {canViewFullAgenda && (
                             <button onClick={() => handleDeleteBlock(slotBlocks[0].id)} className="text-[10px] text-destructive/60 hover:text-destructive ml-auto">
