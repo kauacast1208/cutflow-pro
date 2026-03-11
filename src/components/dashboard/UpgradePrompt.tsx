@@ -33,7 +33,7 @@ export function UpgradePrompt({ feature, currentPlan, onClose }: UpgradePromptPr
 
   const handleUpgrade = () => {
     onClose();
-    navigate("/checkout");
+    navigate("/billing");
   };
 
   return (
