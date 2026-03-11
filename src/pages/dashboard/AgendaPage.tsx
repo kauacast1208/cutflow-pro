@@ -23,6 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { motion, AnimatePresence } from "framer-motion";
 import NewAppointmentDialog from "@/components/agenda/NewAppointmentDialog";
@@ -55,7 +56,7 @@ export default function AgendaPage() {
   const [myProfessionalId, setMyProfessionalId] = useState<string | null>(null);
   const [selectedPro, setSelectedPro] = useState<string>("all");
   const [showBlockDialog, setShowBlockDialog] = useState(false);
-  const [blockForm, setBlockForm] = useState({ date: "", start_time: "", end_time: "", reason: "", professional_id: "all", all_day: false });
+  const [blockForm, setBlockForm] = useState<{ date: string; start_time: string; end_time: string; reason: string; professional_id: string; all_day: boolean; recurring: boolean; recurring_days: number[] }>({ date: "", start_time: "", end_time: "", reason: "", professional_id: "all", all_day: false, recurring: false, recurring_days: [] });
   const [showNewAppt, setShowNewAppt] = useState(false);
   const [newApptDefaults, setNewApptDefaults] = useState<{ date?: Date; time?: string; proId?: string }>({});
   const [currentMinute, setCurrentMinute] = useState(new Date().getHours() * 60 + new Date().getMinutes());
@@ -104,14 +105,15 @@ export default function AgendaPage() {
       apptQuery = apptQuery.eq("professional_id", myProfessionalId);
     }
 
-    const [appRes, blockRes, proRes, svcRes] = await Promise.all([
+    const [appRes, blockRes, recurringBlockRes, proRes, svcRes] = await Promise.all([
       apptQuery,
-      supabase.from("blocked_times").select("*").eq("barbershop_id", barbershop.id).gte("date", start).lte("date", end),
+      supabase.from("blocked_times").select("*").eq("barbershop_id", barbershop.id).eq("recurring", false).gte("date", start).lte("date", end),
+      supabase.from("blocked_times").select("*").eq("barbershop_id", barbershop.id).eq("recurring", true),
       supabase.from("professionals").select("*").eq("barbershop_id", barbershop.id).eq("active", true),
       supabase.from("services").select("*").eq("barbershop_id", barbershop.id).eq("active", true),
     ]);
     setAppointments(appRes.data || []);
-    setBlockedTimes(blockRes.data || []);
+    setBlockedTimes([...(blockRes.data || []), ...(recurringBlockRes.data || [])]);
     setProfessionals(proRes.data || []);
     setServices(svcRes.data || []);
   }, [barbershop, days, isProfessional, myProfessionalId]);
@@ -155,13 +157,15 @@ export default function AgendaPage() {
       reason: blockForm.reason || null,
       professional_id: blockForm.professional_id === "all" ? null : blockForm.professional_id,
       all_day: blockForm.all_day,
+      recurring: blockForm.recurring,
+      recurring_days: blockForm.recurring ? blockForm.recurring_days : null,
     });
     if (error) {
       toast({ title: "Erro ao bloquear horário", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Horário bloqueado com sucesso" });
+      toast({ title: blockForm.recurring ? "Bloqueio recorrente criado" : "Horário bloqueado com sucesso" });
       setShowBlockDialog(false);
-      setBlockForm({ date: "", start_time: "", end_time: "", reason: "", professional_id: "all", all_day: false });
+      setBlockForm({ date: "", start_time: "", end_time: "", reason: "", professional_id: "all", all_day: false, recurring: false, recurring_days: [] });
       await fetchData();
     }
   };
@@ -233,9 +237,16 @@ export default function AgendaPage() {
     });
   };
 
-  const getBlocksForSlot = (dateStr: string, hour: number) => {
+  const getBlocksForSlot = (dateStr: string, hour: number, proId?: string) => {
+    const dayOfWeek = new Date(dateStr + "T12:00:00").getDay();
     return blockedTimes.filter(b => {
-      if (b.date !== dateStr) return false;
+      // Check professional match
+      if (proId && b.professional_id && b.professional_id !== proId) return false;
+      // Check date match: exact date or recurring weekday
+      const dateMatch = b.recurring
+        ? (b.recurring_days || []).includes(dayOfWeek)
+        : b.date === dateStr;
+      if (!dateMatch) return false;
       if (b.all_day) return true;
       if (!b.start_time || !b.end_time) return false;
       const bStart = parseInt(b.start_time);
@@ -480,7 +491,11 @@ export default function AgendaPage() {
                       <span className="text-[11px] font-medium text-muted-foreground/60">{hour}</span>
                     </div>
                     <div className={`flex-1 py-2 px-2 min-h-[56px] border-l border-border/30 ${
-                      slotBlocks.length > 0 && slotAppts.length === 0 ? "bg-muted/20" : ""
+                      slotBlocks.length > 0 && slotAppts.length === 0
+                        ? (slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "bg-amber-500/5" :
+                          (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "bg-blue-500/5" :
+                          "bg-muted/20"
+                        : ""
                     }`}>
                       {slotAppts.length > 0 ? (
                         <div className="space-y-1.5">
@@ -490,9 +505,13 @@ export default function AgendaPage() {
                         </div>
                       ) : slotBlocks.length > 0 ? (
                         <div className="flex items-center gap-2 py-2">
-                          <Ban className="h-3 w-3 text-muted-foreground/40" />
+                          <span className="text-xs">
+                            {(slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "🍽️" :
+                             (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "☕" : "🚫"}
+                          </span>
                           <span className="text-[10px] text-muted-foreground/60">
                             {slotBlocks[0]?.reason || "Bloqueado"}
+                            {slotBlocks[0]?.recurring && " · Recorrente"}
                           </span>
                           {canViewFullAgenda && (
                             <button onClick={() => handleDeleteBlock(slotBlocks[0].id)} className="text-[10px] text-destructive/60 hover:text-destructive ml-auto">
@@ -635,7 +654,11 @@ export default function AgendaPage() {
                         return (
                           <div key={dayIdx}
                             className={`border-l border-border/20 p-1 min-h-[64px] relative transition-colors group/cell ${
-                              slotBlocks.length > 0 ? "bg-muted/10" : ""
+                              slotBlocks.length > 0
+                                ? (slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "bg-amber-500/5" :
+                                  (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "bg-blue-500/5" :
+                                  "bg-muted/10"
+                                : ""
                             } ${isToday ? "bg-primary/[0.02]" : ""}`}
                             onClick={() => {
                               if (slotAppts.length === 0 && slotBlocks.length === 0 && canViewFullAgenda) {
@@ -667,8 +690,11 @@ export default function AgendaPage() {
                               ))}
                             </div>
                             {slotBlocks.length > 0 && slotAppts.length === 0 && (
-                              <div className="flex items-center justify-center h-full opacity-40">
-                                <Ban className="h-3 w-3 text-muted-foreground mr-1" />
+                              <div className="flex items-center justify-center h-full opacity-50">
+                                <span className="text-xs mr-1">
+                                  {(slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "🍽️" :
+                                   (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "☕" : "🚫"}
+                                </span>
                                 <span className="text-[9px] text-muted-foreground">
                                   {slotBlocks[0]?.reason || "Bloqueado"}
                                 </span>
@@ -693,25 +719,49 @@ export default function AgendaPage() {
       </motion.div>
 
       {/* Blocked times summary for the day */}
-      {viewMode === "day" && blockedTimes.filter(b => b.date === format(selectedDate, "yyyy-MM-dd")).length > 0 && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="hidden sm:block">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Horários bloqueados</p>
-          <div className="flex flex-wrap gap-2">
-            {blockedTimes.filter(b => b.date === format(selectedDate, "yyyy-MM-dd")).map(b => (
-              <div key={b.id} className="flex items-center gap-2 rounded-xl border border-border/50 bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground">
-                <Ban className="h-3 w-3" />
-                <span>{b.all_day ? "Dia inteiro" : `${b.start_time?.slice(0, 5)} - ${b.end_time?.slice(0, 5)}`}</span>
-                {b.reason && <span className="text-muted-foreground/60">· {b.reason}</span>}
-                {canViewFullAgenda && (
-                  <button onClick={() => handleDeleteBlock(b.id)} className="text-destructive/60 hover:text-destructive ml-1">
-                    <XCircle className="h-3 w-3" />
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      )}
+      {viewMode === "day" && (() => {
+        const dateStr = format(selectedDate, "yyyy-MM-dd");
+        const dayOfWeek = selectedDate.getDay();
+        const dayBlocks = blockedTimes.filter(b =>
+          b.recurring
+            ? (b.recurring_days || []).includes(dayOfWeek)
+            : b.date === dateStr
+        );
+        if (dayBlocks.length === 0) return null;
+        return (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="hidden sm:block">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Horários bloqueados</p>
+            <div className="flex flex-wrap gap-2">
+              {dayBlocks.map(b => {
+                const isLunch = (b.reason || "").toLowerCase().includes("almoço");
+                const isPause = (b.reason || "").toLowerCase().includes("pausa");
+                return (
+                  <div key={b.id} className={`flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs ${
+                    isLunch ? "border-amber-500/30 bg-amber-500/5 text-amber-700 dark:text-amber-400" :
+                    isPause ? "border-blue-500/30 bg-blue-500/5 text-blue-700 dark:text-blue-400" :
+                    "border-border/50 bg-muted/30 text-muted-foreground"
+                  }`}>
+                    <span>{isLunch ? "🍽️" : isPause ? "☕" : "🚫"}</span>
+                    <span>{b.all_day ? "Dia inteiro" : `${b.start_time?.slice(0, 5)} - ${b.end_time?.slice(0, 5)}`}</span>
+                    {b.reason && <span className="opacity-60">· {b.reason}</span>}
+                    {b.recurring && (
+                      <Badge variant="secondary" className="text-[9px] px-1.5 py-0 rounded-full">Recorrente</Badge>
+                    )}
+                    {b.professional_id && professionals.find(p => p.id === b.professional_id) && (
+                      <span className="opacity-60">· {professionals.find(p => p.id === b.professional_id)?.name?.split(" ")[0]}</span>
+                    )}
+                    {canViewFullAgenda && (
+                      <button onClick={() => handleDeleteBlock(b.id)} className="text-destructive/60 hover:text-destructive ml-1">
+                        <XCircle className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        );
+      })()}
 
       {/* Appointment detail dialog */}
       <Dialog open={!!selectedAppt} onOpenChange={o => !o && setSelectedAppt(null)}>
@@ -829,14 +879,34 @@ export default function AgendaPage() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Quick presets */}
             <div>
-              <Label className="text-xs">Data</Label>
-              <Input
-                type="date"
-                value={blockForm.date}
-                onChange={e => setBlockForm(f => ({ ...f, date: e.target.value }))}
-                className="rounded-xl mt-1"
-              />
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tipo</Label>
+              <div className="grid grid-cols-3 gap-2 mt-1.5">
+                {[
+                  { label: "Almoço", icon: "🍽️", start: "12:00", end: "13:00", reason: "Almoço" },
+                  { label: "Pausa", icon: "☕", start: "", end: "", reason: "Pausa" },
+                  { label: "Folga", icon: "🏖️", start: "", end: "", reason: "Folga", allDay: true },
+                ].map(preset => (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => setBlockForm(f => ({
+                      ...f,
+                      start_time: preset.start,
+                      end_time: preset.end,
+                      reason: preset.reason,
+                      all_day: preset.allDay || false,
+                    }))}
+                    className={`flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl border text-xs font-medium transition-all hover:border-primary/40 hover:bg-accent/50 ${
+                      blockForm.reason === preset.reason ? "border-primary bg-primary/5 text-primary" : "border-border bg-card text-muted-foreground"
+                    }`}
+                  >
+                    <span className="text-base">{preset.icon}</span>
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div>
@@ -852,6 +922,16 @@ export default function AgendaPage() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div>
+              <Label className="text-xs">Data</Label>
+              <Input
+                type="date"
+                value={blockForm.date}
+                onChange={e => setBlockForm(f => ({ ...f, date: e.target.value }))}
+                className="rounded-xl mt-1"
+              />
             </div>
 
             <div className="flex items-center gap-2">
@@ -888,8 +968,45 @@ export default function AgendaPage() {
               </div>
             )}
 
+            {/* Recurring toggle */}
+            <div className="rounded-xl border border-border/60 bg-muted/20 p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-foreground">Recorrente</p>
+                  <p className="text-[10px] text-muted-foreground">Repetir toda semana nos dias selecionados</p>
+                </div>
+                <Switch
+                  checked={blockForm.recurring}
+                  onCheckedChange={v => setBlockForm(f => ({ ...f, recurring: v, recurring_days: v ? [new Date(f.date || Date.now()).getDay()] : [] }))}
+                />
+              </div>
+              {blockForm.recurring && (
+                <div className="flex gap-1.5">
+                  {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((d, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setBlockForm(f => ({
+                        ...f,
+                        recurring_days: (f.recurring_days || []).includes(i)
+                          ? (f.recurring_days || []).filter(x => x !== i)
+                          : [...(f.recurring_days || []), i].sort()
+                      }))}
+                      className={`flex-1 py-2 rounded-lg text-[10px] font-medium transition-all ${
+                        (blockForm.recurring_days || []).includes(i)
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "bg-card text-muted-foreground hover:bg-accent/50 border border-border/40"
+                      }`}
+                    >
+                      {d}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div>
-              <Label className="text-xs">Motivo (opcional)</Label>
+              <Label className="text-xs">Motivo</Label>
               <Input
                 placeholder="Ex: Almoço, Folga, Reunião"
                 value={blockForm.reason}

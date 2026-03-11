@@ -23,6 +23,8 @@ export interface BlockedTime {
   all_day: boolean;
   start_time: string | null;
   end_time: string | null;
+  recurring?: boolean;
+  recurring_days?: number[] | null;
 }
 
 export interface ProfessionalAvailability {
@@ -47,15 +49,21 @@ export function hasAppointmentConflict(
   });
 }
 
-/** Check if a time slot is blocked */
+/** Check if a time slot is blocked (including recurring blocks) */
 export function isTimeBlocked(
   timeStr: string,
   endTime: string,
   professionalId: string,
-  blockedTimes: BlockedTime[]
+  blockedTimes: BlockedTime[],
+  date?: Date
 ): boolean {
+  const dayOfWeek = date ? getDay(date) : undefined;
   return blockedTimes.some((b) => {
     if (b.professional_id && b.professional_id !== professionalId) return false;
+    // For recurring blocks, check if the day of week matches
+    if (b.recurring && b.recurring_days && dayOfWeek !== undefined) {
+      if (!b.recurring_days.includes(dayOfWeek)) return false;
+    }
     if (b.all_day) return true;
     return timeStr < (b.end_time || "") && endTime > (b.start_time || "");
   });
@@ -115,7 +123,7 @@ export function generateTimeSlots(
 
     if (!isBefore(current, minTime)) {
       const conflict = hasAppointmentConflict(timeStr, endTimeWithBuffer, professionalId, appointments);
-      const blocked = isTimeBlocked(timeStr, endTime, professionalId, blockedTimes);
+      const blocked = isTimeBlocked(timeStr, endTime, professionalId, blockedTimes, date);
 
       if (!conflict && !blocked) {
         slots.push(timeStr);
