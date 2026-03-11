@@ -240,15 +240,32 @@ export default function SettingsPage() {
             <CardSection className="space-y-5">
               <SectionTitle>Informações da barbearia</SectionTitle>
 
-              <div className="rounded-xl bg-accent/40 border border-accent p-4 space-y-2">
-                <Label className="text-xs text-muted-foreground font-medium">Link público de agendamento</Label>
-                <div className="flex items-center gap-2">
-                  <Input value={bookingUrl} readOnly className="text-xs bg-card font-mono" />
-                  <Button size="sm" variant="outline" className="shrink-0" onClick={() => { navigator.clipboard.writeText(bookingUrl); toast({ title: "Link copiado!" }); }}>
+              <div className="rounded-2xl bg-primary/[0.04] border border-primary/15 p-5 space-y-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Globe className="h-4 w-4 text-primary" />
+                  <Label className="text-sm font-semibold text-foreground">Link público de agendamento</Label>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Compartilhe este link com seus clientes para receberem agendamentos online.
+                </p>
+                <div className="flex items-center gap-2 rounded-xl bg-card border border-border p-2.5">
+                  <code className="flex-1 text-xs sm:text-sm font-mono text-foreground truncate select-all px-1">
+                    {bookingUrl}
+                  </code>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="shrink-0 h-8 rounded-lg gap-1.5 text-xs"
+                    onClick={() => { navigator.clipboard.writeText(bookingUrl); toast({ title: "Link copiado!" }); }}
+                  >
                     <Copy className="h-3.5 w-3.5" />
+                    Copiar
                   </Button>
                   <a href={bookingUrl} target="_blank" rel="noopener noreferrer" className="shrink-0">
-                    <Button size="sm" variant="outline"><ExternalLink className="h-3.5 w-3.5" /></Button>
+                    <Button size="sm" variant="outline" className="h-8 rounded-lg gap-1.5 text-xs">
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      Abrir
+                    </Button>
                   </a>
                 </div>
               </div>
