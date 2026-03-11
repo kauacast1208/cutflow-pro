@@ -442,7 +442,7 @@ export default function DashboardHome() {
           </div>
         </motion.div>
 
-        <motion.div {...fadeUp(5)} className="lg:col-span-2 rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow">
+        <motion.div {...fadeUp(5)} className="lg:col-span-2 rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-semibold text-foreground flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               <Clock className="h-4 w-4 text-primary" /> Agenda de hoje
