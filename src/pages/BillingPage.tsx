@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Check, Crown, Loader2, Sparkles, Zap, Shield, CreditCard,
-  X, ExternalLink, Calendar, Star,
+  ExternalLink, Star, CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +22,7 @@ const planIcons: Record<StripePlanKey, React.ReactNode> = {
 };
 
 const statusLabels: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  trial: { label: "Periodo de teste", variant: "secondary" },
+  trial: { label: "Período de teste", variant: "secondary" },
   active: { label: "Ativo", variant: "default" },
   past_due: { label: "Pagamento pendente", variant: "destructive" },
   cancelled: { label: "Cancelado", variant: "destructive" },
@@ -31,14 +31,14 @@ const statusLabels: Record<string, { label: string; variant: "default" | "second
 
 export default function BillingPage() {
   const { user } = useAuth();
-  const { subscription, loading, isActive, daysRemaining, refreshSubscription } = useSubscription();
+  const { subscription, loading, isActive, isTrial, daysRemaining, refreshSubscription } = useSubscription();
   const { toast } = useToast();
   const [loadingPlan, setLoadingPlan] = useState<StripePlanKey | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
 
   const handleSubscribe = async (planKey: StripePlanKey) => {
     if (!user) {
-      toast({ title: "Faca login primeiro", variant: "destructive" });
+      toast({ title: "Faça login primeiro", variant: "destructive" });
       return;
     }
 
@@ -129,10 +129,16 @@ export default function BillingPage() {
                         <h3 className="text-xl font-bold">
                           Plano {STRIPE_PLANS[currentPlan].name}
                         </h3>
-                        <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
+                        {isTrial ? (
+                          <Badge variant="secondary" className="bg-amber-500/10 text-amber-700 border-amber-500/20">
+                            Plano em teste
+                          </Badge>
+                        ) : (
+                          <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
+                        )}
                       </div>
                       <p className="text-sm text-muted-foreground mt-0.5">
-                        R$ {STRIPE_PLANS[currentPlan].price}/mes
+                        R$ {STRIPE_PLANS[currentPlan].price}/mês
                       </p>
                     </div>
                   </div>
@@ -155,25 +161,23 @@ export default function BillingPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                  {subscription.status === "trial" && daysRemaining !== null && (
+                  {isTrial && daysRemaining !== null && (
                     <div className="rounded-lg bg-accent/50 p-3">
                       <p className="text-muted-foreground mb-0.5">Dias restantes do trial</p>
                       <p className="font-semibold text-lg">{daysRemaining} dias</p>
                     </div>
                   )}
-                  {subscription.trial_ends_at && (
+                  {subscription.trial_ends_at && isTrial && (
                     <div className="rounded-lg bg-accent/50 p-3">
-                      <p className="text-muted-foreground mb-0.5">
-                        {subscription.status === "trial" ? "Trial expira em" : "Trial expirou em"}
-                      </p>
+                      <p className="text-muted-foreground mb-0.5">Trial expira em</p>
                       <p className="font-semibold">
                         {format(new Date(subscription.trial_ends_at), "dd MMM yyyy", { locale: ptBR })}
                       </p>
                     </div>
                   )}
-                  {subscription.current_period_end && (
+                  {subscription.current_period_end && subscription.status === "active" && (
                     <div className="rounded-lg bg-accent/50 p-3">
-                      <p className="text-muted-foreground mb-0.5">Proxima cobranca</p>
+                      <p className="text-muted-foreground mb-0.5">Próxima cobrança</p>
                       <p className="font-semibold">
                         {format(new Date(subscription.current_period_end), "dd MMM yyyy", { locale: ptBR })}
                       </p>
@@ -205,13 +209,14 @@ export default function BillingPage() {
           transition={{ delay: 0.2 }}
         >
           <h2 className="text-xl font-bold mb-6">
-            {hasStripeSubscription ? "Alterar plano" : "Escolha seu plano"}
+            {hasStripeSubscription ? "Alterar plano" : isTrial ? "Trocar plano do teste" : "Escolha seu plano"}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {(Object.entries(STRIPE_PLANS) as [StripePlanKey, typeof STRIPE_PLANS[StripePlanKey]][]).map(
               ([key, plan], i) => {
-                const isCurrent = isActive && currentPlan === key;
+                const isCurrentTrialPlan = isTrial && currentPlan === key;
+                const isCurrentActivePlan = !isTrial && isActive && currentPlan === key;
                 const isRecommended = key === "pro";
 
                 return (
@@ -226,20 +231,27 @@ export default function BillingPage() {
                         isRecommended
                           ? "border-primary shadow-md ring-2 ring-primary/20"
                           : "border-border"
-                      } ${isCurrent ? "ring-2 ring-primary/40" : ""}`}
+                      } ${isCurrentTrialPlan || isCurrentActivePlan ? "ring-2 ring-primary/40" : ""}`}
                     >
-                      {isRecommended && !isCurrent && (
+                      {isRecommended && !isCurrentTrialPlan && !isCurrentActivePlan && (
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                           <span className="bg-primary text-primary-foreground text-xs font-semibold px-4 py-1 rounded-full shadow-sm flex items-center gap-1">
                             <Star className="h-3 w-3 fill-current" />
-                            Mais escolhido
+                            Mais popular
                           </span>
                         </div>
                       )}
-                      {isCurrent && (
+                      {isCurrentTrialPlan && (
                         <div className="absolute -top-3 right-4">
-                          <span className="bg-accent text-accent-foreground text-xs font-semibold px-3 py-1 rounded-full border">
-                            Plano atual
+                          <span className="bg-amber-500/10 text-amber-700 border border-amber-500/20 text-xs font-semibold px-3 py-1 rounded-full">
+                            Plano em teste
+                          </span>
+                        </div>
+                      )}
+                      {isCurrentActivePlan && (
+                        <div className="absolute -top-3 right-4">
+                          <span className="bg-primary/10 text-primary border border-primary/20 text-xs font-semibold px-3 py-1 rounded-full">
+                            Plano ativo
                           </span>
                         </div>
                       )}
@@ -249,14 +261,17 @@ export default function BillingPage() {
                           <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                             {planIcons[key]}
                           </div>
-                          <CardTitle className="text-xl">{plan.name}</CardTitle>
+                          <div>
+                            <CardTitle className="text-xl">{plan.name}</CardTitle>
+                            <p className="text-xs text-muted-foreground mt-0.5">{plan.description}</p>
+                          </div>
                         </div>
                         <div className="flex items-baseline gap-1">
                           <span className="text-4xl font-bold">R${plan.price}</span>
-                          <span className="text-muted-foreground text-sm">/mes</span>
+                          <span className="text-muted-foreground text-sm">/mês</span>
                         </div>
-                        {!hasStripeSubscription && (
-                          <p className="text-xs text-primary mt-1 font-medium">7 dias gratis</p>
+                        {!hasStripeSubscription && !isTrial && (
+                          <p className="text-xs text-primary mt-1 font-medium">7 dias grátis</p>
                         )}
                       </CardHeader>
 
@@ -270,9 +285,15 @@ export default function BillingPage() {
                           ))}
                         </ul>
 
-                        {isCurrent ? (
-                          <Button className="w-full rounded-xl" variant="outline" size="lg" disabled>
-                            Plano atual
+                        {isCurrentActivePlan ? (
+                          <Button className="w-full rounded-xl" variant="outline" size="lg" onClick={handleOpenPortal} disabled={portalLoading}>
+                            {portalLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                            Gerenciar plano
+                          </Button>
+                        ) : isCurrentTrialPlan ? (
+                          <Button className="w-full rounded-xl" variant="outline" size="lg" onClick={handleOpenPortal} disabled={portalLoading}>
+                            {portalLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                            Gerenciar plano
                           </Button>
                         ) : hasStripeSubscription ? (
                           <Button
@@ -287,6 +308,17 @@ export default function BillingPage() {
                               ? "Fazer upgrade"
                               : "Alterar plano"}
                           </Button>
+                        ) : isTrial ? (
+                          <Button
+                            className="w-full rounded-xl"
+                            variant={isRecommended ? "default" : "outline"}
+                            size="lg"
+                            disabled={loadingPlan !== null}
+                            onClick={() => handleSubscribe(key)}
+                          >
+                            {loadingPlan === key ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                            Iniciar teste neste plano
+                          </Button>
                         ) : (
                           <Button
                             className="w-full rounded-xl"
@@ -296,7 +328,7 @@ export default function BillingPage() {
                             onClick={() => handleSubscribe(key)}
                           >
                             {loadingPlan === key ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                            Iniciar 7 dias gratis
+                            Começar teste gratuito
                           </Button>
                         )}
                       </CardContent>
@@ -310,18 +342,20 @@ export default function BillingPage() {
           {/* Trust signals */}
           <div className="flex flex-wrap items-center justify-center gap-6 mt-8 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4 text-primary" />
+              <CheckCircle2 className="h-4 w-4 text-primary" />
               <span>Pagamento seguro via Stripe</span>
             </div>
-            {!hasStripeSubscription && (
-              <div className="flex items-center gap-2">
-                <CreditCard className="h-4 w-4 text-primary" />
-                <span>Nenhuma cobranca hoje</span>
-              </div>
-            )}
             <div className="flex items-center gap-2">
-              <X className="h-4 w-4 text-primary" />
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              <span>Teste gratuito de 7 dias</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
               <span>Cancele quando quiser</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              <span>Sem fidelidade</span>
             </div>
           </div>
         </motion.div>

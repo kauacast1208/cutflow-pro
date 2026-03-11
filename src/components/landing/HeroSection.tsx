@@ -22,8 +22,8 @@ export function HeroSection() {
             className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm text-primary font-medium mb-8 sm:mb-10 backdrop-blur-sm"
           >
             <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">Teste gratis por 7 dias — sem cartao de credito</span>
-            <span className="sm:hidden">7 dias gratis — sem cartao</span>
+            <span className="hidden sm:inline">Teste gratuito por 7 dias — sem cartão de crédito</span>
+            <span className="sm:hidden">7 dias grátis — sem cartão</span>
           </motion.div>
 
           {/* Headline */}
@@ -35,7 +35,7 @@ export function HeroSection() {
           >
             Gerencie sua barbearia com{" "}
             <br className="hidden sm:block" />
-            <span className="text-gradient">eficiencia profissional.</span>
+            <span className="text-gradient">eficiência profissional.</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -45,8 +45,8 @@ export function HeroSection() {
             transition={{ duration: 0.5, delay: 0.16 }}
             className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 sm:mb-12 leading-relaxed px-1 sm:px-0"
           >
-            Agenda, clientes, financeiro e relatorios em um so sistema.
-            Tudo em uma plataforma profissional e facil de usar.
+            Agenda, clientes, financeiro e relatórios em um só sistema.
+            Tudo em uma plataforma profissional e fácil de usar.
           </motion.p>
 
           {/* CTA buttons */}
@@ -58,24 +58,34 @@ export function HeroSection() {
           >
             <Link to="/signup" className="w-full sm:w-auto">
               <Button variant="hero" size="lg" className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-12 h-14 sm:h-[60px] shadow-glow">
-                Comecar gratis
+                Começar teste gratuito
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link to="/demo" className="w-full sm:w-auto">
               <Button variant="hero-outline" size="lg" className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-12 h-14 sm:h-[60px]">
                 <Play className="mr-2 h-5 w-5" />
-                Ver demonstracao
+                Ver demonstração
               </Button>
             </Link>
           </motion.div>
+
+          {/* Subtitle under CTA */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.32 }}
+            className="mt-4 text-xs sm:text-sm text-muted-foreground"
+          >
+            7 dias grátis · Sem cartão · Cancele quando quiser
+          </motion.p>
 
           {/* Social proof */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.45 }}
-            className="mt-14 sm:mt-16 flex flex-col items-center gap-4"
+            className="mt-12 sm:mt-14 flex flex-col items-center gap-4"
           >
             <div className="flex -space-x-2.5">
               {[...Array(5)].map((_, i) => (
@@ -85,7 +95,7 @@ export function HeroSection() {
               ))}
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground">+1.200 barbearias</span> ja usam o CutFlow
+              <span className="font-semibold text-foreground">+1.200 barbearias</span> já usam o CutFlow
             </p>
           </motion.div>
         </div>
@@ -116,8 +126,8 @@ export function HeroSection() {
               {[
                 { icon: Calendar, label: "Agendamentos hoje", value: "12", color: "text-primary" },
                 { icon: Users, label: "Clientes ativos", value: "248", color: "text-info" },
-                { icon: Clock, label: "Proximo horario", value: "14:30", color: "text-warning" },
-                { icon: CheckCircle2, label: "Taxa de presenca", value: "94%", color: "text-success" },
+                { icon: Clock, label: "Próximo horário", value: "14:30", color: "text-warning" },
+                { icon: CheckCircle2, label: "Taxa de presença", value: "94%", color: "text-success" },
               ].map((stat) => (
                 <div key={stat.label} className="rounded-xl border border-border/60 bg-background p-3 sm:p-4 hover:shadow-md transition-shadow">
                   <stat.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${stat.color} mb-2 sm:mb-3`} />
@@ -128,7 +138,7 @@ export function HeroSection() {
             </div>
             {/* Mock agenda rows */}
             <div className="hidden sm:block px-6 lg:px-8 pb-6 lg:pb-8 space-y-2">
-              {["09:00 — Carlos Silva · Corte + Barba", "10:00 — Rafael Santos · Corte Masculino", "11:00 — Andre Oliveira · Barba"].map((row, i) => (
+              {["09:00 — Carlos Silva · Corte + Barba", "10:00 — Rafael Santos · Corte Masculino", "11:00 — André Oliveira · Barba"].map((row, i) => (
                 <div key={i} className="flex items-center gap-3 rounded-xl border border-border/50 bg-background px-4 py-3 text-sm group hover:border-primary/15 transition-colors">
                   <div className="h-2 w-2 rounded-full bg-primary/70" />
                   <span className="text-muted-foreground group-hover:text-foreground transition-colors">{row}</span>
