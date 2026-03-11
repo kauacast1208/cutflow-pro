@@ -7,6 +7,7 @@ const tabs = [
   { id: "agenda", label: "Agenda", icon: Calendar },
   { id: "clients", label: "Clientes", icon: Users },
   { id: "reports", label: "Relatórios", icon: BarChart3 },
+  { id: "booking", label: "Agendamento", icon: Globe },
 ];
 
 const sidebarItems = [
