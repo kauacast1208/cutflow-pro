@@ -217,7 +217,7 @@ export default function FinancePage() {
           </motion.div>
 
           {/* Revenue by professional */}
-          <motion.div {...fadeUp(8)} className="rounded-2xl border border-border bg-card p-6">
+          <motion.div {...fadeUp(8)} className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-card">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-semibold text-foreground flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                 <Users className="h-4 w-4 text-primary" />
