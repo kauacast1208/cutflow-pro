@@ -66,7 +66,7 @@ export function Navbar() {
           </Link>
         </div>
 
-        <button onClick={() => setOpen(!open)} className="md:hidden p-2 -mr-2 text-foreground rounded-lg hover:bg-accent/50 transition-colors">
+        <button onClick={() => setOpen(!open)} className="md:hidden p-3 -mr-3 text-foreground rounded-xl hover:bg-accent/50 transition-colors">
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
