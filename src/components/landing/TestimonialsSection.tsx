@@ -66,7 +66,7 @@ export function TestimonialsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="rounded-xl sm:rounded-2xl border border-border bg-card p-5 sm:p-7 shadow-card hover:shadow-elevated transition-all duration-300 flex flex-col"
+              className="rounded-2xl border border-border/80 bg-card p-5 sm:p-7 shadow-card hover:shadow-card-hover transition-all duration-300 flex flex-col"
             >
               <div className="flex gap-0.5 mb-4 sm:mb-5">
                 {[...Array(t.rating)].map((_, j) => (

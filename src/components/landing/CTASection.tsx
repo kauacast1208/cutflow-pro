@@ -10,7 +10,7 @@ export function CTASection() {
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="max-w-4xl mx-auto text-center rounded-2xl sm:rounded-3xl bg-primary p-8 sm:p-14 lg:p-20 shadow-premium relative overflow-hidden"
+        className="max-w-4xl mx-auto text-center rounded-2xl sm:rounded-3xl bg-primary p-8 sm:p-14 lg:p-20 shadow-premium relative overflow-hidden ring-1 ring-primary/20"
       >
         {/* Glow circles */}
         <div className="absolute -top-24 -right-24 h-48 w-48 rounded-full bg-primary-foreground/5 blur-3xl" />

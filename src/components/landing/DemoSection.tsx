@@ -69,7 +69,7 @@ export function DemoSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="rounded-xl sm:rounded-2xl border border-border bg-card shadow-card overflow-hidden hover:shadow-elevated transition-all duration-300"
+              className="rounded-2xl border border-border/80 bg-card shadow-card overflow-hidden hover:shadow-card-hover transition-all duration-300"
             >
               {/* Screen header */}
               <div className="flex items-center gap-2.5 sm:gap-3 px-4 sm:px-5 py-3 border-b border-border bg-muted/20">
