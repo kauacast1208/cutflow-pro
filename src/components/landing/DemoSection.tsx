@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, BarChart3, Users, LayoutDashboard, TrendingUp, Star, Bell, Search, Settings, ChevronRight, Scissors, Clock, CheckCircle2, ArrowUpRight } from "lucide-react";
+import { Calendar, BarChart3, Users, LayoutDashboard, TrendingUp, Star, Bell, Search, Settings, ChevronRight, Scissors, Clock, CheckCircle2, ArrowUpRight, Globe, MapPin, Phone, Check } from "lucide-react";
 import { useState } from "react";
 
 const tabs = [
@@ -7,6 +7,7 @@ const tabs = [
   { id: "agenda", label: "Agenda", icon: Calendar },
   { id: "clients", label: "Clientes", icon: Users },
   { id: "reports", label: "Relatórios", icon: BarChart3 },
+  { id: "booking", label: "Agendamento", icon: Globe },
 ];
 
 const sidebarItems = [
@@ -355,11 +356,186 @@ function ReportsMockup() {
   );
 }
 
+function BookingMockup() {
+  const [step, setStep] = useState(0);
+
+  const services = [
+    { name: "Corte Masculino", price: "R$ 45", duration: "30 min", selected: true },
+    { name: "Corte + Barba", price: "R$ 65", duration: "45 min", selected: false },
+    { name: "Barba", price: "R$ 30", duration: "20 min", selected: false },
+    { name: "Corte Infantil", price: "R$ 35", duration: "25 min", selected: false },
+  ];
+
+  const times = ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00"];
+
+  return (
+    <div className="flex min-h-[340px] sm:min-h-[400px]">
+      {/* Booking sidebar - barbershop info */}
+      <div className="hidden lg:flex flex-col w-[200px] border-r border-border bg-muted/10 p-4 shrink-0">
+        <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+          <Scissors className="h-5 w-5 text-primary" />
+        </div>
+        <h3 className="text-sm font-bold mb-0.5">Barbearia Central</h3>
+        <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-3">
+          <Star className="h-2.5 w-2.5 fill-warning text-warning" />
+          4.9 · 248 avaliações
+        </div>
+        <div className="space-y-2 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <MapPin className="h-3 w-3 shrink-0" />
+            <span>Rua Augusta, 1200 · SP</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Phone className="h-3 w-3 shrink-0" />
+            <span>(11) 99999-0000</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Clock className="h-3 w-3 shrink-0" />
+            <span>Seg–Sáb · 09:00–20:00</span>
+          </div>
+        </div>
+
+        {/* Step indicator */}
+        <div className="mt-auto pt-4 space-y-1.5">
+          {["Serviço", "Profissional", "Data e hora", "Seus dados"].map((s, i) => (
+            <div key={s} className={`flex items-center gap-2 text-[10px] ${
+              i === step ? "text-primary font-semibold" : i < step ? "text-primary/50" : "text-muted-foreground"
+            }`}>
+              <div className={`h-4 w-4 rounded-full flex items-center justify-center text-[8px] font-bold ${
+                i < step ? "bg-primary text-primary-foreground" : i === step ? "border-2 border-primary text-primary" : "border border-border"
+              }`}>
+                {i < step ? <Check className="h-2.5 w-2.5" /> : i + 1}
+              </div>
+              {s}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Main booking content */}
+      <div className="flex-1 p-4 sm:p-5">
+        <AnimatePresence mode="wait">
+          {step === 0 && (
+            <motion.div key="services" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.15 }}>
+              <p className="text-xs font-semibold mb-1">Escolha o serviço</p>
+              <p className="text-[10px] text-muted-foreground mb-3">Selecione o serviço desejado para continuar</p>
+              <div className="space-y-2">
+                {services.map((s, i) => (
+                  <button
+                    key={s.name}
+                    onClick={() => setStep(1)}
+                    className={`w-full flex items-center justify-between rounded-xl border p-3 text-left transition-all ${
+                      i === 0 ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
+                        i === 0 ? "bg-primary/10" : "bg-muted/50"
+                      }`}>
+                        <Scissors className="h-3.5 w-3.5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-[11px] font-medium">{s.name}</p>
+                        <p className="text-[9px] text-muted-foreground">{s.duration}</p>
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-bold">{s.price}</span>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+          {step === 1 && (
+            <motion.div key="professionals" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.15 }}>
+              <p className="text-xs font-semibold mb-1">Escolha o profissional</p>
+              <p className="text-[10px] text-muted-foreground mb-3">Corte Masculino · R$ 45 · 30 min</p>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { name: "Carlos", specialty: "Corte & Barba" },
+                  { name: "Rafael", specialty: "Degradê" },
+                  { name: "André", specialty: "Barba" },
+                ].map((p, i) => (
+                  <button
+                    key={p.name}
+                    onClick={() => setStep(2)}
+                    className={`flex flex-col items-center rounded-xl border p-3 transition-all ${
+                      i === 0 ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+                    }`}
+                  >
+                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground mb-2">
+                      {p.name[0]}
+                    </div>
+                    <p className="text-[11px] font-medium">{p.name}</p>
+                    <p className="text-[9px] text-muted-foreground">{p.specialty}</p>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+          {step === 2 && (
+            <motion.div key="datetime" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.15 }}>
+              <p className="text-xs font-semibold mb-1">Escolha a data e horário</p>
+              <p className="text-[10px] text-muted-foreground mb-3">Corte Masculino · Carlos · 30 min</p>
+              <p className="text-[10px] font-medium mb-2">Terça, 11 de março</p>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
+                {times.map((t, i) => (
+                  <button
+                    key={t}
+                    onClick={() => setStep(3)}
+                    className={`rounded-lg border py-2 text-[11px] font-medium transition-all ${
+                      i === 2 ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary/40"
+                    }`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+          {step === 3 && (
+            <motion.div key="confirm" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.15 }}>
+              <div className="flex flex-col items-center text-center py-4 sm:py-8">
+                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <CheckCircle2 className="h-7 w-7 text-primary" />
+                </div>
+                <p className="text-sm font-bold mb-1">Agendamento confirmado!</p>
+                <p className="text-[11px] text-muted-foreground mb-4">Você receberá uma confirmação por e-mail</p>
+                <div className="rounded-xl border border-border bg-muted/20 p-4 text-left w-full max-w-xs space-y-2">
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-muted-foreground">Serviço</span>
+                    <span className="font-medium">Corte Masculino</span>
+                  </div>
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-muted-foreground">Profissional</span>
+                    <span className="font-medium">Carlos</span>
+                  </div>
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-muted-foreground">Data</span>
+                    <span className="font-medium">11/03 às 10:00</span>
+                  </div>
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-muted-foreground">Valor</span>
+                    <span className="font-bold text-primary">R$ 45</span>
+                  </div>
+                </div>
+                <button onClick={() => setStep(0)} className="mt-4 text-[10px] text-primary font-medium hover:underline">
+                  ← Ver novamente
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
 const mockups: Record<string, () => JSX.Element> = {
   dashboard: DashboardMockup,
   agenda: AgendaMockup,
   clients: ClientsMockup,
   reports: ReportsMockup,
+  booking: BookingMockup,
 };
 
 export function DemoSection() {
@@ -442,31 +618,45 @@ export function DemoSection() {
               </div>
               <div className="flex-1 flex justify-center">
                 <div className="text-[10px] sm:text-[11px] text-muted-foreground bg-background/60 rounded-md px-4 py-1 border border-border/50 font-mono">
-                  cutflow.app/dashboard
+                  {activeTab === "booking" ? "cutflow.app/b/barbearia-central" : "cutflow.app/dashboard"}
                 </div>
               </div>
             </div>
 
-            {/* App content with sidebar */}
-            <div className="flex min-h-[340px] sm:min-h-[400px]">
-              <Sidebar activeTab={activeTab} />
-              <div className="flex-1 flex flex-col min-w-0">
-                <TopBar />
-                <div className="flex-1 bg-muted/5 overflow-hidden">
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={activeTab}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -6 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ActiveMockup />
-                    </motion.div>
-                  </AnimatePresence>
+            {/* App content */}
+            {activeTab === "booking" ? (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ActiveMockup />
+                </motion.div>
+              </AnimatePresence>
+            ) : (
+              <div className="flex min-h-[340px] sm:min-h-[400px]">
+                <Sidebar activeTab={activeTab} />
+                <div className="flex-1 flex flex-col min-w-0">
+                  <TopBar />
+                  <div className="flex-1 bg-muted/5 overflow-hidden">
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={activeTab}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ActiveMockup />
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </motion.div>
       </div>
