@@ -654,7 +654,11 @@ export default function AgendaPage() {
                         return (
                           <div key={dayIdx}
                             className={`border-l border-border/20 p-1 min-h-[64px] relative transition-colors group/cell ${
-                              slotBlocks.length > 0 ? "bg-muted/10" : ""
+                              slotBlocks.length > 0
+                                ? (slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "bg-amber-500/5" :
+                                  (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "bg-blue-500/5" :
+                                  "bg-muted/10"
+                                : ""
                             } ${isToday ? "bg-primary/[0.02]" : ""}`}
                             onClick={() => {
                               if (slotAppts.length === 0 && slotBlocks.length === 0 && canViewFullAgenda) {
