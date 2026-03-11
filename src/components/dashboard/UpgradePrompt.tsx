@@ -47,10 +47,10 @@ export function UpgradePrompt({ feature, currentPlan, onClose }: UpgradePromptPr
             <Crown className="h-8 w-8 text-white" />
           </div>
 
-          <h2 className="text-xl font-bold mb-2">Recurso Premium</h2>
+          <h2 className="text-xl font-bold mb-2">Recurso indisponível</h2>
           <p className="text-muted-foreground text-sm mb-6">
-            <strong>{featureLabel}</strong> está disponível a partir do plano{" "}
-            <span className="font-semibold text-foreground">{targetConfig.label}</span>.
+            Esse recurso está disponível apenas no plano{" "}
+            <span className="font-semibold text-foreground">{targetConfig.label}</span> ou superior.
           </p>
 
           <div className="rounded-xl border border-border bg-card p-4 mb-6 text-left">
