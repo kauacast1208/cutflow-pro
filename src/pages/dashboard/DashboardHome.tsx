@@ -364,6 +364,7 @@ export default function DashboardHome() {
 
   return (
     <div className="space-y-6 pb-24 sm:pb-6">
+      <WelcomeModal />
       {/* Trial Banner */}
       {subscription?.status === "trial" && daysRemaining !== null && daysRemaining <= 3 && (
         <motion.div {...fadeUp(0)} className="flex items-center gap-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-4">
