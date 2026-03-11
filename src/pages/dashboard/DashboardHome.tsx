@@ -325,7 +325,7 @@ export default function DashboardHome() {
     <div className="flex items-center gap-1 rounded-xl bg-muted/50 p-1">
       {periodOptions.map(opt => (
         <button key={opt.value} onClick={() => setPeriod(opt.value)}
-          className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 ${
+          className={`px-4 py-2 text-sm sm:text-xs font-medium rounded-lg transition-all duration-200 ${
             period === opt.value ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
           }`}
         >{opt.label}</button>
