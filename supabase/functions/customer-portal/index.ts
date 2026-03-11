@@ -41,11 +41,34 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    
     if (customers.data.length === 0) {
-      throw new Error("Nenhuma assinatura encontrada. Assine um plano primeiro.");
+      logStep("No Stripe customer found - user is likely in trial");
+      // Return a specific code so the frontend can show a friendly message
+      return new Response(JSON.stringify({ 
+        error: "trial_no_customer",
+        message: "Seu plano está em período de teste. Você pode trocar de plano ou aguardar a ativação completa da assinatura para gerenciar cobrança."
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200, // Return 200 so the frontend can handle the message gracefully
+      });
     }
+
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
+
+    // Check if customer has any subscriptions before creating portal
+    const subscriptions = await stripe.subscriptions.list({ customer: customerId, limit: 1 });
+    if (subscriptions.data.length === 0) {
+      logStep("Customer has no subscriptions");
+      return new Response(JSON.stringify({
+        error: "no_subscription",
+        message: "Nenhuma assinatura ativa encontrada. Assine um plano para gerenciar sua cobrança."
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     const origin = req.headers.get("origin") || Deno.env.get("SITE_URL") || "https://cutflow.app";
     const portalSession = await stripe.billingPortal.sessions.create({

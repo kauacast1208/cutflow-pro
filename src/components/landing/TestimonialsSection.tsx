@@ -7,10 +7,10 @@ const testimonials = [
     role: "Proprietário",
     barbershop: "Barbearia Premium",
     city: "São Paulo, SP",
-    content: "O CutFlow transformou meu negócio. Reduzi faltas em 60% com os lembretes automáticos e aumentei o faturamento em 40% nos primeiros 3 meses.",
+    content: "O CutFlow transformou meu negócio. Reduzi faltas com os lembretes automáticos e finalmente tenho controle real do meu faturamento.",
     rating: 5,
-    metric: "+40% faturamento",
-    metricLabel: "em 3 meses",
+    metric: "Menos faltas",
+    metricLabel: "com lembretes",
     avatar: "CM",
     avatarGradient: "from-emerald-400 to-primary",
   },
@@ -21,8 +21,8 @@ const testimonials = [
     city: "Belo Horizonte, MG",
     content: "Finalmente um sistema simples e bonito. Meus clientes adoram agendar online e eu tenho tudo organizado no celular. Não volto mais para o papel.",
     rating: 5,
-    metric: "Zero faltas",
-    metricLabel: "com lembretes",
+    metric: "Mais organização",
+    metricLabel: "no dia a dia",
     avatar: "RO",
     avatarGradient: "from-blue-400 to-primary",
   },
@@ -31,20 +31,13 @@ const testimonials = [
     role: "Sócio-gerente",
     barbershop: "Barber & Co",
     city: "Rio de Janeiro, RJ",
-    content: "Gerencio 3 unidades com o CutFlow. Os relatórios financeiros me dão visibilidade total do negócio. Sei exatamente quanto cada barbeiro fatura.",
+    content: "Gerencio minha equipe inteira com o CutFlow. Os relatórios financeiros me dão visibilidade total do negócio. Sei exatamente quanto cada barbeiro fatura.",
     rating: 5,
-    metric: "3 unidades",
-    metricLabel: "em uma tela",
+    metric: "Controle total",
+    metricLabel: "da equipe",
     avatar: "AS",
     avatarGradient: "from-amber-400 to-primary",
   },
-];
-
-const stats = [
-  { value: "500+", label: "Barbearias" },
-  { value: "12.000+", label: "Agendamentos/mês" },
-  { value: "4.9", label: "Avaliação média" },
-  { value: "98%", label: "Satisfação" },
 ];
 
 export function TestimonialsSection() {
@@ -59,7 +52,7 @@ export function TestimonialsSection() {
             viewport={{ once: true }}
             className="inline-flex items-center gap-2 rounded-full bg-primary/8 border border-primary/15 px-4 py-1.5 text-xs sm:text-sm font-medium text-primary mb-4 sm:mb-5"
           >
-            Depoimentos reais
+            Depoimentos
           </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -79,21 +72,6 @@ export function TestimonialsSection() {
             Veja como barbearias reais estão crescendo com o CutFlow.
           </motion.p>
         </div>
-
-        {/* Stats bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-10 sm:mb-14 max-w-3xl mx-auto"
-        >
-          {stats.map((s) => (
-            <div key={s.label} className="text-center py-3 sm:py-4 rounded-xl border border-border bg-card">
-              <p className="text-xl sm:text-2xl font-extrabold text-primary">{s.value}</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">{s.label}</p>
-            </div>
-          ))}
-        </motion.div>
 
         {/* Testimonial cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
@@ -150,7 +128,7 @@ export function TestimonialsSection() {
           transition={{ delay: 0.3 }}
           className="text-center text-xs sm:text-sm text-muted-foreground mt-8 sm:mt-12"
         >
-          Junte-se a centenas de barbearias que já confiam no CutFlow.
+          Feito para barbearias modernas que querem profissionalizar sua gestão.
         </motion.p>
       </div>
     </section>

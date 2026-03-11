@@ -35,12 +35,10 @@ export default function SubscriptionManager() {
     }
   }, [toast]);
 
-  // Auto-sync on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("checkout") === "success") {
       syncSubscription();
-      // Clean URL
       window.history.replaceState({}, "", window.location.pathname);
     }
   }, [syncSubscription]);
@@ -50,6 +48,17 @@ export default function SubscriptionManager() {
     try {
       const { data, error } = await supabase.functions.invoke("customer-portal");
       if (error) throw error;
+      
+      // Handle trial/no-customer gracefully
+      if (data?.error === "trial_no_customer" || data?.error === "no_subscription") {
+        toast({
+          title: "Plano em teste",
+          description: data.message,
+        });
+        setPortalLoading(false);
+        return;
+      }
+      
       if (data?.url) {
         window.open(data.url, "_blank");
       }
@@ -160,7 +169,7 @@ export default function SubscriptionManager() {
         <div className="flex flex-col sm:flex-row gap-2 pt-2">
           <Button
             size="sm"
-            className="rounded-xl flex-1"
+            className="rounded-xl flex-1 h-11 sm:h-9"
             onClick={() => navigate("/billing")}
           >
             <CreditCard className="h-4 w-4 mr-1.5" />
@@ -171,7 +180,7 @@ export default function SubscriptionManager() {
             <Button
               size="sm"
               variant="outline"
-              className="rounded-xl flex-1"
+              className="rounded-xl flex-1 h-11 sm:h-9"
               onClick={openPortal}
               disabled={portalLoading}
             >
