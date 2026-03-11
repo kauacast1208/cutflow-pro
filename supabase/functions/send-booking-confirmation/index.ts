@@ -38,6 +38,19 @@ Deno.serve(async (req) => {
       throw new Error(`Appointment not found: ${error?.message}`);
     }
 
+    // Resolve client_id for notification logging
+    let clientId: string | null = null;
+    if (appointment.client_phone || appointment.client_email) {
+      const { data: matched } = await supabase.rpc("match_client_for_booking", {
+        _barbershop_id: appointment.barbershop_id,
+        _phone: appointment.client_phone || undefined,
+        _email: appointment.client_email || undefined,
+      });
+      if (matched && matched.length > 0) {
+        clientId = matched[0].id;
+      }
+    }
+
     const formattedDate = new Date(appointment.date + "T00:00:00").toLocaleDateString("pt-BR", {
       weekday: "long", day: "numeric", month: "long",
     });
