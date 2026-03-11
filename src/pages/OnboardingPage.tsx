@@ -34,7 +34,18 @@ export default function OnboardingPage() {
     if (!user) return;
     setLoading(true);
 
-    const slug = slugify(barbershopName) + "-" + Math.random().toString(36).slice(2, 6);
+    let slug = slugify(barbershopName);
+    
+    // Check uniqueness, append short suffix only if needed
+    const { data: existing } = await supabase
+      .from("barbershops")
+      .select("id")
+      .eq("slug", slug)
+      .maybeSingle();
+    
+    if (existing) {
+      slug = slug + "-" + Math.random().toString(36).slice(2, 5);
+    }
 
     const { error } = await supabase.from("barbershops").insert({
       owner_id: user.id,
