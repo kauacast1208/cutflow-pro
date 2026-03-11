@@ -111,24 +111,6 @@ export function HeroSection() {
             </div>
           </motion.div>
 
-          {/* Social proof */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.45 }}
-            className="mt-10 sm:mt-12 flex flex-col items-center gap-3"
-          >
-            <div className="flex -space-x-2">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-8 w-8 sm:h-9 sm:w-9 rounded-full border-2 border-background bg-gradient-to-br from-primary/25 to-primary/8 flex items-center justify-center text-[10px] font-bold text-primary">
-                  {String.fromCharCode(65 + i)}
-                </div>
-              ))}
-            </div>
-            <p className="text-xs sm:text-[13px] text-muted-foreground">
-              Barbearias estão começando a usar o <span className="font-semibold text-foreground">CutFlow</span> para organizar seus atendimentos.
-            </p>
-          </motion.div>
         </div>
 
         {/* Dashboard mockup */}
