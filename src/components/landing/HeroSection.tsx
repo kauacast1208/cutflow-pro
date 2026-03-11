@@ -9,17 +9,17 @@ export function HeroSection() {
       {/* Glow effect */}
       <div className="absolute inset-0 glow-bg" />
       {/* Refined subtle grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(hsl(var(--border)/0.08)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--border)/0.08)_1px,transparent_1px)] bg-[size:72px_72px] sm:bg-[size:80px_80px]" />
+      <div className="absolute inset-0 bg-[linear-gradient(hsl(var(--border)/0.06)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--border)/0.06)_1px,transparent_1px)] bg-[size:72px_72px] sm:bg-[size:80px_80px]" />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
 
-      <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-32 pb-20 sm:pt-36 sm:pb-24 lg:pt-48 lg:pb-36">
-        <div className="max-w-4xl mx-auto text-center">
+      <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-28 pb-16 sm:pt-36 sm:pb-24 lg:pt-44 lg:pb-32">
+        <div className="max-w-3xl mx-auto text-center">
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm text-primary font-medium mb-8 sm:mb-10 backdrop-blur-sm"
+            className="inline-flex items-center gap-2 rounded-full border border-primary/12 bg-primary/[0.04] px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm text-primary font-medium mb-7 sm:mb-9"
           >
             <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span className="hidden sm:inline">Teste gratuito por 7 dias — sem cartão de crédito</span>
@@ -31,7 +31,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.08 }}
-            className="text-[2rem] leading-[1.1] sm:text-5xl lg:text-6xl xl:text-[4.5rem] font-extrabold tracking-[-0.03em] sm:leading-[1.05] mb-6 sm:mb-7 px-1 sm:px-0"
+            className="text-[2rem] leading-[1.08] sm:text-5xl lg:text-[3.5rem] font-extrabold tracking-[-0.035em] sm:leading-[1.08] mb-5 sm:mb-6 px-1 sm:px-0"
           >
             Gerencie sua barbearia com{" "}
             <br className="hidden sm:block" />
@@ -43,10 +43,11 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.16 }}
-            className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 sm:mb-12 leading-relaxed px-1 sm:px-0"
+            className="text-[15px] sm:text-lg text-muted-foreground max-w-xl mx-auto mb-9 sm:mb-10 leading-relaxed px-2 sm:px-0"
           >
-            Agenda, clientes, financeiro e relatórios em um só sistema.
-            Tudo em uma plataforma profissional e fácil de usar.
+            Agenda, clientes, financeiro e relatórios em um só lugar.
+            <br className="hidden sm:block" />
+            Simples, profissional e pronto para usar.
           </motion.p>
 
           {/* CTA buttons */}
@@ -54,28 +55,28 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.24 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-5 px-1 sm:px-0"
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-1 sm:px-0"
           >
             <Link to="/signup" className="w-full sm:w-auto">
-              <Button variant="hero" size="lg" className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-12 h-14 sm:h-[60px] shadow-glow">
+              <Button variant="hero" size="lg" className="w-full sm:w-auto text-[15px] sm:text-base px-8 sm:px-10 h-13 sm:h-14 shadow-glow">
                 Começar teste gratuito
-                <ArrowRight className="ml-2 h-5 w-5" />
+                <ArrowRight className="ml-2 h-4.5 w-4.5" />
               </Button>
             </Link>
             <Link to="/demo" className="w-full sm:w-auto">
-              <Button variant="hero-outline" size="lg" className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-12 h-14 sm:h-[60px]">
-                <Play className="mr-2 h-5 w-5" />
+              <Button variant="hero-outline" size="lg" className="w-full sm:w-auto text-[15px] sm:text-base px-8 sm:px-10 h-13 sm:h-14">
+                <Play className="mr-2 h-4.5 w-4.5" />
                 Ver demonstração
               </Button>
             </Link>
           </motion.div>
 
-          {/* Subtitle under CTA */}
+          {/* Trust line */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.32 }}
-            className="mt-4 text-xs sm:text-sm text-muted-foreground"
+            className="mt-4 text-xs sm:text-[13px] text-muted-foreground/70"
           >
             7 dias grátis · Sem cartão · Cancele quando quiser
           </motion.p>
@@ -85,16 +86,16 @@ export function HeroSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.45 }}
-            className="mt-12 sm:mt-14 flex flex-col items-center gap-4"
+            className="mt-10 sm:mt-12 flex flex-col items-center gap-3"
           >
-            <div className="flex -space-x-2.5">
+            <div className="flex -space-x-2">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-9 w-9 sm:h-10 sm:w-10 rounded-full border-[2.5px] border-background bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center text-[11px] font-bold text-primary shadow-sm">
+                <div key={i} className="h-8 w-8 sm:h-9 sm:w-9 rounded-full border-2 border-background bg-gradient-to-br from-primary/25 to-primary/8 flex items-center justify-center text-[10px] font-bold text-primary">
                   {String.fromCharCode(65 + i)}
                 </div>
               ))}
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground">
+            <p className="text-xs sm:text-[13px] text-muted-foreground">
               <span className="font-semibold text-foreground">+1.200 barbearias</span> já usam o CutFlow
             </p>
           </motion.div>
@@ -105,18 +106,18 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.55 }}
-          className="mt-16 sm:mt-24 max-w-5xl mx-auto"
+          className="mt-14 sm:mt-20 max-w-5xl mx-auto"
         >
-          <div className="rounded-2xl border border-border/60 bg-card shadow-xl overflow-hidden ring-1 ring-border/30">
+          <div className="rounded-2xl border border-border/50 bg-card shadow-xl overflow-hidden ring-1 ring-border/20">
             {/* Browser chrome */}
-            <div className="flex items-center gap-2 px-4 sm:px-5 py-3 sm:py-3.5 border-b border-border/60 bg-muted/20">
+            <div className="flex items-center gap-2 px-4 sm:px-5 py-3 border-b border-border/50 bg-muted/15">
               <div className="flex gap-1.5 sm:gap-2">
-                <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-destructive/25" />
-                <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-warning/25" />
-                <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-primary/25" />
+                <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-destructive/20" />
+                <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-warning/20" />
+                <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-primary/20" />
               </div>
               <div className="flex-1 flex justify-center">
-                <div className="bg-background/80 rounded-lg px-4 sm:px-5 py-1.5 text-[10px] sm:text-xs text-muted-foreground border border-border/50 font-medium">
+                <div className="bg-background/60 rounded-lg px-4 sm:px-5 py-1.5 text-[10px] sm:text-xs text-muted-foreground border border-border/40 font-medium">
                   cutflow.app/dashboard
                 </div>
               </div>
@@ -129,7 +130,7 @@ export function HeroSection() {
                 { icon: Clock, label: "Próximo horário", value: "14:30", color: "text-warning" },
                 { icon: CheckCircle2, label: "Taxa de presença", value: "94%", color: "text-success" },
               ].map((stat) => (
-                <div key={stat.label} className="rounded-xl border border-border/60 bg-background p-3 sm:p-4 hover:shadow-md transition-shadow">
+                <div key={stat.label} className="rounded-xl border border-border/50 bg-background p-3 sm:p-4">
                   <stat.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${stat.color} mb-2 sm:mb-3`} />
                   <p className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight">{stat.value}</p>
                   <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">{stat.label}</p>
@@ -139,9 +140,9 @@ export function HeroSection() {
             {/* Mock agenda rows */}
             <div className="hidden sm:block px-6 lg:px-8 pb-6 lg:pb-8 space-y-2">
               {["09:00 — Carlos Silva · Corte + Barba", "10:00 — Rafael Santos · Corte Masculino", "11:00 — André Oliveira · Barba"].map((row, i) => (
-                <div key={i} className="flex items-center gap-3 rounded-xl border border-border/50 bg-background px-4 py-3 text-sm group hover:border-primary/15 transition-colors">
-                  <div className="h-2 w-2 rounded-full bg-primary/70" />
-                  <span className="text-muted-foreground group-hover:text-foreground transition-colors">{row}</span>
+                <div key={i} className="flex items-center gap-3 rounded-xl border border-border/40 bg-background px-4 py-3 text-sm">
+                  <div className="h-2 w-2 rounded-full bg-primary/60" />
+                  <span className="text-muted-foreground">{row}</span>
                 </div>
               ))}
             </div>

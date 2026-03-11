@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Check, Star, Shield, CreditCard, X, CheckCircle2 } from "lucide-react";
+import { Check, Star, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -83,18 +83,18 @@ export function PricingSection() {
     <section id="pricing" className="section-padding bg-secondary/30">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-10 sm:mb-14">
-          <span className="inline-flex items-center gap-2 rounded-full bg-primary/8 border border-primary/15 px-4 py-1.5 text-xs sm:text-sm font-medium text-primary mb-4 sm:mb-5">
+          <span className="inline-flex items-center gap-2 rounded-full bg-primary/[0.06] border border-primary/12 px-4 py-1.5 text-xs sm:text-sm font-medium text-primary mb-4 sm:mb-5">
             Planos e preços
           </span>
-          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-[-0.02em] mb-3 sm:mb-4">
+          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-[-0.025em] mb-3 sm:mb-4">
             Escolha o plano ideal para sua barbearia
           </h2>
-          <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto">
+          <p className="text-muted-foreground text-[15px] sm:text-lg max-w-lg mx-auto">
             Todos os planos incluem 7 dias grátis. Cancele quando quiser.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 max-w-5xl mx-auto items-start">
           {plans.map((plan, i) => {
             const isPopular = plan.slug === "pro";
             const highlights = planHighlights[plan.slug] || [];
@@ -106,15 +106,15 @@ export function PricingSection() {
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
+                transition={{ delay: i * 0.08 }}
                 className={`rounded-2xl border flex flex-col relative transition-all duration-300 ${
                   isPopular
-                    ? "border-primary bg-card shadow-lg ring-2 ring-primary/15 md:scale-105 z-10 p-6 sm:p-8 lg:p-9"
-                    : "border-border/80 bg-card shadow-card hover:shadow-card-hover p-5 sm:p-7 lg:p-8"
+                    ? "border-primary bg-card shadow-lg ring-2 ring-primary/15 md:scale-[1.03] z-10 p-6 sm:p-8"
+                    : "border-border/70 bg-card shadow-card hover:shadow-card-hover p-5 sm:p-7"
                 }`}
               >
                 {isPopular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-primary px-4 sm:px-5 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-primary-foreground shadow-md whitespace-nowrap">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-primary px-4 py-1 text-[11px] font-semibold text-primary-foreground shadow-sm whitespace-nowrap">
                     <Star className="h-3 w-3 fill-current" />
                     Mais popular
                   </div>
@@ -128,7 +128,7 @@ export function PricingSection() {
                 </div>
 
                 <div className="mb-5 sm:mb-6">
-                  <div className="flex items-baseline gap-1">
+                  <div className="flex items-baseline gap-0.5">
                     <span className="text-xs sm:text-sm text-muted-foreground">R$</span>
                     <span className={`font-extrabold tracking-tight ${isPopular ? "text-4xl sm:text-5xl" : "text-3xl sm:text-4xl"}`}>
                       {plan.price}
@@ -136,16 +136,16 @@ export function PricingSection() {
                     <span className="text-muted-foreground text-xs sm:text-sm">/mês</span>
                   </div>
                   <p className="text-[11px] sm:text-xs text-primary mt-1.5 font-medium">
-                    7 dias grátis para testar
+                    7 dias grátis · Sem cobrança hoje
                   </p>
                 </div>
 
-                <ul className="space-y-2.5 sm:space-y-3 mb-6 sm:mb-8 flex-1">
+                <ul className="space-y-2.5 mb-6 sm:mb-7 flex-1">
                   {highlights.map((f) => (
-                    <li key={f} className="flex items-start gap-2 sm:gap-2.5 text-xs sm:text-sm">
+                    <li key={f} className="flex items-start gap-2.5 text-xs sm:text-sm">
                       <Check
                         className={`h-3.5 w-3.5 sm:h-4 sm:w-4 mt-0.5 shrink-0 ${
-                          isPopular ? "text-primary" : "text-primary/70"
+                          isPopular ? "text-primary" : "text-primary/60"
                         }`}
                       />
                       <span>{f}</span>
@@ -153,35 +153,39 @@ export function PricingSection() {
                   ))}
                 </ul>
 
-                <Link to={`/checkout?plan=${plan.slug}`} className="block">
+                <Link to={`/checkout?plan=${plan.slug}`} className="block mt-auto">
                   <Button
                     variant={isPopular ? "hero" : "outline"}
-                    className={`w-full rounded-xl ${isPopular ? "h-14 sm:h-12 text-base sm:text-base" : "h-12 sm:h-11 text-base sm:text-sm"}`}
+                    className={`w-full rounded-xl ${isPopular ? "h-12 sm:h-13 text-[15px]" : "h-11 sm:h-12 text-sm"}`}
                   >
                     Começar teste gratuito
                   </Button>
                 </Link>
+
+                <p className="text-center text-[10px] sm:text-[11px] text-muted-foreground mt-3">
+                  Cancele quando quiser
+                </p>
               </motion.div>
             );
           })}
         </div>
 
         {/* Trust signals */}
-        <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-8 mt-8 sm:mt-12 text-xs sm:text-sm text-muted-foreground">
+        <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 mt-8 sm:mt-10 text-xs sm:text-[13px] text-muted-foreground">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-primary" />
+            <CheckCircle2 className="h-4 w-4 text-primary/60" />
             <span>Pagamento seguro via Stripe</span>
           </div>
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-primary" />
+            <CheckCircle2 className="h-4 w-4 text-primary/60" />
             <span>Teste gratuito de 7 dias</span>
           </div>
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-primary" />
+            <CheckCircle2 className="h-4 w-4 text-primary/60" />
             <span>Cancele quando quiser</span>
           </div>
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-primary" />
+            <CheckCircle2 className="h-4 w-4 text-primary/60" />
             <span>Sem fidelidade</span>
           </div>
         </div>
