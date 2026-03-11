@@ -31,9 +31,7 @@ export function HeroSection() {
             transition={{ duration: 0.6, delay: 0.08 }}
             className="text-[2rem] leading-[1.08] sm:text-5xl lg:text-[3.5rem] font-extrabold tracking-[-0.035em] sm:leading-[1.08] mb-5 sm:mb-6 px-1 sm:px-0"
           >
-            Organize sua barbearia, lote sua agenda e{" "}
-            <br className="hidden sm:block" />
-            <span className="text-gradient">nunca mais perca clientes.</span>
+            Sistema completo para barbearias que querem parar de perder clientes.
           </motion.h1>
 
           {/* Subtitle */}
@@ -41,9 +39,9 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.16 }}
-            className="text-[15px] sm:text-lg text-muted-foreground max-w-xl mx-auto mb-9 sm:mb-10 leading-relaxed px-2 sm:px-0"
+            className="text-[15px] sm:text-lg text-muted-foreground max-w-xl mx-auto mb-6 sm:mb-8 leading-relaxed px-2 sm:px-0"
           >
-            O CutFlow ajuda barbearias a gerenciar agendamentos, clientes e faturamento em um único sistema simples e profissional.
+            Organize agenda, reduza faltas e controle seu faturamento em um único lugar.
           </motion.p>
 
           {/* CTA buttons */}
