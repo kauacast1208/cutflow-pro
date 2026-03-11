@@ -146,8 +146,8 @@ export default function ProfessionalsPage() {
           <div className="h-14 w-14 rounded-2xl bg-secondary/60 flex items-center justify-center mx-auto mb-4">
             <UserCog className="h-6 w-6 text-muted-foreground/40" />
           </div>
-          <p className="text-sm font-medium text-muted-foreground">Nenhum profissional cadastrado</p>
-          <p className="text-xs text-muted-foreground/60 mt-1">Adicione profissionais para permitir agendamentos.</p>
+          <p className="text-sm font-medium text-muted-foreground">Adicione seu primeiro profissional</p>
+          <p className="text-xs text-muted-foreground/60 mt-1">Cadastre quem vai atender para começar a receber agendamentos.</p>
           <Button size="sm" className="mt-4 gap-1.5 rounded-lg" onClick={openNew}>
             <Plus className="h-4 w-4" /> Adicionar profissional
           </Button>
