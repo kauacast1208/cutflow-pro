@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { MessageSquare, Clock, DollarSign, ArrowRight } from "lucide-react";
+import { MessageSquare, Clock, DollarSign } from "lucide-react";
 
 const problems = [
   {
@@ -38,7 +38,7 @@ export function PainPointsSection() {
             viewport={{ once: true }}
             className="text-2xl sm:text-4xl lg:text-[2.75rem] font-extrabold tracking-[-0.02em] mb-4 sm:mb-5"
           >
-            Sua agenda ainda depende de WhatsApp ou papel?
+            Cada horário vazio é dinheiro perdido.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -51,7 +51,7 @@ export function PainPointsSection() {
           </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5 max-w-4xl mx-auto mb-8 sm:mb-10">
           {problems.map((p, i) => (
             <motion.div
               key={p.title}
@@ -69,6 +69,31 @@ export function PainPointsSection() {
             </motion.div>
           ))}
         </div>
+
+        {/* Revenue loss calculator */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3 }}
+          className="max-w-lg mx-auto rounded-2xl border border-border bg-card p-6 sm:p-8 text-center"
+        >
+          <p className="text-sm text-muted-foreground mb-3">
+            Se apenas <span className="font-semibold text-foreground">2 clientes</span> faltam por semana:
+          </p>
+          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-destructive mb-1">
+            R$ 480
+            <span className="text-base sm:text-lg font-semibold text-muted-foreground ml-1.5">perdidos/mês</span>
+          </p>
+          <p className="text-xs text-muted-foreground mt-2">
+            R$ 60 × 2 faltas × 4 semanas
+          </p>
+          <div className="mt-4 pt-4 border-t border-border">
+            <p className="text-sm font-semibold text-primary">
+              CutFlow ajuda você a evitar isso.
+            </p>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
