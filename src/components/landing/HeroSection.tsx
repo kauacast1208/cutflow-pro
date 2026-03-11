@@ -31,7 +31,7 @@ export function HeroSection() {
             transition={{ duration: 0.6, delay: 0.08 }}
             className="text-[2rem] leading-[1.08] sm:text-5xl lg:text-[3.5rem] font-extrabold tracking-[-0.035em] sm:leading-[1.08] mb-5 sm:mb-6 px-1 sm:px-0"
           >
-            Sistema completo para barbearias que querem parar de perder clientes.
+            Pare de perder clientes por falta de organização.
           </motion.h1>
 
           {/* Subtitle */}
@@ -39,33 +39,29 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.16 }}
-            className="text-[15px] sm:text-lg text-muted-foreground max-w-xl mx-auto mb-6 sm:mb-8 leading-relaxed px-2 sm:px-0"
+            className="text-[15px] sm:text-lg text-muted-foreground max-w-xl mx-auto mb-4 sm:mb-5 leading-relaxed px-2 sm:px-0"
           >
-            Organize agenda, reduza faltas e controle seu faturamento em um único lugar.
+            O CutFlow organiza sua agenda, envia lembretes automáticos e ajuda sua barbearia crescer.
           </motion.p>
 
-          {/* Benefits checklist */}
+          {/* Benefits */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground mb-8 sm:mb-9 px-2 sm:px-0"
+            className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-foreground font-medium mb-8 sm:mb-9 px-2 sm:px-0"
           >
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span>Agenda automática</span>
+              <span className="text-primary">↓</span>
+              <span>Menos faltas</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span>Lembretes WhatsApp</span>
+              <span className="text-primary">↑</span>
+              <span>Mais clientes</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span>Gestão de clientes</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span>Relatórios simples</span>
+              <span className="text-primary">✓</span>
+              <span>Mais controle</span>
             </div>
           </motion.div>
 
