@@ -189,7 +189,7 @@ export default function ReportsPage() {
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -200,27 +200,29 @@ export default function ReportsPage() {
               )
             }
             disabled={loading}
-            className="gap-1.5"
+            className="gap-1.5 text-xs"
           >
             <FileText className="h-4 w-4" />
-            CSV Metricas
+            <span className="hidden sm:inline">CSV Metricas</span>
+            <span className="sm:hidden">CSV</span>
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => exportAppointmentsCsv(appointments, period)}
             disabled={loading}
-            className="gap-1.5"
+            className="gap-1.5 text-xs"
           >
             <Download className="h-4 w-4" />
-            CSV Agendamentos
+            <span className="hidden sm:inline">CSV Agendamentos</span>
+            <span className="sm:hidden">Agend.</span>
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={exportReportPdf}
             disabled={loading}
-            className="gap-1.5"
+            className="gap-1.5 text-xs"
           >
             <Printer className="h-4 w-4" />
             PDF

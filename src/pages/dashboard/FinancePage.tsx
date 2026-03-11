@@ -190,13 +190,13 @@ export default function FinancePage() {
           </div>
 
           {/* Revenue chart */}
-          <motion.div {...fadeUp(7)} className="rounded-2xl border border-border bg-card p-6">
-            <h3 className="text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              Evolução do faturamento
+          <motion.div {...fadeUp(7)} className="rounded-2xl border border-border bg-card p-4 sm:p-6">
+            <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Evolucao do faturamento
             </h3>
-            <div className="h-64">
+            <div className="h-48 sm:h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={timeSeriesData}>
+                <AreaChart data={timeSeriesData} margin={{ left: -10, right: 5, top: 5, bottom: 0 }}>
                   <defs>
                     <linearGradient id="finRevGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
@@ -204,8 +204,8 @@ export default function FinancePage() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" interval="preserveStartEnd" />
+                  <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={40} />
                   <Tooltip
                     contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: 12 }}
                     formatter={(value: number) => [fmt(value), "Faturamento"]}
