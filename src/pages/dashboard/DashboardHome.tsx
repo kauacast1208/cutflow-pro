@@ -528,7 +528,7 @@ export default function DashboardHome() {
         </motion.div>
 
         {/* Inactive Clients */}
-        <motion.div {...fadeUp(8)} className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow">
+        <motion.div {...fadeUp(8)} className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
           <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             <UserX className="h-4 w-4 text-amber-600" /> Clientes inativos
           </h3>
