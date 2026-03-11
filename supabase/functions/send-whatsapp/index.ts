@@ -211,6 +211,7 @@ async function updateNotificationStatus(
         status: "sent",
         sent_at: new Date().toISOString(),
         error_message: null,
+        provider: result.provider,
       })
       .eq("id", notificationId);
   } else {
@@ -219,6 +220,7 @@ async function updateNotificationStatus(
       .update({
         status: "failed",
         error_message: `[${result.provider}] ${result.error}`.slice(0, 500),
+        provider: result.provider,
       })
       .eq("id", notificationId);
   }
