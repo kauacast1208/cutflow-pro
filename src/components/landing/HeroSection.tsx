@@ -75,11 +75,11 @@ export function HeroSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.45 }}
-            className="mt-12 sm:mt-16 flex flex-col items-center gap-3 sm:gap-4"
+            className="mt-14 sm:mt-16 flex flex-col items-center gap-4"
           >
-            <div className="flex -space-x-2">
+            <div className="flex -space-x-2.5">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-9 w-9 sm:h-10 sm:w-10 rounded-full border-2 border-background bg-gradient-to-br from-primary/25 to-primary/5 flex items-center justify-center text-xs font-bold text-primary shadow-sm">
+                <div key={i} className="h-9 w-9 sm:h-10 sm:w-10 rounded-full border-[2.5px] border-background bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center text-[11px] font-bold text-primary shadow-sm">
                   {String.fromCharCode(65 + i)}
                 </div>
               ))}
