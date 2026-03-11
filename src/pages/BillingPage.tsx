@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Check, Crown, Loader2, Sparkles, Zap, Shield, CreditCard,
-  ExternalLink, Star, CheckCircle2,
+  ExternalLink, Star, CheckCircle2, AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -60,6 +60,17 @@ export default function BillingPage() {
     try {
       const { data, error } = await supabase.functions.invoke("customer-portal");
       if (error) throw error;
+      
+      // Handle graceful trial/no-customer responses
+      if (data?.error === "trial_no_customer" || data?.error === "no_subscription") {
+        toast({
+          title: "Plano em teste",
+          description: data.message,
+        });
+        setPortalLoading(false);
+        return;
+      }
+      
       if (data?.url) window.open(data.url, "_blank");
     } catch (err: any) {
       toast({ title: "Erro ao abrir portal", description: err.message || "Tente novamente.", variant: "destructive" });
@@ -115,7 +126,7 @@ export default function BillingPage() {
                   </div>
 
                   {hasStripeSubscription && (
-                    <Button variant="outline" onClick={handleOpenPortal} disabled={portalLoading} className="shrink-0 rounded-xl h-10">
+                    <Button variant="outline" onClick={handleOpenPortal} disabled={portalLoading} className="shrink-0 rounded-xl h-11 sm:h-10">
                       {portalLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ExternalLink className="h-4 w-4 mr-2" />}
                       Gerenciar assinatura
                     </Button>
@@ -143,6 +154,19 @@ export default function BillingPage() {
                   )}
                 </div>
 
+                {/* Trial info banner */}
+                {isTrial && !hasStripeSubscription && (
+                  <div className="mt-4 rounded-xl bg-amber-500/5 border border-amber-500/15 p-4 flex items-start gap-3">
+                    <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-amber-800">Período de teste ativo</p>
+                      <p className="text-xs text-amber-700/70 mt-0.5">
+                        Seu plano está em período de teste. Escolha um plano abaixo para ativar sua assinatura e continuar usando após o teste.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {/* Features */}
                 <div className="mt-5 pt-4 border-t border-border">
                   <p className="text-xs font-medium text-muted-foreground mb-2.5">Recursos do seu plano</p>
@@ -163,7 +187,7 @@ export default function BillingPage() {
         {/* Plans grid */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
           <h2 className="text-lg font-bold mb-5">
-            {hasStripeSubscription ? "Alterar plano" : isTrial ? "Trocar plano do teste" : "Escolha seu plano"}
+            {hasStripeSubscription ? "Alterar plano" : isTrial ? "Ativar assinatura" : "Escolha seu plano"}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
@@ -240,27 +264,27 @@ export default function BillingPage() {
                         </ul>
 
                         {isCurrentActivePlan ? (
-                          <Button className="w-full rounded-xl h-11" variant="outline" onClick={handleOpenPortal} disabled={portalLoading}>
+                          <Button className="w-full rounded-xl h-12 sm:h-11 text-sm font-semibold" variant="outline" onClick={handleOpenPortal} disabled={portalLoading}>
                             {portalLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                             Gerenciar plano
                           </Button>
                         ) : isCurrentTrialPlan ? (
-                          <Button className="w-full rounded-xl h-11" variant="outline" onClick={handleOpenPortal} disabled={portalLoading}>
-                            {portalLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                            Gerenciar plano
+                          <Button className="w-full rounded-xl h-12 sm:h-11 text-sm font-semibold" variant={isRecommended ? "default" : "outline"} disabled={loadingPlan !== null} onClick={() => handleSubscribe(key)}>
+                            {loadingPlan === key ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                            Ativar este plano
                           </Button>
                         ) : hasStripeSubscription ? (
-                          <Button className="w-full rounded-xl h-11" variant={isRecommended ? "default" : "outline"} onClick={handleOpenPortal} disabled={portalLoading}>
+                          <Button className="w-full rounded-xl h-12 sm:h-11 text-sm font-semibold" variant={isRecommended ? "default" : "outline"} onClick={handleOpenPortal} disabled={portalLoading}>
                             {portalLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                             Trocar para este plano
                           </Button>
                         ) : isTrial ? (
-                          <Button className="w-full rounded-xl h-11" variant={isRecommended ? "default" : "outline"} disabled={loadingPlan !== null} onClick={() => handleSubscribe(key)}>
+                          <Button className="w-full rounded-xl h-12 sm:h-11 text-sm font-semibold" variant={isRecommended ? "default" : "outline"} disabled={loadingPlan !== null} onClick={() => handleSubscribe(key)}>
                             {loadingPlan === key ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                             Trocar para este plano
                           </Button>
                         ) : (
-                          <Button className="w-full rounded-xl h-11" variant={isRecommended ? "default" : "outline"} disabled={loadingPlan !== null} onClick={() => handleSubscribe(key)}>
+                          <Button className="w-full rounded-xl h-12 sm:h-11 text-sm font-semibold" variant={isRecommended ? "default" : "outline"} disabled={loadingPlan !== null} onClick={() => handleSubscribe(key)}>
                             {loadingPlan === key ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                             Começar teste gratuito
                           </Button>
@@ -274,9 +298,9 @@ export default function BillingPage() {
           </div>
 
           {/* Trust signals */}
-          <div className="flex flex-wrap items-center justify-center gap-5 mt-7 text-xs sm:text-[13px] text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-5 mt-7 text-xs sm:text-[13px] text-muted-foreground">
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-primary/60" />
+              <Shield className="h-3.5 w-3.5 text-primary/60" />
               <span>Pagamento seguro via Stripe</span>
             </div>
             <div className="flex items-center gap-1.5">

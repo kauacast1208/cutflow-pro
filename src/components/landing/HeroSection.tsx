@@ -30,7 +30,7 @@ export function HeroSection() {
             transition={{ duration: 0.6, delay: 0.08 }}
             className="text-[1.75rem] leading-[1.1] sm:text-4xl lg:text-[3rem] font-extrabold tracking-[-0.03em] sm:leading-[1.08] mb-4 sm:mb-5 px-1 sm:px-0"
           >
-            Sistema completo para barbearias modernas.
+            Pare de perder clientes por falta de organização.
           </motion.h1>
 
           {/* Subheadline */}
@@ -38,77 +38,55 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.14 }}
-            className="text-[1rem] sm:text-lg text-foreground font-semibold max-w-xl mx-auto mb-3 sm:mb-4 leading-snug px-2 sm:px-0"
+            className="text-[15px] sm:text-lg text-muted-foreground max-w-xl mx-auto mb-6 sm:mb-7 leading-relaxed px-2 sm:px-0"
           >
-            Pare de perder clientes por falta de organização.
+            O CutFlow ajuda barbearias a organizar agendamentos, enviar lembretes automáticos, controlar clientes e acompanhar faturamento sem complicação.
           </motion.p>
-
-          {/* Subtitle */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-[15px] sm:text-base text-muted-foreground max-w-xl mx-auto mb-5 sm:mb-6 leading-relaxed px-2 sm:px-0"
-          >
-            O CutFlow organiza sua agenda, envia lembretes automáticos e ajuda você controlar seu faturamento.
-          </motion.p>
-
-          {/* Benefits */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.26 }}
-            className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[13px] sm:text-sm text-muted-foreground mb-6 sm:mb-7 px-3 sm:px-0"
-          >
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              <span>Agenda online automática</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              <span>Lembretes por WhatsApp</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              <span>Gestão de clientes</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              <span>Controle financeiro</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              <span>Relatórios simples</span>
-            </div>
-          </motion.div>
 
           {/* Value props */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.32 }}
-            className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-sm font-semibold text-foreground mb-7 sm:mb-8 px-2 sm:px-0"
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[13px] sm:text-sm text-muted-foreground mb-7 sm:mb-8 px-3 sm:px-0"
           >
-            <span>Menos faltas.</span>
-            <span>Mais clientes.</span>
-            <span>Mais controle.</span>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+              <span>Menos faltas</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+              <span>Menos estresse</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+              <span>Mais organização</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+              <span>Mais clientes retornando</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+              <span>Mais controle financeiro</span>
+            </div>
           </motion.div>
 
           {/* CTA buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.38 }}
+            transition={{ duration: 0.5, delay: 0.28 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-1 sm:px-0"
           >
             <Link to="/signup" className="w-full sm:w-auto">
-              <Button variant="hero" size="lg" className="w-full sm:w-auto text-[15px] sm:text-base px-8 sm:px-10 h-13 sm:h-14 shadow-glow">
-                Teste grátis por 7 dias
+              <Button variant="hero" size="lg" className="w-full sm:w-auto text-[15px] sm:text-base px-8 sm:px-10 h-14 sm:h-14 shadow-glow">
+                Criar minha agenda grátis
                 <ArrowRight className="ml-2 h-4.5 w-4.5" />
               </Button>
             </Link>
             <Link to="/demo" className="w-full sm:w-auto">
-              <Button variant="hero-outline" size="lg" className="w-full sm:w-auto text-[15px] sm:text-base px-8 sm:px-10 h-13 sm:h-14">
+              <Button variant="hero-outline" size="lg" className="w-full sm:w-auto text-[15px] sm:text-base px-8 sm:px-10 h-14 sm:h-14">
                 <Play className="mr-2 h-4.5 w-4.5" />
                 Ver demonstração
               </Button>
@@ -119,7 +97,7 @@ export function HeroSection() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.46 }}
+            transition={{ duration: 0.5, delay: 0.38 }}
             className="mt-6 sm:mt-7 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-5 text-xs sm:text-[13px] text-muted-foreground"
           >
             <div className="flex items-center gap-1.5">
@@ -131,8 +109,8 @@ export function HeroSection() {
               <span>Sem fidelidade</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-primary/60" />
-              <span>Sem complicação</span>
+              <CreditCard className="h-3.5 w-3.5 text-primary/60" />
+              <span>Pagamento seguro via Stripe</span>
             </div>
           </motion.div>
 
@@ -142,7 +120,7 @@ export function HeroSection() {
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.55 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
           className="mt-14 sm:mt-20 max-w-5xl mx-auto"
         >
           <div className="rounded-2xl border border-border/50 bg-card shadow-xl overflow-hidden ring-1 ring-border/20">

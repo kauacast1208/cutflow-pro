@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Shield, Sparkles, Clock } from "lucide-react";
+import { ArrowRight, Shield, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function CTASection() {
@@ -27,19 +27,19 @@ export function CTASection() {
             sua barbearia?
           </h2>
           <p className="text-primary-foreground/65 text-sm sm:text-base mb-7 sm:mb-8 max-w-md mx-auto leading-relaxed">
-            Leva menos de 2 minutos para criar sua conta. Comece agora com 7 dias grátis.
+            Leva menos de 5 minutos para criar sua conta. Comece agora com 7 dias grátis.
           </p>
           <Link to="/signup" className="block w-full sm:w-auto sm:inline-block">
             <Button
               size="lg"
-              className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-bold text-[15px] px-8 sm:px-10 h-13 sm:h-14 shadow-lg rounded-xl w-full sm:w-auto"
+              className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-bold text-[15px] px-8 sm:px-10 h-14 shadow-lg rounded-xl w-full sm:w-auto"
             >
-              Começar teste gratuito agora
+              Criar minha agenda grátis
               <ArrowRight className="ml-2 h-4.5 w-4.5" />
             </Button>
           </Link>
           <p className="mt-3.5 text-primary-foreground/45 text-xs sm:text-[13px]">
-            7 dias grátis · Sem cartão · Cancele quando quiser
+            7 dias grátis · Sem fidelidade · Cancele quando quiser
           </p>
           <div className="mt-4 flex items-center justify-center gap-2 text-primary-foreground/40 text-xs">
             <Shield className="h-3.5 w-3.5" />
