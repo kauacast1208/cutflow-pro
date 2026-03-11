@@ -704,25 +704,49 @@ export default function AgendaPage() {
       </motion.div>
 
       {/* Blocked times summary for the day */}
-      {viewMode === "day" && blockedTimes.filter(b => b.date === format(selectedDate, "yyyy-MM-dd")).length > 0 && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="hidden sm:block">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Horários bloqueados</p>
-          <div className="flex flex-wrap gap-2">
-            {blockedTimes.filter(b => b.date === format(selectedDate, "yyyy-MM-dd")).map(b => (
-              <div key={b.id} className="flex items-center gap-2 rounded-xl border border-border/50 bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground">
-                <Ban className="h-3 w-3" />
-                <span>{b.all_day ? "Dia inteiro" : `${b.start_time?.slice(0, 5)} - ${b.end_time?.slice(0, 5)}`}</span>
-                {b.reason && <span className="text-muted-foreground/60">· {b.reason}</span>}
-                {canViewFullAgenda && (
-                  <button onClick={() => handleDeleteBlock(b.id)} className="text-destructive/60 hover:text-destructive ml-1">
-                    <XCircle className="h-3 w-3" />
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      )}
+      {viewMode === "day" && (() => {
+        const dateStr = format(selectedDate, "yyyy-MM-dd");
+        const dayOfWeek = selectedDate.getDay();
+        const dayBlocks = blockedTimes.filter(b =>
+          b.recurring
+            ? (b.recurring_days || []).includes(dayOfWeek)
+            : b.date === dateStr
+        );
+        if (dayBlocks.length === 0) return null;
+        return (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="hidden sm:block">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Horários bloqueados</p>
+            <div className="flex flex-wrap gap-2">
+              {dayBlocks.map(b => {
+                const isLunch = (b.reason || "").toLowerCase().includes("almoço");
+                const isPause = (b.reason || "").toLowerCase().includes("pausa");
+                return (
+                  <div key={b.id} className={`flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs ${
+                    isLunch ? "border-amber-500/30 bg-amber-500/5 text-amber-700 dark:text-amber-400" :
+                    isPause ? "border-blue-500/30 bg-blue-500/5 text-blue-700 dark:text-blue-400" :
+                    "border-border/50 bg-muted/30 text-muted-foreground"
+                  }`}>
+                    <span>{isLunch ? "🍽️" : isPause ? "☕" : "🚫"}</span>
+                    <span>{b.all_day ? "Dia inteiro" : `${b.start_time?.slice(0, 5)} - ${b.end_time?.slice(0, 5)}`}</span>
+                    {b.reason && <span className="opacity-60">· {b.reason}</span>}
+                    {b.recurring && (
+                      <Badge variant="secondary" className="text-[9px] px-1.5 py-0 rounded-full">Recorrente</Badge>
+                    )}
+                    {b.professional_id && professionals.find(p => p.id === b.professional_id) && (
+                      <span className="opacity-60">· {professionals.find(p => p.id === b.professional_id)?.name?.split(" ")[0]}</span>
+                    )}
+                    {canViewFullAgenda && (
+                      <button onClick={() => handleDeleteBlock(b.id)} className="text-destructive/60 hover:text-destructive ml-1">
+                        <XCircle className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        );
+      })()}
 
       {/* Appointment detail dialog */}
       <Dialog open={!!selectedAppt} onOpenChange={o => !o && setSelectedAppt(null)}>
