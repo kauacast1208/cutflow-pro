@@ -114,13 +114,15 @@ export default function PublicBookingPage() {
   useEffect(() => {
     if (!selectedDate || !barbershop) return;
     const dateStr = format(selectedDate, "yyyy-MM-dd");
+    const dayOfWeek = selectedDate.getDay();
     Promise.all([
       supabase.rpc("get_booked_slots", {
         _barbershop_id: barbershop.id,
         _date: dateStr,
       }),
-      supabase.from("blocked_times").select("*").eq("barbershop_id", barbershop.id).eq("date", dateStr),
-    ]).then(([appRes, blockRes]) => {
+      supabase.from("blocked_times").select("*").eq("barbershop_id", barbershop.id).eq("recurring", false).eq("date", dateStr),
+      supabase.from("blocked_times").select("*").eq("barbershop_id", barbershop.id).eq("recurring", true).contains("recurring_days", [dayOfWeek]),
+    ]).then(([appRes, blockRes, recurringBlockRes]) => {
       // Map RPC results to match Appointment interface expected by booking logic
       const slots = (appRes.data || []).map((s: any) => ({
         professional_id: s.professional_id,
@@ -131,7 +133,7 @@ export default function PublicBookingPage() {
         barbershop_id: barbershop.id,
       }));
       setAppointments(slots);
-      setBlockedTimes(blockRes.data || []);
+      setBlockedTimes([...(blockRes.data || []), ...(recurringBlockRes.data || [])]);
     });
   }, [selectedDate, barbershop]);
 

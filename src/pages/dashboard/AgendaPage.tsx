@@ -237,9 +237,16 @@ export default function AgendaPage() {
     });
   };
 
-  const getBlocksForSlot = (dateStr: string, hour: number) => {
+  const getBlocksForSlot = (dateStr: string, hour: number, proId?: string) => {
+    const dayOfWeek = new Date(dateStr + "T12:00:00").getDay();
     return blockedTimes.filter(b => {
-      if (b.date !== dateStr) return false;
+      // Check professional match
+      if (proId && b.professional_id && b.professional_id !== proId) return false;
+      // Check date match: exact date or recurring weekday
+      const dateMatch = b.recurring
+        ? (b.recurring_days || []).includes(dayOfWeek)
+        : b.date === dateStr;
+      if (!dateMatch) return false;
       if (b.all_day) return true;
       if (!b.start_time || !b.end_time) return false;
       const bStart = parseInt(b.start_time);
