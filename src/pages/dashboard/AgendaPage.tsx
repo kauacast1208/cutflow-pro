@@ -55,7 +55,7 @@ export default function AgendaPage() {
   const [myProfessionalId, setMyProfessionalId] = useState<string | null>(null);
   const [selectedPro, setSelectedPro] = useState<string>("all");
   const [showBlockDialog, setShowBlockDialog] = useState(false);
-  const [blockForm, setBlockForm] = useState({ date: "", start_time: "", end_time: "", reason: "", professional_id: "all", all_day: false });
+  const [blockForm, setBlockForm] = useState<{ date: string; start_time: string; end_time: string; reason: string; professional_id: string; all_day: boolean; recurring: boolean; recurring_days: number[] }>({ date: "", start_time: "", end_time: "", reason: "", professional_id: "all", all_day: false, recurring: false, recurring_days: [] });
   const [showNewAppt, setShowNewAppt] = useState(false);
   const [newApptDefaults, setNewApptDefaults] = useState<{ date?: Date; time?: string; proId?: string }>({});
   const [currentMinute, setCurrentMinute] = useState(new Date().getHours() * 60 + new Date().getMinutes());
