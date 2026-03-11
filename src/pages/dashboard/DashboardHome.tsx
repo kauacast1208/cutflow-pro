@@ -665,7 +665,7 @@ export default function DashboardHome() {
       </div>
 
       {/* Quick actions */}
-      <motion.div {...fadeUp(13)} className="rounded-2xl border border-border bg-card p-4 sm:p-6 hover:shadow-md transition-shadow">
+      <motion.div {...fadeUp(13)} className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
         <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Acoes rapidas</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Button variant="outline" className="h-auto py-5 sm:py-4 flex-col gap-2 rounded-xl text-sm" onClick={() => navigate("/dashboard/agenda")}><Calendar className="h-5 w-5 text-primary" /><span className="text-xs">Ver agenda</span></Button>
