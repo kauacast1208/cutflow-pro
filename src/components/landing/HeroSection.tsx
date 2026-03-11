@@ -78,7 +78,7 @@ export function HeroSection() {
           >
             <Link to="/signup" className="w-full sm:w-auto">
               <Button variant="hero" size="lg" className="w-full sm:w-auto text-[15px] sm:text-base px-8 sm:px-10 h-14 sm:h-14 shadow-glow">
-                Criar minha agenda grátis
+                Teste grátis por 7 dias
                 <ArrowRight className="ml-2 h-4.5 w-4.5" />
               </Button>
             </Link>
