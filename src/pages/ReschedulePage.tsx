@@ -7,9 +7,7 @@ import { format, addMinutes, parse, isBefore } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { CalendarDays, Check, Loader2, AlertCircle, Clock, Scissors } from "lucide-react";
-import { formatCurrency } from "@/lib/format";
-import { generateTimeSlots } from "@/lib/booking";
-import { useBookingSlots } from "@/hooks/useBookingSlots";
+import { generateTimeSlots, groupSlotsByPeriod, type SlotConfig } from "@/lib/booking";
 
 export default function ReschedulePage() {
   const { token } = useParams<{ token: string }>();
@@ -18,6 +16,8 @@ export default function ReschedulePage() {
   const [service, setService] = useState<any>(null);
   const [professional, setProfessional] = useState<any>(null);
   const [availability, setAvailability] = useState<any[]>([]);
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [blockedTimes, setBlockedTimes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [expired, setExpired] = useState(false);
@@ -33,13 +33,12 @@ export default function ReschedulePage() {
       const { data: appt } = await supabase
         .from("appointments")
         .select("*")
-        .eq("reschedule_token", token)
+        .eq("reschedule_token" as any, token)
         .in("status", ["scheduled", "confirmed"])
         .maybeSingle();
 
       if (!appt) { setNotFound(true); setLoading(false); return; }
 
-      // Check if appointment is in the past
       const apptDate = new Date(`${appt.date}T${appt.start_time}`);
       if (isBefore(apptDate, new Date())) { setExpired(true); setLoading(false); return; }
 
@@ -61,29 +60,54 @@ export default function ReschedulePage() {
     })();
   }, [token]);
 
-  const { bookedSlots } = useBookingSlots(
-    barbershop?.id,
-    selectedDate ? format(selectedDate, "yyyy-MM-dd") : undefined,
-    appointment?.professional_id
-  );
+  // Load booked slots and blocked times when date changes
+  useEffect(() => {
+    if (!selectedDate || !barbershop || !appointment) return;
+    const dateStr = format(selectedDate, "yyyy-MM-dd");
+
+    Promise.all([
+      supabase.rpc("get_booked_slots", {
+        _barbershop_id: barbershop.id,
+        _date: dateStr,
+        _professional_id: appointment.professional_id,
+      }),
+      supabase.from("blocked_times").select("*").eq("barbershop_id", barbershop.id).eq("date", dateStr),
+    ]).then(([{ data: booked }, { data: blocked }]) => {
+      setAppointments((booked || []).map((s: any) => ({
+        professional_id: s.professional_id,
+        start_time: s.start_time,
+        end_time: s.end_time,
+      })));
+      setBlockedTimes((blocked || []).map((b: any) => ({
+        professional_id: b.professional_id,
+        all_day: b.all_day,
+        start_time: b.start_time,
+        end_time: b.end_time,
+      })));
+    });
+  }, [selectedDate, barbershop, appointment]);
 
   const timeSlots = useMemo(() => {
-    if (!selectedDate || !barbershop || !service) return [];
-    const weekday = selectedDate.getDay();
-    const proAvail = availability.filter((a) => a.weekday === weekday);
-    if (proAvail.length === 0) return [];
+    if (!selectedDate || !barbershop || !service || !appointment) return [];
 
-    return generateTimeSlots({
-      openingTime: proAvail[0].start_time,
-      closingTime: proAvail[0].end_time,
-      slotInterval: barbershop.slot_interval_minutes,
-      serviceDuration: service.duration_minutes,
-      bookedSlots: bookedSlots || [],
+    const config: SlotConfig = {
+      openingTime: barbershop.opening_time?.slice(0, 5) || "09:00",
+      closingTime: barbershop.closing_time?.slice(0, 5) || "19:00",
+      intervalMinutes: barbershop.slot_interval_minutes || 30,
+      durationMinutes: service.duration_minutes,
+      bufferMinutes: barbershop.buffer_minutes || 0,
+      minAdvanceHours: barbershop.min_advance_hours || 1,
+    };
+
+    return generateTimeSlots(
       selectedDate,
-      minAdvanceHours: barbershop.min_advance_hours,
-      bufferMinutes: barbershop.buffer_minutes,
-    });
-  }, [selectedDate, barbershop, service, availability, bookedSlots]);
+      appointment.professional_id,
+      config,
+      appointments,
+      blockedTimes,
+      availability
+    );
+  }, [selectedDate, barbershop, service, appointment, appointments, blockedTimes, availability]);
 
   const handleReschedule = async () => {
     if (!selectedDate || !selectedTime || !appointment || !service) return;
@@ -94,36 +118,28 @@ export default function ReschedulePage() {
       "HH:mm"
     );
 
-    const { error } = await supabase
+    // Mark old appointment as rescheduled
+    await supabase
       .from("appointments")
-      .update({
+      .update({ status: "rescheduled" as any })
+      .eq("id", appointment.id);
+
+    // Create new appointment via edge function
+    const { error } = await supabase.functions.invoke("public-booking", {
+      body: {
+        barbershop_id: appointment.barbershop_id,
+        service_id: appointment.service_id,
+        professional_id: appointment.professional_id,
         date: format(selectedDate, "yyyy-MM-dd"),
         start_time: selectedTime,
         end_time: endTime,
-        status: "rescheduled" as any,
-        reschedule_token: crypto.randomUUID(),
-      })
-      .eq("id", appointment.id);
+        client_name: appointment.client_name,
+        client_phone: appointment.client_phone,
+        client_email: appointment.client_email,
+      },
+    });
 
-    if (!error) {
-      // Create new appointment with updated time
-      const { error: insertError } = await supabase.functions.invoke("public-booking", {
-        body: {
-          barbershop_id: appointment.barbershop_id,
-          service_id: appointment.service_id,
-          professional_id: appointment.professional_id,
-          date: format(selectedDate, "yyyy-MM-dd"),
-          start_time: selectedTime,
-          end_time: endTime,
-          client_name: appointment.client_name,
-          client_phone: appointment.client_phone,
-          client_email: appointment.client_email,
-        },
-      });
-
-      if (!insertError) setConfirmed(true);
-    }
-
+    if (!error) setConfirmed(true);
     setSubmitting(false);
   };
 
@@ -168,11 +184,12 @@ export default function ReschedulePage() {
           </div>
           <h1 className="text-xl font-bold mb-2">Remarcado com sucesso!</h1>
           <p className="text-muted-foreground text-sm">
-            Seu novo horário é {selectedTime} em {selectedDate && format(selectedDate, "dd/MM/yyyy")}.
+            Seu novo horário é <strong>{selectedTime}</strong> em{" "}
+            <strong>{selectedDate && format(selectedDate, "dd/MM/yyyy")}</strong>.
           </p>
-          <p className="text-xs text-muted-foreground mt-4">
+          <p className="text-xs text-muted-foreground mt-6">
             Agendamento realizado via{" "}
-            <a href="https://cutflow.app" className="text-primary font-medium hover:underline">
+            <a href="https://cutflow.app" className="text-primary font-semibold hover:underline">
               CutFlow
             </a>
           </p>
@@ -202,7 +219,7 @@ export default function ReschedulePage() {
       <div className="max-w-lg mx-auto px-4 py-6">
         {/* Current appointment info */}
         <div className="rounded-2xl border border-border bg-card p-5 mb-6">
-          <p className="text-xs text-muted-foreground mb-2">Agendamento atual</p>
+          <p className="text-xs text-muted-foreground mb-2 font-medium">Agendamento atual</p>
           <div className="space-y-1.5 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Serviço</span>
@@ -214,11 +231,11 @@ export default function ReschedulePage() {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Data atual</span>
-              <span className="font-semibold">{format(new Date(appointment.date), "dd/MM/yyyy")}</span>
+              <span className="font-semibold">{appointment && format(new Date(appointment.date), "dd/MM/yyyy")}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Horário atual</span>
-              <span className="font-semibold">{appointment.start_time?.slice(0, 5)}</span>
+              <span className="font-semibold">{appointment?.start_time?.slice(0, 5)}</span>
             </div>
           </div>
         </div>
@@ -244,18 +261,15 @@ export default function ReschedulePage() {
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-6">
             {timeSlots.map((slot) => (
               <button
-                key={slot.time}
-                disabled={!slot.available}
-                onClick={() => setSelectedTime(slot.time)}
+                key={slot}
+                onClick={() => setSelectedTime(slot)}
                 className={`rounded-xl py-2.5 text-sm font-medium transition-all border ${
-                  selectedTime === slot.time
+                  selectedTime === slot
                     ? "bg-primary text-primary-foreground border-primary"
-                    : slot.available
-                    ? "bg-card border-border hover:border-primary/40"
-                    : "bg-muted text-muted-foreground/40 border-transparent cursor-not-allowed"
+                    : "bg-card border-border hover:border-primary/40"
                 }`}
               >
-                {slot.time}
+                {slot}
               </button>
             ))}
           </div>
@@ -279,7 +293,7 @@ export default function ReschedulePage() {
 
         <p className="text-xs text-muted-foreground text-center mt-6">
           Agendamento via{" "}
-          <a href="https://cutflow.app" className="text-primary font-medium hover:underline">CutFlow</a>
+          <a href="https://cutflow.app" className="text-primary font-semibold hover:underline">CutFlow</a>
         </p>
       </div>
     </div>
