@@ -576,7 +576,7 @@ export default function DashboardHome() {
       {/* ── CHARTS: Services Pie + Day of Week Bar + Pro Performance ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Services Pie */}
-        <motion.div {...fadeUp(10)} className="rounded-2xl border border-border bg-card p-4 sm:p-6 hover:shadow-md transition-shadow">
+        <motion.div {...fadeUp(10)} className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
           <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Servicos mais vendidos
           </h3>
