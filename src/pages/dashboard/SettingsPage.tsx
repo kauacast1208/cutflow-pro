@@ -10,7 +10,7 @@ import { useBarbershop } from "@/hooks/useBarbershop";
 import { useToast } from "@/hooks/use-toast";
 import {
   Store, Clock, Scissors, Users, Shield, Loader2, Plus,
-  Trash2, Save, Copy, ExternalLink, CreditCard, MessageCircle,
+  Trash2, Save, Copy, ExternalLink, CreditCard, MessageCircle, Globe,
 } from "lucide-react";
 import SubscriptionManager from "@/components/billing/SubscriptionManager";
 import WhatsAppSettingsPanel from "@/components/admin/WhatsAppSettingsPanel";
