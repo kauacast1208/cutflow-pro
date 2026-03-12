@@ -30,8 +30,8 @@ export function HeroSection() {
             transition={{ duration: 0.6, delay: 0.08 }}
             className="text-[1.75rem] leading-[1.1] sm:text-4xl lg:text-[3rem] font-extrabold tracking-[-0.03em] sm:leading-[1.08] mb-4 sm:mb-5 px-1 sm:px-0"
           >
-            Pare de perder clientes por falta de{" "}
-            <span className="text-primary">organização.</span>
+            Menos faltas. Mais clientes voltando.{" "}
+            <span className="text-primary">Sua barbearia no controle.</span>
           </motion.h1>
 
           {/* Subheadline */}
@@ -41,46 +41,27 @@ export function HeroSection() {
             transition={{ duration: 0.5, delay: 0.14 }}
             className="text-[15px] sm:text-lg text-muted-foreground max-w-xl mx-auto mb-6 sm:mb-7 leading-relaxed px-2 sm:px-0"
           >
-            O CutFlow organiza sua agenda, envia lembretes automáticos e ajuda você a controlar sua barbearia — sem estresse.
+            Barbearias que usam o CutFlow reduzem faltas, aumentam o retorno de clientes e eliminam o estresse de gerenciar tudo no papel ou WhatsApp.
           </motion.p>
 
-          {/* Results line */}
+          {/* Benefit pills */}
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.17 }}
-            className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-sm sm:text-base font-semibold text-foreground mb-5 sm:mb-6 px-2 sm:px-0"
-          >
-            <span>Menos faltas.</span>
-            <span className="text-muted-foreground/40">·</span>
-            <span>Mais clientes retornando.</span>
-            <span className="text-muted-foreground/40">·</span>
-            <span>Mais controle financeiro.</span>
-          </motion.div>
-
-          {/* Value props */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[13px] sm:text-sm text-muted-foreground mb-7 sm:mb-8 px-3 sm:px-0"
+            className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 mb-7 sm:mb-8 px-3 sm:px-0"
           >
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              <span>Agenda online automática</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              <span>Lembretes por WhatsApp</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              <span>Gestão de clientes</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              <span>Controle financeiro</span>
-            </div>
+            {[
+              "Até 40% menos faltas",
+              "Clientes voltam mais",
+              "Zero estresse com agenda",
+              "Controle financeiro real",
+            ].map((benefit) => (
+              <div key={benefit} className="flex items-center gap-1.5 rounded-full border border-primary/12 bg-primary/[0.04] px-3.5 py-1.5 text-[12px] sm:text-[13px] font-medium text-foreground">
+                <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span>{benefit}</span>
+              </div>
+            ))}
           </motion.div>
 
           {/* CTA buttons */}
