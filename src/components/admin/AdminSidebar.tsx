@@ -8,16 +8,18 @@ import {
 import {
   LayoutDashboard, Calendar, Users, UserCog, DollarSign, BarChart3,
   Settings, Scissors, LogOut, ExternalLink, Copy, Lock, Megaphone,
-  Mail, UserPlus, Gift, Zap, UserX, Cake, Trophy, Heart,
+  Mail, UserPlus, Gift, Zap, UserX, Cake, Trophy, Heart, Clock,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useBarbershop } from "@/hooks/useBarbershop";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useSubscription } from "@/hooks/useSubscription";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import type { PlanFeature } from "@/lib/plans";
 import { Badge } from "@/components/ui/badge";
+import { STRIPE_PLANS } from "@/lib/stripe";
 
 interface MenuItem {
   title: string;
