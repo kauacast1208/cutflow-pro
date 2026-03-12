@@ -127,23 +127,27 @@ export default function ProfessionalsPage() {
 
   const addBreak = async () => {
     if (!barbershop || !editing) return;
-    const breakLabel = BREAK_TYPES.find(b => b.value === newBreakType)?.label || "Pausa";
+    const breakDef = BREAK_TYPES.find(b => b.value === newBreakType);
+    const breakLabel = breakDef?.label || "Pausa";
+    const isAllDay = breakDef?.allDay || false;
+    const reasonText = newBreakNote.trim() ? `${breakLabel} — ${newBreakNote.trim()}` : breakLabel;
     const { error } = await supabase.from("blocked_times").insert({
       barbershop_id: barbershop.id,
       professional_id: editing.id,
       date: format(new Date(), "yyyy-MM-dd"),
-      start_time: newBreakStart,
-      end_time: newBreakEnd,
+      start_time: isAllDay ? null : newBreakStart,
+      end_time: isAllDay ? null : newBreakEnd,
       recurring: true,
       recurring_days: newBreakDays,
-      reason: breakLabel,
-      all_day: false,
+      reason: reasonText,
+      all_day: isAllDay,
     });
     if (error) {
       toast({ title: "Erro ao adicionar pausa", description: error.message, variant: "destructive" });
       return;
     }
     toast({ title: "Pausa adicionada!" });
+    setNewBreakNote("");
     loadBreaks(editing.id);
   };
 
