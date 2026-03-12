@@ -10,7 +10,7 @@ import { Loader2, Send, CheckCircle2, XCircle } from "lucide-react";
 export default function WhatsAppTestPanel() {
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState(
-    "Olá! 👋 Este é um teste do CutFlow. Se você recebeu esta mensagem, a integração WhatsApp está funcionando! ✅"
+    "Olá! 👋 Esta é uma mensagem de teste da sua barbearia via CutFlow. Se você recebeu, a integração está funcionando! ✅"
   );
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{ success: boolean; error?: string; messageId?: string } | null>(null);

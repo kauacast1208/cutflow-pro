@@ -3,11 +3,11 @@ import { Star, Quote } from "lucide-react";
 
 const testimonials = [
   {
-    name: "Carlos Mendes",
+    name: "Carlos M.",
     role: "Proprietário",
     barbershop: "Barbearia Premium",
     city: "São Paulo, SP",
-    content: "O CutFlow transformou meu negócio. Reduzi faltas com os lembretes automáticos e finalmente tenho controle real do meu faturamento.",
+    content: "Reduzi as faltas pela metade depois que comecei a usar os lembretes automáticos. Finalmente tenho controle real do meu faturamento.",
     rating: 5,
     metric: "Menos faltas",
     metricLabel: "com lembretes",
@@ -15,11 +15,11 @@ const testimonials = [
     avatarGradient: "from-emerald-400 to-primary",
   },
   {
-    name: "Rafael Oliveira",
+    name: "Rafael O.",
     role: "Barbeiro Autônomo",
-    barbershop: "Studio Rafael",
+    barbershop: "Studio do Rafael",
     city: "Belo Horizonte, MG",
-    content: "Finalmente um sistema simples e bonito. Meus clientes adoram agendar online e eu tenho tudo organizado no celular. Não volto mais para o papel.",
+    content: "Um sistema simples e bonito. Meus clientes adoram agendar online e eu tenho tudo organizado no celular. Não volto mais para a agenda no papel.",
     rating: 5,
     metric: "Mais organização",
     metricLabel: "no dia a dia",
@@ -27,11 +27,11 @@ const testimonials = [
     avatarGradient: "from-blue-400 to-primary",
   },
   {
-    name: "André Souza",
+    name: "André S.",
     role: "Sócio-gerente",
     barbershop: "Barber & Co",
     city: "Rio de Janeiro, RJ",
-    content: "Gerencio minha equipe inteira com o CutFlow. Os relatórios financeiros me dão visibilidade total do negócio. Sei exatamente quanto cada barbeiro fatura.",
+    content: "Gerencio minha equipe inteira pelo CutFlow. Os relatórios me dão visibilidade total do negócio — sei exatamente o faturamento de cada profissional.",
     rating: 5,
     metric: "Controle total",
     metricLabel: "da equipe",

@@ -111,7 +111,7 @@ serve(async (req) => {
 
           const message = auto.config?.message
             ? replacePlaceholders(auto.config.message, templateVars)
-            : `Olá ${client.name}! Sentimos sua falta na ${shop.name}. Agende seu horário!`;
+            : `Olá, ${client.name}! 👋 Sentimos sua falta na *${shop.name}*.\n\nQue tal agendar um horário? Estamos te esperando!\n\n✂ Agende agora e garanta seu horário.`;
 
           await supabase.from("notifications").insert({
             barbershop_id: shop.id,

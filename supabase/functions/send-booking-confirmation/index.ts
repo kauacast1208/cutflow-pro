@@ -171,7 +171,7 @@ Deno.serve(async (req) => {
       const customMsg1h = auto1h?.config?.message;
       const body1h = customMsg1h
         ? replacePlaceholders(customMsg1h, templateVars)
-        : `Olá ${appointment.client_name}! Falta 1 hora para seu horário às ${startTime}.\n\nServiço: ${serviceName}\nProfissional: ${professionalName}\n\n${barbershopName} te espera!`;
+        : `Olá, ${appointment.client_name}! ⏰ Falta *1 hora* para o seu horário na *${barbershopName}*.\n\n✂ *Serviço:* ${serviceName}\n💈 *Profissional:* ${professionalName}\n⏰ *Horário:* ${startTime}\n\nTe esperamos! 👋`;
 
       notifications.push({
         ...baseNotif,
