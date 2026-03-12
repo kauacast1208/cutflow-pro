@@ -83,14 +83,17 @@ export default function ProfessionalsPage() {
       .eq("recurring", true);
     const mapped: ScheduleBreak[] = (data || []).map((b: any) => ({
       id: b.id,
-      reason: b.reason || "Almoço",
-      type: b.reason?.toLowerCase().includes("almoço") || b.reason?.toLowerCase().includes("lunch") ? "lunch"
-        : b.reason?.toLowerCase().includes("pessoal") || b.reason?.toLowerCase().includes("personal") ? "personal"
-        : "unavailable",
+      reason: b.reason || "Pausa",
+      type: b.all_day ? "vacation" as BreakType
+        : b.reason?.toLowerCase().includes("almoço") || b.reason?.toLowerCase().includes("lunch") ? "lunch" as BreakType
+        : b.reason?.toLowerCase().includes("pessoal") || b.reason?.toLowerCase().includes("personal") ? "personal" as BreakType
+        : "unavailable" as BreakType,
       start_time: b.start_time?.slice(0, 5) || "12:00",
       end_time: b.end_time?.slice(0, 5) || "13:00",
       recurring: true,
       recurring_days: b.recurring_days || [],
+      all_day: b.all_day || false,
+      note: b.reason || "",
     }));
     setBreaks(mapped);
     setBreaksLoading(false);
