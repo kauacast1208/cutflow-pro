@@ -413,21 +413,19 @@ export default function DashboardHome() {
 
       {/* ── METRICS CARDS ── */}
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <MetricCard idx={0} label="Faturamento do mes" value={`R$ ${monthRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`}
+        <MetricCard idx={0} label="Agendamentos hoje" value={String(todayAppts.length)}
+          sub={`R$ ${todayRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 0 })} faturados`}
+          icon={Calendar} />
+        <MetricCard idx={1} label="Agendamentos do mês" value={String(monthAppts.filter(a => a.status !== "cancelled").length)}
+          sub={`${cancelled.length} cancelamento${cancelled.length !== 1 ? "s" : ""}`}
+          icon={BarChart3} />
+        <MetricCard idx={2} label="Faturamento do mês" value={`R$ ${monthRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`}
           change={monthRevenueChange ? `${Number(monthRevenueChange) >= 0 ? "+" : ""}${monthRevenueChange}%` : null}
           changePositive={monthRevenueChange ? Number(monthRevenueChange) >= 0 : true}
           icon={DollarSign} />
-        <MetricCard idx={1} label="Atendimentos hoje" value={String(todayAppts.length)}
-          sub={`R$ ${todayRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 0 })} faturados`}
-          icon={Calendar} />
-        <MetricCard idx={2} label="Proximo atendimento"
-          value={nextAppt ? nextAppt.start_time?.slice(0, 5) : "--:--"}
-          sub={nextAppt ? `${nextAppt.client_name} - ${nextAppt.services?.name}` : "Sem atendimentos"}
-          icon={Clock} />
-        <MetricCard idx={3} label={`Ticket medio (${period}d)`}
-          value={`R$ ${ticket.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`}
-          sub={`${completed.length} atendimentos`}
-          icon={TrendingUp} />
+        <MetricCard idx={3} label="Clientes cadastrados" value={String(clientCount)}
+          sub={`Ticket médio: R$ ${ticket.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`}
+          icon={Users} />
       </div>
 
       {/* ── TODAY SUMMARY + UPCOMING ── */}
