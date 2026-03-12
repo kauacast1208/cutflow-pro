@@ -194,8 +194,38 @@ export default function AdminSidebar() {
         )}
       </SidebarContent>
 
+      {/* Plan & Trial Info */}
+      {!collapsed && subscription && (
+        <div className="border-t border-sidebar-border px-3 py-3">
+          <div className="rounded-xl bg-sidebar-accent/50 p-3 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Plano</span>
+              {isTrial && (
+                <Badge variant="secondary" className="bg-amber-500/10 text-amber-700 border-amber-500/20 text-[9px] px-1.5 py-0">
+                  Teste
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm font-bold text-sidebar-foreground">
+              {STRIPE_PLANS[(subscription.plan as keyof typeof STRIPE_PLANS)]?.name || subscription.plan}
+            </p>
+            {isTrial && daysRemaining !== null && (
+              <div className="flex items-center gap-1.5 text-xs text-amber-600">
+                <Clock className="h-3 w-3" />
+                <span>{daysRemaining} dia{daysRemaining !== 1 ? "s" : ""} restante{daysRemaining !== 1 ? "s" : ""}</span>
+              </div>
+            )}
+            {isTrial && (
+              <Button size="sm" variant="default" className="w-full h-8 text-xs rounded-lg mt-1" onClick={() => navigate("/billing")}>
+                Ativar plano
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Footer */}
-      <div className="mt-auto border-t border-sidebar-border p-3">
+      <div className="border-t border-sidebar-border p-3">
         <SidebarMenuButton asChild>
           <button
             onClick={handleLogout}
