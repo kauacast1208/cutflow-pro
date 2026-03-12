@@ -64,7 +64,7 @@ const tooltipStyle = {
 export default function DashboardHome() {
   const { barbershop } = useBarbershop();
   const { user } = useAuth();
-  const { daysRemaining, subscription } = useSubscription();
+  const { daysRemaining, subscription, isTrial } = useSubscription();
   const { toast } = useToast();
   const navigate = useNavigate();
 
