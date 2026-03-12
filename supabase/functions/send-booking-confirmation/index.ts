@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
     const customConfirmMsg = autoConfirm?.config?.message;
     const confirmationBody = customConfirmMsg
       ? replacePlaceholders(customConfirmMsg, templateVars)
-      : `Olá ${appointment.client_name}!\n\nSeu horário foi confirmado.\n\nServiço: ${serviceName}\nData: ${formattedDate}\nHora: ${startTime}\n\n${barbershopName}`;
+      : `Olá, ${appointment.client_name}! ✅ Seu agendamento foi *confirmado* na *${barbershopName}*.\n\n✂ *Serviço:* ${serviceName}\n💈 *Profissional:* ${professionalName}\n📅 *Data:* ${formattedDate}\n⏰ *Horário:* ${startTime}\n\nTe esperamos! 👋`;
 
     const preferredChannel = appointment.client_phone ? "whatsapp" : "email";
 
@@ -131,7 +131,7 @@ Deno.serve(async (req) => {
       const customMsg = auto24?.config?.message;
       const body = customMsg
         ? replacePlaceholders(customMsg, templateVars)
-        : `Lembrete: seu agendamento é amanhã às ${startTime}.\n${barbershopName}.`;
+        : `Olá, ${appointment.client_name}! ⏰ Lembrete: seu agendamento é *amanhã* na *${barbershopName}*.\n\n✂ *Serviço:* ${serviceName}\n⏰ *Horário:* ${startTime}\n\nSe precisar remarcar, entre em contato com a barbearia.\n\nTe esperamos! 👋`;
 
       notifications.push({
         ...baseNotif,
@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
       const customMsg = auto2h?.config?.message;
       const body = customMsg
         ? replacePlaceholders(customMsg, templateVars)
-        : `Faltam 2 horas para seu agendamento às ${startTime}.\n${barbershopName}.`;
+        : `Olá, ${appointment.client_name}! ⏰ Faltam *2 horas* para o seu horário na *${barbershopName}*.\n\n✂ *Serviço:* ${serviceName}\n⏰ *Horário:* ${startTime}\n\nSe precisar remarcar, entre em contato com a barbearia.\n\nTe esperamos! 👋`;
 
       notifications.push({
         ...baseNotif,
@@ -171,7 +171,7 @@ Deno.serve(async (req) => {
       const customMsg1h = auto1h?.config?.message;
       const body1h = customMsg1h
         ? replacePlaceholders(customMsg1h, templateVars)
-        : `Olá ${appointment.client_name}! Falta 1 hora para seu horário às ${startTime}.\n\nServiço: ${serviceName}\nProfissional: ${professionalName}\n\n${barbershopName} te espera!`;
+        : `Olá, ${appointment.client_name}! ⏰ Falta *1 hora* para o seu horário na *${barbershopName}*.\n\n✂ *Serviço:* ${serviceName}\n💈 *Profissional:* ${professionalName}\n⏰ *Horário:* ${startTime}\n\nTe esperamos! 👋`;
 
       notifications.push({
         ...baseNotif,

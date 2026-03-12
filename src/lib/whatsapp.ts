@@ -20,33 +20,33 @@ export interface WhatsAppMessageParams {
 
 const templates: Record<string, (p: WhatsAppMessageParams) => string> = {
   confirmed: (p) =>
-    `Olá, ${p.clientName}! Seu agendamento foi *confirmado* na *${p.barbershopName}*.\n\n` +
-    `*Serviço:* ${p.serviceName}\n` +
-    (p.professionalName ? `*Profissional:* ${p.professionalName}\n` : "") +
-    `*Data:* ${formatDatePtBR(p.date)}\n` +
-    `*Horário:* ${p.startTime}${p.endTime ? ` - ${p.endTime}` : ""}\n` +
-    (p.price ? `*Valor:* ${formatCurrency(p.price)}\n` : "") +
-    `\nTe esperamos!`,
+    `Olá, ${p.clientName}! ✅ Seu agendamento foi *confirmado* na *${p.barbershopName}*.\n\n` +
+    `✂ *Serviço:* ${p.serviceName}\n` +
+    (p.professionalName ? `💈 *Profissional:* ${p.professionalName}\n` : "") +
+    `📅 *Data:* ${formatDatePtBR(p.date)}\n` +
+    `⏰ *Horário:* ${p.startTime}${p.endTime ? ` - ${p.endTime}` : ""}\n` +
+    (p.price ? `💰 *Valor:* ${formatCurrency(p.price)}\n` : "") +
+    `\nTe esperamos! 👋`,
 
   cancelled: (p) =>
     `Olá, ${p.clientName}. Seu agendamento na *${p.barbershopName}* foi *cancelado*.\n\n` +
-    `*Serviço:* ${p.serviceName}\n` +
-    `*Data:* ${formatDatePtBR(p.date)}\n` +
-    `*Horário:* ${p.startTime}\n` +
-    `\nSe precisar reagendar, é só nos chamar!`,
+    `✂ *Serviço:* ${p.serviceName}\n` +
+    `📅 *Data:* ${formatDatePtBR(p.date)}\n` +
+    `⏰ *Horário:* ${p.startTime}\n` +
+    `\nSe precisar reagendar, é só entrar em contato com a barbearia!`,
 
   rescheduled: (p) =>
     `Olá, ${p.clientName}! Seu agendamento na *${p.barbershopName}* foi *remarcado*.\n\n` +
-    `*Serviço:* ${p.serviceName}\n` +
-    `*Nova data:* ${formatDatePtBR(p.date)}\n` +
-    `*Novo horário:* ${p.startTime}${p.endTime ? ` - ${p.endTime}` : ""}\n` +
-    `\nTe esperamos!`,
+    `✂ *Serviço:* ${p.serviceName}\n` +
+    `📅 *Nova data:* ${formatDatePtBR(p.date)}\n` +
+    `⏰ *Novo horário:* ${p.startTime}${p.endTime ? ` - ${p.endTime}` : ""}\n` +
+    `\nTe esperamos! 👋`,
 
   reminder: (p) =>
-    `Olá, ${p.clientName}! Lembrete: você tem um agendamento amanhã na *${p.barbershopName}*.\n\n` +
-    `*Serviço:* ${p.serviceName}\n` +
-    `*Horário:* ${p.startTime}\n` +
-    `\nTe esperamos!`,
+    `Olá, ${p.clientName}! ⏰ Lembrete: você tem um agendamento na *${p.barbershopName}*.\n\n` +
+    `✂ *Serviço:* ${p.serviceName}\n` +
+    `⏰ *Horário:* ${p.startTime}\n` +
+    `\nSe precisar remarcar, entre em contato com a barbearia.\n\nTe esperamos! 👋`,
 };
 
 function formatDatePtBR(dateStr: string): string {

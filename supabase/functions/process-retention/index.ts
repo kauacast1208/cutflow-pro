@@ -104,7 +104,8 @@ serve(async (req) => {
         if (recent && recent.length > 0) continue;
 
         const channel = auto.config?.channel || "whatsapp";
-        const message = (auto.config?.message || `Olá ${client.name}! Sentimos sua falta.`)
+        const defaultMsg = `Olá, ${client.name}! 👋 Sentimos sua falta na *${shop.name}*.\n\nQue tal agendar um horário? Estamos te esperando!\n\n✂ Agende agora e garanta seu horário.`;
+        const message = (auto.config?.message || defaultMsg)
           .split("{{client_name}}").join(client.name)
           .split("{{nome}}").join(client.name)
           .split("{{barbershop_name}}").join(shop.name)

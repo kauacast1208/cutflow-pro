@@ -52,8 +52,8 @@ export default function LoginPage() {
           </p>
           <div className="mt-12 grid grid-cols-2 gap-4">
             {[
-              { label: "Barbearias ativas", value: "2.500+" },
-              { label: "Agendamentos/mês", value: "50.000+" },
+              { label: "Setup rápido", value: "< 5 min" },
+              { label: "Teste grátis", value: "7 dias" },
             ].map((s) => (
               <div key={s.label} className="bg-primary-foreground/10 rounded-xl p-4 backdrop-blur">
                 <p className="text-2xl font-bold">{s.value}</p>
@@ -84,10 +84,18 @@ export default function LoginPage() {
             variant="outline"
             className="w-full mb-4 h-12 rounded-xl text-base font-medium"
             onClick={async () => {
+              setError("");
               setLoading(true);
-              const { error } = await signInWithGoogle("/auth/callback");
-              if (error) {
-                setError("Erro ao entrar com Google. Tente novamente.");
+              try {
+                const { error } = await signInWithGoogle("/auth/callback");
+                if (error) {
+                  console.error("Google OAuth error:", error);
+                  setError("Não foi possível conectar com o Google. Tente novamente ou use e-mail e senha.");
+                  setLoading(false);
+                }
+              } catch (err) {
+                console.error("Google OAuth unexpected error:", err);
+                setError("Erro de conexão. Tente novamente.");
                 setLoading(false);
               }
             }}
