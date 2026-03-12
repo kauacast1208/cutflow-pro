@@ -60,6 +60,7 @@ export default function ProfessionalsPage() {
   const [newBreakStart, setNewBreakStart] = useState("12:00");
   const [newBreakEnd, setNewBreakEnd] = useState("13:00");
   const [newBreakDays, setNewBreakDays] = useState<number[]>([1, 2, 3, 4, 5, 6]);
+  const [newBreakNote, setNewBreakNote] = useState("");
 
   const load = async () => {
     if (!barbershop) return;
