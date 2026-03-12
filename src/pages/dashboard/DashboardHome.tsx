@@ -64,7 +64,7 @@ const tooltipStyle = {
 export default function DashboardHome() {
   const { barbershop } = useBarbershop();
   const { user } = useAuth();
-  const { daysRemaining, subscription } = useSubscription();
+  const { daysRemaining, subscription, isTrial } = useSubscription();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -381,8 +381,8 @@ export default function DashboardHome() {
   return (
     <div className="space-y-6 pb-24 sm:pb-6">
       <WelcomeModal />
-      {/* Trial Banner */}
-      {subscription?.status === "trial" && daysRemaining !== null && daysRemaining <= 3 && (
+      {/* Trial Banner - urgent (≤3 days) */}
+      {isTrial && daysRemaining !== null && daysRemaining <= 3 && (
         <motion.div {...fadeUp(0)} className="flex items-center gap-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-4">
           <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
           <div className="flex-1">
@@ -400,9 +400,17 @@ export default function DashboardHome() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            {greeting}, {userName}
-          </h2>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h2 className="text-2xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              {greeting}, {userName}
+            </h2>
+            {isTrial && daysRemaining !== null && daysRemaining > 3 && (
+              <Badge variant="secondary" className="bg-primary/8 text-primary border-primary/15 text-[11px] font-medium px-2.5 py-0.5 gap-1">
+                <Clock className="h-3 w-3" />
+                Trial: {daysRemaining} dia{daysRemaining !== 1 ? "s" : ""} restante{daysRemaining !== 1 ? "s" : ""}
+              </Badge>
+            )}
+          </div>
           <p className="text-sm text-muted-foreground mt-1">{format(new Date(), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
