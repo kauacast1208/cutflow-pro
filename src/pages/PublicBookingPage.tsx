@@ -373,7 +373,7 @@ export default function PublicBookingPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-xl">
-        <div className="max-w-2xl mx-auto flex h-14 sm:h-16 items-center px-4 gap-3">
+        <div className="max-w-2xl mx-auto flex h-16 items-center px-4 gap-3">
           <button
             onClick={() => step > 0 ? goBack() : navigate(-1)}
             className="flex h-10 w-10 items-center justify-center rounded-xl border border-border hover:bg-accent transition-colors shrink-0"
@@ -382,16 +382,16 @@ export default function PublicBookingPage() {
             <ChevronLeft className="h-4 w-4 text-foreground" />
           </button>
           {barbershop.logo_url ? (
-            <img src={barbershop.logo_url} className="h-10 w-10 rounded-xl object-cover border border-border" alt="" />
+            <img src={barbershop.logo_url} className="h-11 w-11 rounded-xl object-cover border border-border shadow-sm" alt="" />
           ) : (
-            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-              <Scissors className="h-4 w-4 text-primary" />
+            <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Scissors className="h-5 w-5 text-primary" />
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <span className="font-bold text-sm block truncate">{barbershop.name}</span>
+            <span className="font-bold text-base block truncate tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{barbershop.name}</span>
             {barbershop.address && (
-              <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
+              <p className="text-xs text-muted-foreground flex items-center gap-1 truncate mt-0.5">
                 <MapPin className="h-3 w-3 shrink-0" />{barbershop.address}
               </p>
             )}
