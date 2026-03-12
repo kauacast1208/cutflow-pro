@@ -477,7 +477,7 @@ export default function DashboardHome() {
           </h3>
           {upcomingToday.length === 0 ? (
             <div className="text-center py-6 text-muted-foreground">
-              <Check className="h-8 w-8 mx-auto mb-2 opacity-20" />
+              <Calendar className="h-8 w-8 mx-auto mb-2 opacity-20" />
               <p className="text-sm">Nenhum atendimento pendente hoje</p>
             </div>
           ) : (
