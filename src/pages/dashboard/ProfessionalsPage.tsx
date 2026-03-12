@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,12 +6,32 @@ import { Switch } from "@/components/ui/switch";
 import { useBarbershop } from "@/hooks/useBarbershop";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Loader2, Search, UserCog, Save, Clock, Calendar } from "lucide-react";
+import { Plus, Trash2, Loader2, Search, UserCog, Save, Clock, Calendar, Coffee, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 
 const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+const BREAK_TYPES = [
+  { value: "lunch", label: "Almoço", icon: "🍽" },
+  { value: "personal", label: "Pessoal", icon: "👤" },
+  { value: "unavailable", label: "Indisponível", icon: "🚫" },
+] as const;
+
+type BreakType = typeof BREAK_TYPES[number]["value"];
+
+interface ScheduleBreak {
+  id?: string;
+  reason: string;
+  type: BreakType;
+  start_time: string;
+  end_time: string;
+  recurring: boolean;
+  recurring_days: number[];
+}
 
 export default function ProfessionalsPage() {
   const { barbershop } = useBarbershop();
@@ -30,6 +50,14 @@ export default function ProfessionalsPage() {
   const [workDays, setWorkDays] = useState<number[]>([1, 2, 3, 4, 5, 6]);
   const [saving, setSaving] = useState(false);
 
+  // Break management
+  const [breaks, setBreaks] = useState<ScheduleBreak[]>([]);
+  const [breaksLoading, setBreaksLoading] = useState(false);
+  const [newBreakType, setNewBreakType] = useState<BreakType>("lunch");
+  const [newBreakStart, setNewBreakStart] = useState("12:00");
+  const [newBreakEnd, setNewBreakEnd] = useState("13:00");
+  const [newBreakDays, setNewBreakDays] = useState<number[]>([1, 2, 3, 4, 5, 6]);
+
   const load = async () => {
     if (!barbershop) return;
     setLoading(true);
@@ -40,6 +68,30 @@ export default function ProfessionalsPage() {
 
   useEffect(() => { load(); }, [barbershop]);
 
+  const loadBreaks = useCallback(async (proId: string) => {
+    if (!barbershop) return;
+    setBreaksLoading(true);
+    const { data } = await supabase
+      .from("blocked_times")
+      .select("*")
+      .eq("barbershop_id", barbershop.id)
+      .eq("professional_id", proId)
+      .eq("recurring", true);
+    const mapped: ScheduleBreak[] = (data || []).map((b: any) => ({
+      id: b.id,
+      reason: b.reason || "Almoço",
+      type: b.reason?.toLowerCase().includes("almoço") || b.reason?.toLowerCase().includes("lunch") ? "lunch"
+        : b.reason?.toLowerCase().includes("pessoal") || b.reason?.toLowerCase().includes("personal") ? "personal"
+        : "unavailable",
+      start_time: b.start_time?.slice(0, 5) || "12:00",
+      end_time: b.end_time?.slice(0, 5) || "13:00",
+      recurring: true,
+      recurring_days: b.recurring_days || [],
+    }));
+    setBreaks(mapped);
+    setBreaksLoading(false);
+  }, [barbershop]);
+
   const openNew = () => {
     const activePros = pros.filter((p) => p.active !== false).length;
     if (isAtLimit("professionals", activePros)) {
@@ -49,6 +101,7 @@ export default function ProfessionalsPage() {
     }
     setEditing(null); setName(""); setRole("Barbeiro"); setSpecialties("");
     setWorkStart("09:00"); setWorkEnd("19:00"); setWorkDays([1, 2, 3, 4, 5, 6]);
+    setBreaks([]);
     setDialogOpen(true);
   };
 
@@ -58,10 +111,40 @@ export default function ProfessionalsPage() {
     setWorkStart(p.work_start?.slice(0, 5) || "09:00");
     setWorkEnd(p.work_end?.slice(0, 5) || "19:00");
     setWorkDays(p.work_days || [1, 2, 3, 4, 5, 6]);
+    loadBreaks(p.id);
     setDialogOpen(true);
   };
 
   const toggleDay = (day: number) => setWorkDays((prev) => prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day].sort());
+  const toggleBreakDay = (day: number) => setNewBreakDays((prev) => prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day].sort());
+
+  const addBreak = async () => {
+    if (!barbershop || !editing) return;
+    const breakLabel = BREAK_TYPES.find(b => b.value === newBreakType)?.label || "Pausa";
+    const { error } = await supabase.from("blocked_times").insert({
+      barbershop_id: barbershop.id,
+      professional_id: editing.id,
+      date: format(new Date(), "yyyy-MM-dd"),
+      start_time: newBreakStart,
+      end_time: newBreakEnd,
+      recurring: true,
+      recurring_days: newBreakDays,
+      reason: breakLabel,
+      all_day: false,
+    });
+    if (error) {
+      toast({ title: "Erro ao adicionar pausa", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Pausa adicionada!" });
+    loadBreaks(editing.id);
+  };
+
+  const removeBreak = async (breakId: string) => {
+    await supabase.from("blocked_times").delete().eq("id", breakId);
+    toast({ title: "Pausa removida." });
+    if (editing) loadBreaks(editing.id);
+  };
 
   const handleSave = async () => {
     if (!barbershop || !name.trim()) return;
@@ -78,7 +161,6 @@ export default function ProfessionalsPage() {
     } else {
       const { error } = await supabase.from("professionals").insert({ ...payload, barbershop_id: barbershop.id });
       if (error) {
-        // DB trigger raises exception with plan limit message
         const isLimitError = error.message.includes("plano") || error.message.includes("profissional");
         toast({
           title: isLimitError ? "Limite do plano atingido" : "Erro ao adicionar",
@@ -197,11 +279,11 @@ export default function ProfessionalsPage() {
 
       {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing ? "Editar profissional" : "Novo profissional"}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-5">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nome *</Label>
@@ -236,6 +318,88 @@ export default function ProfessionalsPage() {
                 ))}
               </div>
             </div>
+
+            {/* ── Schedule Breaks Section ── */}
+            {editing && (
+              <div className="space-y-3 pt-3 border-t border-border">
+                <div className="flex items-center gap-2">
+                  <Coffee className="h-4 w-4 text-primary" />
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pausas e intervalos</Label>
+                </div>
+
+                {/* Existing breaks */}
+                {breaksLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  </div>
+                ) : breaks.length > 0 ? (
+                  <div className="space-y-2">
+                    {breaks.map((b) => (
+                      <div key={b.id} className="flex items-center justify-between rounded-xl border border-border/60 bg-accent/30 px-3 py-2.5">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span className="text-sm">{BREAK_TYPES.find(t => t.value === b.type)?.icon || "⏸"}</span>
+                          <div className="min-w-0">
+                            <p className="text-xs font-medium text-foreground">{b.reason}</p>
+                            <p className="text-[11px] text-muted-foreground">
+                              {b.start_time} - {b.end_time} · {b.recurring_days.map(d => WEEKDAYS[d]).join(", ")}
+                            </p>
+                          </div>
+                        </div>
+                        <button onClick={() => b.id && removeBreak(b.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1">
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground/60 py-2">Nenhuma pausa configurada. Adicione intervalos como almoço ou pausas pessoais.</p>
+                )}
+
+                {/* Add break form */}
+                <div className="rounded-xl border border-border/60 bg-card p-3 space-y-3">
+                  <p className="text-xs font-medium text-foreground">Adicionar pausa</p>
+                  <div className="flex gap-1.5">
+                    {BREAK_TYPES.map((bt) => (
+                      <button
+                        key={bt.value}
+                        type="button"
+                        onClick={() => setNewBreakType(bt.value)}
+                        className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
+                          newBreakType === bt.value
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "bg-secondary/60 text-muted-foreground hover:bg-secondary"
+                        }`}
+                      >
+                        {bt.icon} {bt.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Início</Label>
+                      <Input type="time" value={newBreakStart} onChange={(e) => setNewBreakStart(e.target.value)} className="bg-card h-9 text-sm" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Fim</Label>
+                      <Input type="time" value={newBreakEnd} onChange={(e) => setNewBreakEnd(e.target.value)} className="bg-card h-9 text-sm" />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] text-muted-foreground">Dias da pausa</Label>
+                    <div className="flex gap-1">
+                      {WEEKDAYS.map((d, i) => (
+                        <button key={i} type="button" onClick={() => toggleBreakDay(i)}
+                          className={`flex-1 py-1.5 rounded-md text-[10px] font-medium transition-all ${newBreakDays.includes(i) ? "bg-primary text-primary-foreground" : "bg-secondary/60 text-muted-foreground hover:bg-secondary"}`}
+                        >{d}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <Button size="sm" variant="outline" className="w-full h-9 text-xs rounded-lg" onClick={addBreak} disabled={newBreakDays.length === 0}>
+                    <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar pausa
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
           <DialogFooter className="flex gap-2">
             {editing && (
