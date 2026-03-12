@@ -400,9 +400,17 @@ export default function DashboardHome() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            {greeting}, {userName}
-          </h2>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h2 className="text-2xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              {greeting}, {userName}
+            </h2>
+            {isTrial && daysRemaining !== null && daysRemaining > 3 && (
+              <Badge variant="secondary" className="bg-primary/8 text-primary border-primary/15 text-[11px] font-medium px-2.5 py-0.5 gap-1">
+                <Clock className="h-3 w-3" />
+                Trial: {daysRemaining} dia{daysRemaining !== 1 ? "s" : ""} restante{daysRemaining !== 1 ? "s" : ""}
+              </Badge>
+            )}
+          </div>
           <p className="text-sm text-muted-foreground mt-1">{format(new Date(), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
