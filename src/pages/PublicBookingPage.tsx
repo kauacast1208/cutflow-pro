@@ -463,7 +463,7 @@ export default function PublicBookingPage() {
         )}
       </AnimatePresence>
 
-      <div className="max-w-2xl mx-auto px-4 py-6 sm:py-8">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Progress steps */}
         <div className="mb-8">
           <div className="flex items-center gap-1 mb-2">
