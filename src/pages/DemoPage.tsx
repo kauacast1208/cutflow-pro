@@ -10,8 +10,8 @@ export default function DemoPage() {
 
   useEffect(() => {
     // Try to find any barbershop to use as demo
-    supabase
-      .from("barbershops")
+    (supabase as any)
+      .from("barbershops_public")
       .select("slug")
       .limit(1)
       .then(({ data }) => {
