@@ -428,7 +428,7 @@ export default function DashboardHome() {
       )}
 
       {/* ── METRICS CARDS ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         <MetricCard idx={0} label="Agendamentos hoje" value={String(todayAppts.length)}
           sub={`R$ ${todayRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 0 })} faturados`}
           icon={Calendar} />
@@ -439,9 +439,12 @@ export default function DashboardHome() {
           change={monthRevenueChange ? `${Number(monthRevenueChange) >= 0 ? "+" : ""}${monthRevenueChange}%` : null}
           changePositive={monthRevenueChange ? Number(monthRevenueChange) >= 0 : true}
           icon={DollarSign} />
-        <MetricCard idx={3} label="Clientes cadastrados" value={String(clientCount)}
-          sub={`Ticket médio: R$ ${ticket.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`}
+        <MetricCard idx={3} label="Novos clientes" value={String(newClients)}
+          sub={`nos últimos ${period} dias`}
           icon={Users} />
+        <MetricCard idx={4} label="Clientes retornando" value={String(returningClients)}
+          sub={`${clientCount} cadastrados`}
+          icon={Heart} />
       </div>
 
       {/* ── TODAY SUMMARY + UPCOMING ── */}
