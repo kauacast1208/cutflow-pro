@@ -543,7 +543,7 @@ export default function PublicBookingPage() {
         </AnimatePresence>
 
         {/* Navigation */}
-        <div className="flex justify-between mt-8 sm:mt-10 pb-24 sm:pb-8">
+        <div className="flex justify-between mt-8 sm:mt-10 pb-8">
           <Button
             variant="outline"
             size="lg"
@@ -574,6 +574,15 @@ export default function PublicBookingPage() {
               Confirmar <Check className="h-4 w-4 ml-2" />
             </Button>
           )}
+        </div>
+
+        {/* Trust footer */}
+        <div className="flex flex-wrap items-center justify-center gap-4 pb-24 sm:pb-10 text-[11px] text-muted-foreground/70">
+          <span>Agendamento seguro</span>
+          <span className="text-muted-foreground/30">·</span>
+          <span>Dados protegidos</span>
+          <span className="text-muted-foreground/30">·</span>
+          <span>Powered by CutFlow</span>
         </div>
       </div>
       <SupportBot />

@@ -43,10 +43,11 @@ const templates: Record<string, (p: WhatsAppMessageParams) => string> = {
     `\nPrecisa de algo? Responda esta mensagem.\n\nTe esperamos! 👋`,
 
   reminder: (p) =>
-    `Olá, ${p.clientName}! Lembrete: você tem um horário na *${p.barbershopName}*.\n\n` +
+    `Olá, ${p.clientName}! Seu horário está chegando na *${p.barbershopName}*.\n\n` +
     `✂ *Serviço:* ${p.serviceName}\n` +
     `⏰ *Horário:* ${p.startTime}\n` +
-    `\nPrecisa remarcar? Responda esta mensagem.\n\nTe esperamos! 👋`,
+    `\nEvite perder seu horário — compareça no horário marcado.\n` +
+    `Precisa remarcar? Responda esta mensagem.\n\nTe esperamos! 👋`,
 };
 
 function formatDatePtBR(dateStr: string): string {

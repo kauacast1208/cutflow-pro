@@ -428,21 +428,26 @@ export default function DashboardHome() {
       )}
 
       {/* ── METRICS CARDS ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <MetricCard idx={0} label="Agendamentos hoje" value={String(todayAppts.length)}
           sub={`R$ ${todayRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 0 })} faturados`}
           icon={Calendar} />
-        <MetricCard idx={1} label="Agendamentos do mês" value={String(monthAppts.filter(a => a.status !== "cancelled").length)}
+        <MetricCard idx={1} label="Agendamentos da semana" value={String(weekAppts.filter(a => a.status !== "cancelled").length)}
+          sub={`${weekAppts.filter(a => a.status === "cancelled").length} cancelamento${weekAppts.filter(a => a.status === "cancelled").length !== 1 ? "s" : ""}`}
+          icon={Clock} />
+        <MetricCard idx={2} label="Agendamentos do mês" value={String(monthAppts.filter(a => a.status !== "cancelled").length)}
           sub={`${cancelled.length} cancelamento${cancelled.length !== 1 ? "s" : ""}`}
           icon={BarChart3} />
-        <MetricCard idx={2} label="Faturamento do mês" value={`R$ ${monthRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`}
+      </div>
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <MetricCard idx={3} label="Faturamento do mês" value={`R$ ${monthRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`}
           change={monthRevenueChange ? `${Number(monthRevenueChange) >= 0 ? "+" : ""}${monthRevenueChange}%` : null}
           changePositive={monthRevenueChange ? Number(monthRevenueChange) >= 0 : true}
           icon={DollarSign} />
-        <MetricCard idx={3} label="Novos clientes" value={String(newClients)}
+        <MetricCard idx={4} label="Novos clientes" value={String(newClients)}
           sub={`nos últimos ${period} dias`}
           icon={Users} />
-        <MetricCard idx={4} label="Clientes retornando" value={String(returningClients)}
+        <MetricCard idx={5} label="Clientes retornando" value={String(returningClients)}
           sub={`${clientCount} cadastrados`}
           icon={Heart} />
       </div>
