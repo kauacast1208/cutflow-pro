@@ -352,7 +352,7 @@ export default function ProfessionalsPage() {
                           <div className="min-w-0">
                             <p className="text-xs font-medium text-foreground">{b.reason}</p>
                             <p className="text-[11px] text-muted-foreground">
-                              {b.start_time} - {b.end_time} · {b.recurring_days.map(d => WEEKDAYS[d]).join(", ")}
+                              {b.all_day ? "Dia inteiro" : `${b.start_time} - ${b.end_time}`} · {b.recurring_days.map(d => WEEKDAYS[d]).join(", ")}
                             </p>
                           </div>
                         </div>
