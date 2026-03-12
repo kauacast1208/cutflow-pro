@@ -131,7 +131,7 @@ Deno.serve(async (req) => {
       const customMsg = auto24?.config?.message;
       const body = customMsg
         ? replacePlaceholders(customMsg, templateVars)
-        : `Lembrete: seu agendamento é amanhã às ${startTime}.\n${barbershopName}.`;
+        : `Olá, ${appointment.client_name}! ⏰ Lembrete: seu agendamento é *amanhã* na *${barbershopName}*.\n\n✂ *Serviço:* ${serviceName}\n⏰ *Horário:* ${startTime}\n\nSe precisar remarcar, entre em contato com a barbearia.\n\nTe esperamos! 👋`;
 
       notifications.push({
         ...baseNotif,
