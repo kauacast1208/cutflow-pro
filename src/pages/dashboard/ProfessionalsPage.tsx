@@ -16,9 +16,10 @@ import { format } from "date-fns";
 const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 const BREAK_TYPES = [
-  { value: "lunch", label: "Almoço", icon: "🍽" },
-  { value: "personal", label: "Pessoal", icon: "👤" },
-  { value: "unavailable", label: "Indisponível", icon: "🚫" },
+  { value: "lunch", label: "Almoço", icon: "🍽", allDay: false },
+  { value: "personal", label: "Pessoal", icon: "👤", allDay: false },
+  { value: "unavailable", label: "Indisponível", icon: "🚫", allDay: false },
+  { value: "vacation", label: "Férias / Folga", icon: "🏖", allDay: true },
 ] as const;
 
 type BreakType = typeof BREAK_TYPES[number]["value"];
@@ -31,6 +32,8 @@ interface ScheduleBreak {
   end_time: string;
   recurring: boolean;
   recurring_days: number[];
+  all_day: boolean;
+  note?: string;
 }
 
 export default function ProfessionalsPage() {
