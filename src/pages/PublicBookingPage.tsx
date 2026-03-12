@@ -369,39 +369,50 @@ export default function PublicBookingPage() {
     );
   }
 
+  // Smart capitalize: capitalize first letter of each word except common prepositions
+  const smartCapitalize = (name: string) => {
+    const lower = ["do", "da", "de", "dos", "das", "e", "em", "no", "na", "nos", "nas", "o", "a", "os", "as"];
+    return name
+      ?.split(" ")
+      .map((word: string, i: number) =>
+        i === 0 || !lower.includes(word.toLowerCase())
+          ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+          : word.toLowerCase()
+      )
+      .join(" ") || name;
+  };
+
+  const displayName = smartCapitalize(barbershop.name || "");
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-xl">
-        <div className="max-w-2xl mx-auto flex h-16 items-center px-4 gap-3">
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-card/95 backdrop-blur-xl">
+        <div className="max-w-2xl mx-auto flex h-16 items-center px-4 sm:px-6 gap-3">
           <button
             onClick={() => step > 0 ? goBack() : navigate(-1)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-border hover:bg-accent transition-colors shrink-0"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-border/60 hover:bg-accent transition-colors shrink-0"
             aria-label="Voltar"
           >
             <ChevronLeft className="h-4 w-4 text-foreground" />
           </button>
           {barbershop.logo_url ? (
-            <img src={barbershop.logo_url} className="h-11 w-11 rounded-xl object-cover border border-border shadow-sm" alt="" />
+            <img src={barbershop.logo_url} className="h-10 w-10 rounded-xl object-cover border border-border/40 shadow-sm" alt="" />
           ) : (
-            <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-              <Scissors className="h-5 w-5 text-primary" />
+            <div className="h-10 w-10 rounded-xl bg-primary/8 flex items-center justify-center shrink-0">
+              <Scissors className="h-4.5 w-4.5 text-primary" />
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <span className="font-bold text-base block truncate tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              {barbershop.name?.replace(/\b\w/g, (c: string) => c.toUpperCase())}
+            <span className="font-bold text-[15px] block truncate tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              {displayName}
             </span>
-            {barbershop.address && (
-              <p className="text-xs text-muted-foreground flex items-center gap-1 truncate mt-0.5">
-                <MapPin className="h-3 w-3 shrink-0" />{barbershop.address}
-              </p>
-            )}
+            <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5">Agendamento online</p>
           </div>
         </div>
       </header>
 
-      {/* Barbershop info banner (step 0 only) */}
+      {/* Barbershop hero banner (step 0 only) */}
       <AnimatePresence>
         {step === 0 && (
           <motion.div
@@ -410,35 +421,38 @@ export default function PublicBookingPage() {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="max-w-2xl mx-auto px-4 pt-5">
-              <div className="rounded-2xl border border-border bg-card p-5 shadow-sm mb-2">
-                <div className="flex items-start gap-4">
+            <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
+              <div className="rounded-2xl border border-border/60 bg-card p-6 sm:p-7 shadow-sm">
+                <div className="flex items-start gap-4 sm:gap-5">
                   {barbershop.logo_url ? (
-                    <img src={barbershop.logo_url} className="h-16 w-16 rounded-2xl object-cover border border-border shrink-0" alt="" />
+                    <img src={barbershop.logo_url} className="h-16 w-16 sm:h-[72px] sm:w-[72px] rounded-2xl object-cover border border-border/40 shrink-0 shadow-sm" alt="" />
                   ) : (
-                    <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <div className="h-16 w-16 sm:h-[72px] sm:w-[72px] rounded-2xl bg-primary/8 flex items-center justify-center shrink-0">
                       <Scissors className="h-7 w-7 text-primary" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <h1 className="font-extrabold text-lg tracking-tight">{barbershop.name?.replace(/\b\w/g, (c: string) => c.toUpperCase())}</h1>
+                    <h1 className="font-extrabold text-xl sm:text-2xl tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      {displayName}
+                    </h1>
+                    <p className="text-sm text-muted-foreground mt-1">Agende seu horário online</p>
                     {barbershop.description && (
-                      <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{barbershop.description}</p>
+                      <p className="text-sm text-muted-foreground/70 mt-1.5 line-clamp-2">{barbershop.description}</p>
                     )}
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2.5 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 text-xs text-muted-foreground/70">
                       {barbershop.address && (
-                        <span className="flex items-center gap-1">
+                        <span className="flex items-center gap-1.5">
                           <MapPin className="h-3 w-3 shrink-0" />{barbershop.address}
                         </span>
                       )}
                       {(barbershop.phone || barbershop.whatsapp) && (
-                        <span className="flex items-center gap-1">
+                        <span className="flex items-center gap-1.5">
                           <Phone className="h-3 w-3 shrink-0" />{barbershop.whatsapp || barbershop.phone}
                         </span>
                       )}
-                      <span className="flex items-center gap-1">
+                      <span className="flex items-center gap-1.5">
                         <Clock className="h-3 w-3 shrink-0" />
-                        {barbershop.opening_time?.slice(0, 5)} - {barbershop.closing_time?.slice(0, 5)}
+                        {barbershop.opening_time?.slice(0, 5)} – {barbershop.closing_time?.slice(0, 5)}
                       </span>
                     </div>
                   </div>
