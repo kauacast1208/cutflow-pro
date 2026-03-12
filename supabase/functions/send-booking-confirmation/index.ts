@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
       const customMsg = auto2h?.config?.message;
       const body = customMsg
         ? replacePlaceholders(customMsg, templateVars)
-        : `Faltam 2 horas para seu agendamento às ${startTime}.\n${barbershopName}.`;
+        : `Olá, ${appointment.client_name}! ⏰ Faltam *2 horas* para o seu horário na *${barbershopName}*.\n\n✂ *Serviço:* ${serviceName}\n⏰ *Horário:* ${startTime}\n\nSe precisar remarcar, entre em contato com a barbearia.\n\nTe esperamos! 👋`;
 
       notifications.push({
         ...baseNotif,
