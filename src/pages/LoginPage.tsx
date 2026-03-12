@@ -52,8 +52,8 @@ export default function LoginPage() {
           </p>
           <div className="mt-12 grid grid-cols-2 gap-4">
             {[
-              { label: "Barbearias ativas", value: "2.500+" },
-              { label: "Agendamentos/mês", value: "50.000+" },
+              { label: "Setup rápido", value: "< 5 min" },
+              { label: "Teste grátis", value: "7 dias" },
             ].map((s) => (
               <div key={s.label} className="bg-primary-foreground/10 rounded-xl p-4 backdrop-blur">
                 <p className="text-2xl font-bold">{s.value}</p>
