@@ -63,6 +63,7 @@ export default function AdminSidebar() {
   const { barbershop } = useBarbershop();
   const { role } = useUserRole();
   const { signOut } = useAuth();
+  const { subscription, isTrial, daysRemaining } = useSubscription();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { can, showUpgrade } = usePlanPermissions();
