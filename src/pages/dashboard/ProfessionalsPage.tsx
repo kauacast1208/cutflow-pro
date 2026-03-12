@@ -369,13 +369,13 @@ export default function ProfessionalsPage() {
                 {/* Add break form */}
                 <div className="rounded-xl border border-border/60 bg-card p-3 space-y-3">
                   <p className="text-xs font-medium text-foreground">Adicionar pausa</p>
-                  <div className="flex gap-1.5">
+                  <div className="grid grid-cols-2 gap-1.5">
                     {BREAK_TYPES.map((bt) => (
                       <button
                         key={bt.value}
                         type="button"
                         onClick={() => setNewBreakType(bt.value)}
-                        className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
+                        className={`py-2 rounded-lg text-xs font-medium transition-all ${
                           newBreakType === bt.value
                             ? "bg-primary text-primary-foreground shadow-sm"
                             : "bg-secondary/60 text-muted-foreground hover:bg-secondary"
@@ -385,18 +385,23 @@ export default function ProfessionalsPage() {
                       </button>
                     ))}
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-1">
-                      <Label className="text-[10px] text-muted-foreground">Início</Label>
-                      <Input type="time" value={newBreakStart} onChange={(e) => setNewBreakStart(e.target.value)} className="bg-card h-9 text-sm" />
+                  {!BREAK_TYPES.find(b => b.value === newBreakType)?.allDay && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-muted-foreground">Início</Label>
+                        <Input type="time" value={newBreakStart} onChange={(e) => setNewBreakStart(e.target.value)} className="bg-card h-9 text-sm" />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-muted-foreground">Fim</Label>
+                        <Input type="time" value={newBreakEnd} onChange={(e) => setNewBreakEnd(e.target.value)} className="bg-card h-9 text-sm" />
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <Label className="text-[10px] text-muted-foreground">Fim</Label>
-                      <Input type="time" value={newBreakEnd} onChange={(e) => setNewBreakEnd(e.target.value)} className="bg-card h-9 text-sm" />
-                    </div>
-                  </div>
+                  )}
+                  {BREAK_TYPES.find(b => b.value === newBreakType)?.allDay && (
+                    <p className="text-[11px] text-muted-foreground bg-accent/40 rounded-lg px-3 py-2">⏸ Bloqueia o dia inteiro nos dias selecionados</p>
+                  )}
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-muted-foreground">Dias da pausa</Label>
+                    <Label className="text-[10px] text-muted-foreground">Dias</Label>
                     <div className="flex gap-1">
                       {WEEKDAYS.map((d, i) => (
                         <button key={i} type="button" onClick={() => toggleBreakDay(i)}
@@ -404,6 +409,10 @@ export default function ProfessionalsPage() {
                         >{d}</button>
                       ))}
                     </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] text-muted-foreground">Observação (opcional)</Label>
+                    <Input value={newBreakNote} onChange={(e) => setNewBreakNote(e.target.value)} placeholder="Ex: Consulta médica" className="bg-card h-9 text-sm" />
                   </div>
                   <Button size="sm" variant="outline" className="w-full h-9 text-xs rounded-lg" onClick={addBreak} disabled={newBreakDays.length === 0}>
                     <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar pausa
