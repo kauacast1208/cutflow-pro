@@ -152,6 +152,22 @@ export default function DashboardHome() {
   const ticket = completed.length > 0 ? revenue / completed.length : 0;
   const todayRevenue = todayAppts.reduce((s, a) => s + Number(a.price || 0), 0);
 
+  // Returning vs new clients (clients with 2+ appointments in period = returning)
+  const { returningClients, newClients } = useMemo(() => {
+    const clientAppts: Record<string, number> = {};
+    completed.forEach(a => {
+      const key = a.client_name?.toLowerCase().trim();
+      if (key) clientAppts[key] = (clientAppts[key] || 0) + 1;
+    });
+    let returning = 0;
+    let newC = 0;
+    Object.values(clientAppts).forEach(count => {
+      if (count >= 2) returning++;
+      else newC++;
+    });
+    return { returningClients: returning, newClients: newC };
+  }, [completed]);
+
   // Next appointment
   const nextAppt = useMemo(() => {
     const now = format(new Date(), "HH:mm");
@@ -412,7 +428,7 @@ export default function DashboardHome() {
       )}
 
       {/* ── METRICS CARDS ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         <MetricCard idx={0} label="Agendamentos hoje" value={String(todayAppts.length)}
           sub={`R$ ${todayRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 0 })} faturados`}
           icon={Calendar} />
@@ -423,9 +439,12 @@ export default function DashboardHome() {
           change={monthRevenueChange ? `${Number(monthRevenueChange) >= 0 ? "+" : ""}${monthRevenueChange}%` : null}
           changePositive={monthRevenueChange ? Number(monthRevenueChange) >= 0 : true}
           icon={DollarSign} />
-        <MetricCard idx={3} label="Clientes cadastrados" value={String(clientCount)}
-          sub={`Ticket médio: R$ ${ticket.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`}
+        <MetricCard idx={3} label="Novos clientes" value={String(newClients)}
+          sub={`nos últimos ${period} dias`}
           icon={Users} />
+        <MetricCard idx={4} label="Clientes retornando" value={String(returningClients)}
+          sub={`${clientCount} cadastrados`}
+          icon={Heart} />
       </div>
 
       {/* ── TODAY SUMMARY + UPCOMING ── */}

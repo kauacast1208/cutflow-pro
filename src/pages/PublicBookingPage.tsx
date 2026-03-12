@@ -389,7 +389,9 @@ export default function PublicBookingPage() {
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <span className="font-bold text-base block truncate tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{barbershop.name}</span>
+            <span className="font-bold text-base block truncate tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              {barbershop.name?.replace(/\b\w/g, (c: string) => c.toUpperCase())}
+            </span>
             {barbershop.address && (
               <p className="text-xs text-muted-foreground flex items-center gap-1 truncate mt-0.5">
                 <MapPin className="h-3 w-3 shrink-0" />{barbershop.address}
@@ -419,7 +421,7 @@ export default function PublicBookingPage() {
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <h1 className="font-extrabold text-lg tracking-tight">{barbershop.name}</h1>
+                    <h1 className="font-extrabold text-lg tracking-tight">{barbershop.name?.replace(/\b\w/g, (c: string) => c.toUpperCase())}</h1>
                     {barbershop.description && (
                       <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{barbershop.description}</p>
                     )}
