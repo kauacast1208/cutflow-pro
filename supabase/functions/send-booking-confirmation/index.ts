@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
     const customConfirmMsg = autoConfirm?.config?.message;
     const confirmationBody = customConfirmMsg
       ? replacePlaceholders(customConfirmMsg, templateVars)
-      : `Olá ${appointment.client_name}!\n\nSeu horário foi confirmado.\n\nServiço: ${serviceName}\nData: ${formattedDate}\nHora: ${startTime}\n\n${barbershopName}`;
+      : `Olá, ${appointment.client_name}! ✅ Seu agendamento foi *confirmado* na *${barbershopName}*.\n\n✂ *Serviço:* ${serviceName}\n💈 *Profissional:* ${professionalName}\n📅 *Data:* ${formattedDate}\n⏰ *Horário:* ${startTime}\n\nTe esperamos! 👋`;
 
     const preferredChannel = appointment.client_phone ? "whatsapp" : "email";
 
