@@ -152,6 +152,22 @@ export default function DashboardHome() {
   const ticket = completed.length > 0 ? revenue / completed.length : 0;
   const todayRevenue = todayAppts.reduce((s, a) => s + Number(a.price || 0), 0);
 
+  // Returning vs new clients (clients with 2+ appointments in period = returning)
+  const { returningClients, newClients } = useMemo(() => {
+    const clientAppts: Record<string, number> = {};
+    completed.forEach(a => {
+      const key = a.client_name?.toLowerCase().trim();
+      if (key) clientAppts[key] = (clientAppts[key] || 0) + 1;
+    });
+    let returning = 0;
+    let newC = 0;
+    Object.values(clientAppts).forEach(count => {
+      if (count >= 2) returning++;
+      else newC++;
+    });
+    return { returningClients: returning, newClients: newC };
+  }, [completed]);
+
   // Next appointment
   const nextAppt = useMemo(() => {
     const now = format(new Date(), "HH:mm");
