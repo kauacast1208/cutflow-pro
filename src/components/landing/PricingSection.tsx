@@ -57,8 +57,8 @@ const planLabels: Record<string, string> = {
 
 const originalPrices: Record<string, number> = {
   starter: 59,
-  pro: 97,
-  premium: 147,
+  pro: 99,
+  premium: 149,
 };
 
 const promoPrices: Record<string, number> = {
