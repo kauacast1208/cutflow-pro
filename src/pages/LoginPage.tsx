@@ -87,9 +87,15 @@ export default function LoginPage() {
               setError("");
               setLoading(true);
               try {
-                const { error } = await signInWithGoogle("/auth/callback");
+                const { error } = await supabase.auth.signInWithOAuth({
+                  provider: "google",
+                  options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                  },
+                });
+
                 if (error) {
-                  console.error("Google OAuth error:", error);
+                  console.error("Google OAuth error:", error.message);
                   setError("Não foi possível conectar com o Google. Tente novamente ou use e-mail e senha.");
                   setLoading(false);
                 }
