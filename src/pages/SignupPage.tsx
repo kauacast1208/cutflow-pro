@@ -23,6 +23,10 @@ export default function SignupPage() {
     e.preventDefault();
     setError("");
 
+    if (!fullName.trim()) {
+      setError("Informe seu nome completo.");
+      return;
+    }
     if (password.length < 6) {
       setError("A senha deve ter pelo menos 6 caracteres.");
       return;
@@ -30,7 +34,7 @@ export default function SignupPage() {
 
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -39,16 +43,33 @@ export default function SignupPage() {
       },
     });
 
-    if (error) {
-      const message = error.message?.toLowerCase().includes("already registered")
-        ? "Este e-mail já está cadastrado. Faça login ou recupere sua senha."
-        : "Não foi possível criar sua conta. Tente novamente.";
-      setError(message);
+    if (signUpError) {
+      const msg = signUpError.message?.toLowerCase();
+      if (msg?.includes("already registered") || msg?.includes("already been registered")) {
+        setError("Este e-mail já está cadastrado. Faça login ou recupere sua senha.");
+      } else if (msg?.includes("password") && msg?.includes("leaked")) {
+        setError("Esta senha foi encontrada em vazamentos de dados. Escolha uma senha diferente.");
+      } else if (msg?.includes("valid email")) {
+        setError("Informe um endereço de e-mail válido.");
+      } else {
+        setError("Não foi possível criar sua conta. Tente novamente.");
+      }
       setLoading(false);
       return;
     }
 
-    toast({ title: "Conta criada!", description: "Verifique seu e-mail para confirmar o cadastro." });
+    // Check if email confirmation is required (user exists but session is null)
+    if (data.user && !data.session) {
+      toast({
+        title: "Verifique seu e-mail",
+        description: "Enviamos um link de confirmação para " + email,
+      });
+      setLoading(false);
+      return;
+    }
+
+    // If auto-confirm is on, user gets a session immediately
+    toast({ title: "Conta criada!", description: "Bem-vindo ao CutFlow!" });
     navigate("/onboarding");
   };
 
@@ -65,12 +86,12 @@ export default function SignupPage() {
       });
 
       if (error) {
-        setError("Não foi possível entrar com Google.");
         console.error("Erro no signup com Google:", error);
+        setError("Não foi possível entrar com Google. Tente usar e-mail e senha.");
       }
     } catch (err) {
       console.error(err);
-      setError("Erro inesperado ao entrar com Google.");
+      setError("Erro inesperado. Tente novamente.");
     } finally {
       setGoogleLoading(false);
     }
@@ -78,10 +99,8 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen bg-muted/30 flex">
-      {/* Left branding panel */}
       <SignupBrandingPanel />
 
-      {/* Right form panel */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 sm:px-8 lg:px-16">
         <div className="w-full max-w-[420px]">
           {/* Mobile logo */}
@@ -133,7 +152,6 @@ export default function SignupPage() {
 
             {/* Form */}
             <form onSubmit={handleSignup} className="space-y-3.5">
-              {/* Name */}
               <div className="space-y-1.5">
                 <label htmlFor="name" className="text-[13px] font-medium text-foreground/80">
                   Nome completo
@@ -147,6 +165,7 @@ export default function SignupPage() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
+                    autoComplete="name"
                     className={cn(
                       "flex h-11 w-full rounded-xl border border-border/60 bg-background pl-10 pr-3 text-sm",
                       "placeholder:text-muted-foreground/40",
@@ -157,7 +176,6 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              {/* Email */}
               <div className="space-y-1.5">
                 <label htmlFor="email" className="text-[13px] font-medium text-foreground/80">
                   E-mail
@@ -182,7 +200,6 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              {/* Password */}
               <div className="space-y-1.5">
                 <label htmlFor="password" className="text-[13px] font-medium text-foreground/80">
                   Senha
@@ -196,6 +213,7 @@ export default function SignupPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    autoComplete="new-password"
                     className={cn(
                       "flex h-11 w-full rounded-xl border border-border/60 bg-background pl-10 pr-10 text-sm",
                       "placeholder:text-muted-foreground/40",
@@ -215,14 +233,12 @@ export default function SignupPage() {
                 <PasswordStrengthIndicator password={password} />
               </div>
 
-              {/* Error */}
               {error && (
-                <div className="text-[13px] text-destructive bg-destructive/8 border border-destructive/15 rounded-xl px-3.5 py-2.5 leading-snug">
+                <div className="text-[13px] text-destructive bg-destructive/5 border border-destructive/10 rounded-xl px-3.5 py-2.5 leading-snug">
                   {error}
                 </div>
               )}
 
-              {/* Submit */}
               <button
                 type="submit"
                 disabled={loading || googleLoading}
@@ -241,7 +257,6 @@ export default function SignupPage() {
               </button>
             </form>
 
-            {/* Trust text */}
             <div className="flex items-center justify-center gap-3 mt-4">
               {["7 dias grátis", "Sem cartão", "Cancele quando quiser"].map((t) => (
                 <span key={t} className="text-[11px] text-muted-foreground/60 flex items-center gap-1">
@@ -251,7 +266,6 @@ export default function SignupPage() {
             </div>
           </div>
 
-          {/* Login link */}
           <p className="text-center text-sm text-muted-foreground mt-5">
             Já tem uma conta?{" "}
             <Link to="/login" className="text-primary font-medium hover:underline">
@@ -259,7 +273,6 @@ export default function SignupPage() {
             </Link>
           </p>
 
-          {/* Footer */}
           <div className="flex items-center justify-center gap-4 mt-6 text-[11px] text-muted-foreground/50">
             <a href="#" className="hover:text-muted-foreground transition-colors">Termos</a>
             <span>·</span>

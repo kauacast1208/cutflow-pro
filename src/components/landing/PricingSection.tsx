@@ -44,15 +44,21 @@ const planHighlights: Record<string, string[]> = {
 };
 
 const planDescriptions: Record<string, string> = {
-  starter: "Ideal para barbeiros autônomos",
-  pro: "O plano ideal para barbearias em crescimento",
-  premium: "Para barbearias profissionais",
+  starter: "Ideal para barbeiros autônomos que querem organizar a agenda e reduzir faltas.",
+  pro: "Perfeito para barbearias em crescimento que precisam de mais controle e profissionalismo.",
+  premium: "Para operações profissionais que precisam de gestão completa e escala.",
+};
+
+const planLabels: Record<string, string> = {
+  starter: "Starter",
+  pro: "Pro",
+  premium: "Business",
 };
 
 const fallbackPlans: PlanRow[] = [
-  { id: "1", slug: "starter", label: "Starter", price: 79, max_professionals: 1, features: [] },
-  { id: "2", slug: "pro", label: "Pro", price: 129, max_professionals: 5, features: [] },
-  { id: "3", slug: "premium", label: "Premium", price: 189, max_professionals: 999, features: [] },
+  { id: "1", slug: "starter", label: "Starter", price: 29, max_professionals: 1, features: [] },
+  { id: "2", slug: "pro", label: "Pro", price: 49, max_professionals: 5, features: [] },
+  { id: "3", slug: "premium", label: "Business", price: 79, max_professionals: 999, features: [] },
 ];
 
 export function PricingSection() {
@@ -90,7 +96,7 @@ export function PricingSection() {
             Escolha o plano ideal para sua barbearia
           </h2>
           <p className="text-muted-foreground text-[15px] sm:text-lg max-w-lg mx-auto">
-            Teste grátis por 7 dias. Nenhuma cobrança hoje.
+            7 dias grátis. Cancele quando quiser. Sem taxas escondidas.
           </p>
         </div>
 
@@ -99,6 +105,7 @@ export function PricingSection() {
             const isPopular = plan.slug === "pro";
             const highlights = planHighlights[plan.slug] || [];
             const desc = planDescriptions[plan.slug] || "";
+            const displayLabel = planLabels[plan.slug] || plan.label;
 
             return (
               <motion.div
@@ -116,22 +123,22 @@ export function PricingSection() {
                 {isPopular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-primary px-4 py-1 text-[11px] font-semibold text-primary-foreground shadow-sm whitespace-nowrap">
                     <Star className="h-3 w-3 fill-current" />
-                    Mais popular
+                    Mais escolhido
                   </div>
                 )}
 
                 <div className="mb-4 sm:mb-5">
                   <h3 className={`font-bold ${isPopular ? "text-xl sm:text-2xl" : "text-lg sm:text-xl"}`}>
-                    {plan.label}
+                    {displayLabel}
                   </h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">{desc}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed">{desc}</p>
                 </div>
 
                 <div className="mb-5 sm:mb-6">
                   <div className="flex items-baseline gap-0.5">
                     <span className="text-xs sm:text-sm text-muted-foreground">R$</span>
                     <span className={`font-extrabold tracking-tight ${isPopular ? "text-4xl sm:text-5xl" : "text-3xl sm:text-4xl"}`}>
-                      {plan.price}
+                      {plan.slug === "starter" ? 29 : plan.slug === "pro" ? 49 : 79}
                     </span>
                     <span className="text-muted-foreground text-xs sm:text-sm">/mês</span>
                   </div>
@@ -177,7 +184,7 @@ export function PricingSection() {
           </div>
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 text-primary/60" />
-            <span>Teste gratuito de 7 dias</span>
+            <span>7 dias grátis</span>
           </div>
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 text-primary/60" />
@@ -185,7 +192,7 @@ export function PricingSection() {
           </div>
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 text-primary/60" />
-            <span>Sem fidelidade</span>
+            <span>Sem taxas escondidas</span>
           </div>
         </div>
       </div>

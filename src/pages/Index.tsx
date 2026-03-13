@@ -12,6 +12,7 @@ import { PricingSection } from "@/components/landing/PricingSection";
 import { FAQSection } from "@/components/landing/FAQSection";
 import { CTASection } from "@/components/landing/CTASection";
 import { Footer } from "@/components/landing/Footer";
+import { FloatingNotifications } from "@/components/landing/FloatingNotifications";
 import WhatsAppButton from "@/components/booking/WhatsAppButton";
 
 const Index = () => {
@@ -31,6 +32,7 @@ const Index = () => {
       <div id="faq"><FAQSection /></div>
       <CTASection />
       <Footer />
+      <FloatingNotifications />
       <WhatsAppButton />
     </div>
   );
