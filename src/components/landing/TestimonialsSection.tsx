@@ -43,8 +43,8 @@ const testimonials = [
     rating: 5,
   },
   {
-    barbershop: "Barber Club Rio",
-    city: "Niterói, RJ",
+    barbershop: "Barber Club",
+    city: "Florianópolis, SC",
     monogram: "BR",
     gradient: "from-teal-600 to-cyan-800",
     content: "Trocamos a agenda de papel pelo CutFlow e nunca mais tivemos conflito de horário. A equipe inteira agradeceu.",

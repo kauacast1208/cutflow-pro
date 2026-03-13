@@ -35,7 +35,7 @@ export function FloatingNotifications() {
         setCurrent((prev) => (prev + 1) % notifications.length);
         setVisible(true);
       }, 400);
-    }, 4500);
+    }, 8000);
 
     return () => clearInterval(interval);
   }, [dismissed]);
