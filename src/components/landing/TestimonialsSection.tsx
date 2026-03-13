@@ -36,7 +36,7 @@ const testimonials = [
   },
   {
     barbershop: "Barbearia Central",
-    city: "Brasília, DF",
+    city: "Belo Horizonte, MG",
     monogram: "BC",
     gradient: "from-primary to-emerald-700",
     content: "A página de agendamento online trouxe clientes novos toda semana. O retorno do investimento foi quase imediato.",
