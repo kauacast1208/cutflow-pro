@@ -12,7 +12,7 @@ const testimonials = [
   },
   {
     barbershop: "Dom H Barber",
-    city: "Rio de Janeiro, RJ",
+    city: "Porto Alegre, RS",
     monogram: "DH",
     gradient: "from-slate-600 to-slate-800",
     content: "Os lembretes automáticos ajudaram muito na confirmação dos horários. Nosso índice de faltas caiu mais de 30%.",
