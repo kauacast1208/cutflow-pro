@@ -1,11 +1,9 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Scissors, Eye, EyeOff, Loader2, Check } from "lucide-react";
+import { Eye, EyeOff, Loader2, Lock, Check, Scissors } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -14,13 +12,6 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  useEffect(() => {
-    const hash = window.location.hash;
-    if (!hash.includes("type=recovery")) {
-      // Not a recovery flow, redirect
-    }
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,54 +32,87 @@ export default function ResetPasswordPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <div className="text-center max-w-md">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-            <Check className="h-8 w-8 text-primary" />
+      <div className="min-h-screen bg-muted/30 flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-[420px]">
+          <div className="bg-background rounded-2xl border border-border/50 shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_6px_24px_-4px_rgb(0_0_0/0.06)] p-8 text-center">
+            <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+              <Check className="h-7 w-7 text-primary" />
+            </div>
+            <h1 className="text-[22px] font-bold tracking-tight mb-2">Senha redefinida!</h1>
+            <p className="text-muted-foreground text-sm">Redirecionando para o painel...</p>
           </div>
-          <h1 className="text-2xl font-bold mb-2">Senha redefinida!</h1>
-          <p className="text-muted-foreground">Redirecionando para o painel...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-muted/30 flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-[420px]">
+        {/* Logo */}
         <div className="flex items-center gap-2 mb-8">
-          <Scissors className="h-6 w-6 text-primary" />
-          <span className="text-2xl font-bold">CutFlow</span>
-        </div>
-        <h1 className="text-2xl font-bold mb-1">Redefinir senha</h1>
-        <p className="text-muted-foreground text-sm mb-8">Escolha uma nova senha para sua conta.</p>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="password">Nova senha</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Mínimo 6 caracteres"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
+          <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Scissors className="h-5 w-5 text-primary" />
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Redefinir senha
-          </Button>
-        </form>
+          <span className="text-xl font-bold tracking-tight">CutFlow</span>
+        </div>
+
+        {/* Card */}
+        <div className="bg-background rounded-2xl border border-border/50 shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_6px_24px_-4px_rgb(0_0_0/0.06)] p-8">
+          <h1 className="text-[22px] font-bold tracking-tight mb-1">Redefinir senha</h1>
+          <p className="text-muted-foreground text-sm mb-6">Escolha uma nova senha para sua conta.</p>
+
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            <div className="space-y-1.5">
+              <label htmlFor="password" className="text-[13px] font-medium text-foreground/80">
+                Nova senha
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Mínimo 6 caracteres"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete="new-password"
+                  className={cn(
+                    "flex h-11 w-full rounded-xl border border-border/60 bg-background pl-10 pr-10 text-sm",
+                    "placeholder:text-muted-foreground/40",
+                    "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50",
+                    "transition-all duration-200"
+                  )}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground transition-colors"
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className={cn(
+                "w-full h-11 rounded-xl text-sm font-semibold text-primary-foreground",
+                "bg-gradient-to-b from-primary to-primary/90",
+                "shadow-[0_1px_2px_0_rgb(0_0_0/0.1),inset_0_1px_0_0_rgb(255_255_255/0.1)]",
+                "hover:shadow-[0_2px_8px_-2px_hsl(var(--primary)/0.5)] hover:brightness-110",
+                "active:scale-[0.99] transition-all duration-150",
+                "disabled:opacity-50 disabled:pointer-events-none",
+                "flex items-center justify-center gap-2"
+              )}
+            >
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {loading ? "Redefinindo..." : "Redefinir senha"}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
