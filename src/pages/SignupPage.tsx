@@ -87,7 +87,7 @@ export default function SignupPage() {
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2 mb-8">
             <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Scissors className="h-4.5 w-4.5 text-primary" />
+              <Scissors className="h-5 w-5 text-primary" />
             </div>
             <span className="text-xl font-bold tracking-tight">CutFlow</span>
           </div>
