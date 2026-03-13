@@ -69,7 +69,7 @@ export default function AdminSidebar() {
   const { can, showUpgrade } = usePlanPermissions();
 
   const bookingUrl = barbershop
-    ? `${window.location.origin}/agendar/${barbershop.slug}`
+    ? `${window.location.origin}/b/${barbershop.slug}`
     : "";
 
   const copyLink = () => {

@@ -436,19 +436,19 @@ export default function DashboardHome() {
       )}
 
       {/* ── BUSINESS KPI CARDS ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <MetricCard
           idx={0}
-          label="Agendamentos hoje"
+          label="Atendimentos hoje"
           value={String(todayAppts.length)}
-          sub={`R$ ${todayRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`}
+          sub={`R$ ${todayRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 0 })} faturado`}
           icon={Calendar}
         />
         <MetricCard
           idx={1}
-          label="Agendamentos no mês"
+          label="Atendimentos no mês"
           value={String(monthAppts.filter(a => a.status !== "cancelled").length)}
-          sub={`${monthAppts.filter(a => a.status === "cancelled").length} cancelamentos`}
+          sub={`${monthAppts.filter(a => a.status === "cancelled").length} cancelamento${monthAppts.filter(a => a.status === "cancelled").length !== 1 ? "s" : ""}`}
           icon={BarChart3}
         />
         <MetricCard
@@ -461,10 +461,24 @@ export default function DashboardHome() {
         />
         <MetricCard
           idx={3}
-          label="Clientes retornando"
+          label="Novos clientes"
+          value={String(newClients)}
+          sub="no período selecionado"
+          icon={Users}
+        />
+        <MetricCard
+          idx={4}
+          label="Clientes recorrentes"
           value={String(returningClients)}
           sub="2+ visitas no período"
           icon={Heart}
+        />
+        <MetricCard
+          idx={5}
+          label="Ticket médio"
+          value={`R$ ${ticket.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+          sub="valor médio por atendimento"
+          icon={TrendingUp}
         />
       </div>
 
