@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Menu, X, Scissors, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ThemeToggle } from "./ThemeToggle";
 
 const links = [
   { label: "Funcionalidades", href: "#features" },
@@ -22,7 +23,6 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
@@ -35,7 +35,7 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto flex h-16 sm:h-[68px] items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-2.5 font-bold text-xl text-foreground">
           <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center shadow-sm">
-            <Scissors className="h-4.5 w-4.5 text-primary-foreground" />
+            <Scissors className="h-5 w-5 text-primary-foreground" />
           </div>
           <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>CutFlow</span>
         </Link>
@@ -54,21 +54,25 @@ export function Navbar() {
           )}
         </nav>
 
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-2">
+          <ThemeToggle />
           <Link to="/login">
             <Button variant="ghost" size="sm" className="font-medium text-[13px]">Entrar</Button>
           </Link>
           <Link to="/signup">
             <Button variant="default" size="sm" className="font-semibold shadow-sm rounded-xl px-5">
-              Teste gratis
+              Teste grátis
               <ArrowRight className="h-3.5 w-3.5 ml-1" />
             </Button>
           </Link>
         </div>
 
-        <button onClick={() => setOpen(!open)} className="md:hidden p-3 -mr-3 text-foreground rounded-xl hover:bg-accent/50 transition-colors">
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="flex items-center gap-1 md:hidden">
+          <ThemeToggle />
+          <button onClick={() => setOpen(!open)} className="p-3 -mr-3 text-foreground rounded-xl hover:bg-accent/50 transition-colors">
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}
@@ -98,7 +102,7 @@ export function Navbar() {
               <div className="space-y-3 pt-2">
                 <Link to="/signup" className="block" onClick={() => setOpen(false)}>
                   <Button variant="default" className="w-full h-14 rounded-xl text-base font-semibold">
-                    Teste gratis
+                    Teste grátis
                     <ArrowRight className="h-4 w-4 ml-1.5" />
                   </Button>
                 </Link>
