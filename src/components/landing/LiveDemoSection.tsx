@@ -239,7 +239,7 @@ export function LiveDemoSection() {
             transition={{ delay: 0.1 }}
             className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto"
           >
-            Veja novos agendamentos acontecendo enquanto você organiza sua barbearia.
+            Acompanhe agendamentos acontecendo enquanto você organiza sua barbearia.
           </motion.p>
         </div>
 
