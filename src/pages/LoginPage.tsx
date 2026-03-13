@@ -22,10 +22,19 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (error) {
-      setError("E-mail ou senha incorretos. Tente novamente.");
+    if (signInError) {
+      const msg = signInError.message?.toLowerCase();
+      if (msg?.includes("invalid login credentials") || msg?.includes("invalid_credentials")) {
+        setError("E-mail ou senha incorretos. Verifique e tente novamente.");
+      } else if (msg?.includes("email not confirmed")) {
+        setError("Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada.");
+      } else if (msg?.includes("too many requests") || msg?.includes("rate")) {
+        setError("Muitas tentativas. Aguarde alguns minutos e tente novamente.");
+      } else {
+        setError("Não foi possível fazer login. Tente novamente.");
+      }
       setLoading(false);
       return;
     }
@@ -47,12 +56,12 @@ export default function LoginPage() {
       });
 
       if (error) {
-        setError("Não foi possível entrar com Google.");
         console.error("Erro no login com Google:", error);
+        setError("Não foi possível entrar com Google. Tente usar e-mail e senha.");
       }
     } catch (err) {
       console.error(err);
-      setError("Erro inesperado ao entrar com Google.");
+      setError("Erro inesperado. Tente novamente.");
     } finally {
       setGoogleLoading(false);
     }
@@ -60,10 +69,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-muted/30 flex">
-      {/* Left branding panel */}
       <SignupBrandingPanel />
 
-      {/* Right form panel */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 sm:px-8 lg:px-16">
         <div className="w-full max-w-[420px]">
           {/* Mobile logo */}
@@ -115,7 +122,6 @@ export default function LoginPage() {
 
             {/* Form */}
             <form onSubmit={handleLogin} className="space-y-3.5">
-              {/* Email */}
               <div className="space-y-1.5">
                 <label htmlFor="email" className="text-[13px] font-medium text-foreground/80">
                   E-mail
@@ -140,7 +146,6 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Password */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label htmlFor="password" className="text-[13px] font-medium text-foreground/80">
@@ -178,14 +183,12 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Error */}
               {error && (
-                <div className="text-[13px] text-destructive bg-destructive/8 border border-destructive/15 rounded-xl px-3.5 py-2.5 leading-snug">
+                <div className="text-[13px] text-destructive bg-destructive/5 border border-destructive/10 rounded-xl px-3.5 py-2.5 leading-snug">
                   {error}
                 </div>
               )}
 
-              {/* Submit */}
               <button
                 type="submit"
                 disabled={loading || googleLoading}
@@ -205,7 +208,6 @@ export default function LoginPage() {
             </form>
           </div>
 
-          {/* Signup link */}
           <p className="text-center text-sm text-muted-foreground mt-5">
             Não tem uma conta?{" "}
             <Link to="/signup" className="text-primary font-medium hover:underline">
@@ -213,7 +215,6 @@ export default function LoginPage() {
             </Link>
           </p>
 
-          {/* Footer */}
           <div className="flex items-center justify-center gap-4 mt-6 text-[11px] text-muted-foreground/50">
             <a href="#" className="hover:text-muted-foreground transition-colors">Termos</a>
             <span>·</span>
