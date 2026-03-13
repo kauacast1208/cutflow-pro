@@ -34,9 +34,13 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
 
       if (signInError) {
+        console.error("Login error:", signInError.message, signInError.status);
         const msg = signInError.message?.toLowerCase() || "";
         if (msg.includes("invalid login credentials") || msg.includes("invalid_credentials")) {
           setError("E-mail ou senha incorretos. Verifique e tente novamente.");
@@ -45,15 +49,21 @@ export default function LoginPage() {
         } else if (msg.includes("too many requests") || msg.includes("rate")) {
           setError("Muitas tentativas. Aguarde alguns minutos e tente novamente.");
         } else {
-          setError("Não foi possível fazer login. Tente novamente.");
+          setError(signInError.message || "Não foi possível fazer login. Tente novamente.");
         }
         setLoading(false);
         return;
       }
 
-      toast({ title: "Bem-vindo de volta!", description: "Login realizado com sucesso." });
-      navigate("/dashboard");
-    } catch {
+      if (data.session) {
+        toast({ title: "Bem-vindo de volta!", description: "Login realizado com sucesso." });
+        navigate("/dashboard");
+      } else {
+        setError("Não foi possível iniciar a sessão. Tente novamente.");
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error("Login unexpected error:", err);
       setError("Erro inesperado. Tente novamente.");
       setLoading(false);
     }

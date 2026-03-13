@@ -56,6 +56,7 @@ export default function SignupPage() {
       });
 
       if (signUpError) {
+        console.error("Signup error:", signUpError.message);
         const msg = signUpError.message?.toLowerCase() || "";
         if (msg.includes("already registered") || msg.includes("already been registered")) {
           setError("Este e-mail já está cadastrado. Faça login ou recupere sua senha.");
@@ -66,7 +67,7 @@ export default function SignupPage() {
         } else if (msg.includes("password") && (msg.includes("short") || msg.includes("length"))) {
           setError("A senha deve ter pelo menos 6 caracteres.");
         } else {
-          setError("Não foi possível criar sua conta. Tente novamente.");
+          setError(signUpError.message || "Não foi possível criar sua conta. Tente novamente.");
         }
         setLoading(false);
         return;
@@ -83,9 +84,16 @@ export default function SignupPage() {
       }
 
       // Auto-confirm on: user gets session immediately
-      toast({ title: "Conta criada!", description: "Bem-vindo ao CutFlow!" });
-      navigate("/onboarding");
-    } catch {
+      if (data.session) {
+        toast({ title: "Conta criada!", description: "Bem-vindo ao CutFlow!" });
+        navigate("/onboarding");
+        return;
+      }
+
+      // Fallback
+      setLoading(false);
+    } catch (err) {
+      console.error("Signup unexpected error:", err);
       setError("Erro inesperado. Tente novamente.");
       setLoading(false);
     }
