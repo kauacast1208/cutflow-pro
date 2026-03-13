@@ -114,7 +114,7 @@ export default function SignupPage() {
               {googleLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <GoogleIcon className="h-4.5 w-4.5" />
+                <GoogleIcon className="h-5 w-5" />
               )}
               {googleLoading ? "Conectando..." : "Continuar com Google"}
             </button>
