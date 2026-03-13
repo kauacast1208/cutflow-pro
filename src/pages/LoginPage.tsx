@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import { Scissors, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+
 import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
@@ -36,24 +36,25 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
-    setError("");
-    setGoogleLoading(true);
-    console.info("[Auth] Google login clicked → lovable.auth.signInWithOAuth('google')");
-
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${window.location.origin}/auth/callback`,
+      setGoogleLoading(true);
+      setError("");
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
 
-      if (result?.error) {
-        console.error("[Auth] Google OAuth error:", result.error);
-        setError("Não foi possível conectar com o Google. Tente novamente ou use e-mail e senha.");
-        setGoogleLoading(false);
+      if (error) {
+        setError("Não foi possível entrar com Google.");
+        console.error("Erro no login com Google:", error);
       }
-      // If redirected, the page will navigate away automatically
     } catch (err) {
-      console.error("[Auth] Google OAuth unexpected error:", err);
-      setError("Erro de conexão com o Google. Tente novamente.");
+      console.error(err);
+      setError("Erro inesperado ao entrar com Google.");
+    } finally {
       setGoogleLoading(false);
     }
   };
