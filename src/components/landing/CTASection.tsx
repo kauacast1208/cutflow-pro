@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Shield, Sparkles } from "lucide-react";
+import { ArrowRight, Shield, Sparkles, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function CTASection() {
@@ -22,9 +22,9 @@ export function CTASection() {
             Comece grátis hoje
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-primary-foreground mb-3 sm:mb-4 tracking-[-0.025em] leading-tight">
-            Pronto para organizar{" "}
+            Comece grátis e veja sua agenda{" "}
             <br className="hidden sm:block" />
-            sua barbearia?
+            ficar mais organizada em minutos.
           </h2>
           <p className="text-primary-foreground/65 text-sm sm:text-base mb-7 sm:mb-8 max-w-md mx-auto leading-relaxed">
             Leva menos de 5 minutos para criar sua conta. Comece agora com 7 dias grátis.
@@ -38,12 +38,23 @@ export function CTASection() {
               <ArrowRight className="ml-2 h-4.5 w-4.5" />
             </Button>
           </Link>
-          <p className="mt-3.5 text-primary-foreground/45 text-xs sm:text-[13px]">
-            7 dias grátis · Sem fidelidade · Cancele quando quiser
-          </p>
-          <div className="mt-4 flex items-center justify-center gap-2 text-primary-foreground/40 text-xs">
-            <Shield className="h-3.5 w-3.5" />
-            <span>Pagamento seguro via Stripe</span>
+          <div className="mt-5 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-5 text-primary-foreground/50 text-xs">
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              <span>7 dias grátis</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              <span>Sem cobrança hoje</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              <span>Cancele quando quiser</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Shield className="h-3.5 w-3.5" />
+              <span>Pagamento seguro via Stripe</span>
+            </div>
           </div>
         </div>
       </motion.div>

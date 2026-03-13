@@ -2,9 +2,9 @@ import { motion } from "framer-motion";
 import { UserPlus, Settings, CalendarCheck } from "lucide-react";
 
 const steps = [
-  { icon: UserPlus, step: "01", title: "Cadastre sua barbearia", description: "Crie sua conta e configure sua barbearia em poucos minutos." },
-  { icon: Settings, step: "02", title: "Configure seus serviços", description: "Adicione serviços, preços e horários de cada profissional." },
-  { icon: CalendarCheck, step: "03", title: "Receba agendamentos", description: "Compartilhe seu link e receba agendamentos automaticamente." },
+  { icon: UserPlus, step: "01", title: "Cadastre sua barbearia", description: "Crie sua conta gratuita e configure sua barbearia em poucos minutos." },
+  { icon: Settings, step: "02", title: "Organize agenda e serviços", description: "Adicione profissionais, serviços, preços e horários de atendimento." },
+  { icon: CalendarCheck, step: "03", title: "Receba agendamentos e lembretes", description: "Compartilhe seu link e receba agendamentos com lembretes automáticos." },
 ];
 
 export function HowItWorksSection() {
@@ -19,7 +19,7 @@ export function HowItWorksSection() {
             Comece em 3 passos simples
           </h2>
           <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
-            Configuração simples, resultados imediatos.
+            Configuração rápida, resultados desde o primeiro dia.
           </p>
         </div>
 

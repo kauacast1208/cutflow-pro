@@ -69,7 +69,7 @@ export function TestimonialsSection() {
             transition={{ delay: 0.1 }}
             className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto"
           >
-            Veja como barbearias reais estão crescendo com o CutFlow.
+            Veja como barbeiros reais estão organizando seus negócios.
           </motion.p>
         </div>
 
@@ -119,17 +119,6 @@ export function TestimonialsSection() {
             </motion.div>
           ))}
         </div>
-
-        {/* Trust message */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.3 }}
-          className="text-center text-xs sm:text-sm text-muted-foreground mt-8 sm:mt-12"
-        >
-          Feito para barbearias modernas que querem profissionalizar sua gestão.
-        </motion.p>
       </div>
     </section>
   );

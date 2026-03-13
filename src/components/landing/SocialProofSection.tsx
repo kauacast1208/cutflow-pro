@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { TrendingUp, Shield, Zap } from "lucide-react";
+import { Shield, Zap, Smartphone, Lock } from "lucide-react";
 
 export function SocialProofSection() {
   return (
@@ -12,24 +12,28 @@ export function SocialProofSection() {
           className="text-center"
         >
           <h3 className="text-lg sm:text-xl font-bold tracking-tight mb-2">
-            Feito para barbearias modernas que querem profissionalizar sua gestão.
+            Plataforma profissional para barbearias que levam o negócio a sério.
           </h3>
           <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-            Organização, controle e crescimento em uma plataforma simples e segura.
+            Organização, controle e crescimento com segurança e simplicidade.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-6 mt-6">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Shield className="h-3.5 w-3.5 text-primary" />
-              <span>Seguro e confiável</span>
+              <span>Dados seguros e protegidos</span>
             </div>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Zap className="h-3.5 w-3.5 text-primary" />
               <span>Setup em menos de 5 minutos</span>
             </div>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <TrendingUp className="h-3.5 w-3.5 text-primary" />
-              <span>Resultados desde o primeiro dia</span>
+              <Smartphone className="h-3.5 w-3.5 text-primary" />
+              <span>Funciona no celular e computador</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Lock className="h-3.5 w-3.5 text-primary" />
+              <span>Pagamento seguro via Stripe</span>
             </div>
           </div>
         </motion.div>
