@@ -55,31 +55,20 @@ export default function SignupPage() {
   const handleGoogleSignup = async () => {
     setError("");
     setGoogleLoading(true);
-    console.info("[Auth] Google signup clicked (SignupPage.handleGoogleSignup) → supabase.auth.signInWithOAuth");
+    console.info("[Auth] Google signup clicked → lovable.auth.signInWithOAuth('google')");
 
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: `${window.location.origin}/auth/callback`,
       });
 
-      if (error) {
-        console.error("Google OAuth error (SignupPage.handleGoogleSignup):", error.message);
+      if (result?.error) {
+        console.error("[Auth] Google OAuth error:", result.error);
         setError("Não foi possível conectar com o Google. Tente novamente ou cadastre com e-mail e senha.");
         setGoogleLoading(false);
-        return;
-      }
-
-      if (!data?.url) {
-        console.error("Google OAuth did not return a redirect URL (SignupPage.handleGoogleSignup).");
-        setError("Não foi possível iniciar o cadastro com Google. Tente novamente.");
-        setGoogleLoading(false);
-        return;
       }
     } catch (err) {
-      console.error("Google OAuth unexpected error (SignupPage.handleGoogleSignup):", err);
+      console.error("[Auth] Google OAuth unexpected error:", err);
       setError("Erro de conexão com o Google. Tente novamente.");
       setGoogleLoading(false);
     }

@@ -38,31 +38,21 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setError("");
     setGoogleLoading(true);
-    console.info("[Auth] Google login clicked (LoginPage.handleGoogleLogin) → supabase.auth.signInWithOAuth");
+    console.info("[Auth] Google login clicked → lovable.auth.signInWithOAuth('google')");
 
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: `${window.location.origin}/auth/callback`,
       });
 
-      if (error) {
-        console.error("Google OAuth error (LoginPage.handleGoogleLogin):", error.message);
+      if (result?.error) {
+        console.error("[Auth] Google OAuth error:", result.error);
         setError("Não foi possível conectar com o Google. Tente novamente ou use e-mail e senha.");
         setGoogleLoading(false);
-        return;
       }
-
-      if (!data?.url) {
-        console.error("Google OAuth did not return a redirect URL (LoginPage.handleGoogleLogin).");
-        setError("Não foi possível iniciar o login com Google. Tente novamente.");
-        setGoogleLoading(false);
-        return;
-      }
+      // If redirected, the page will navigate away automatically
     } catch (err) {
-      console.error("Google OAuth unexpected error (LoginPage.handleGoogleLogin):", err);
+      console.error("[Auth] Google OAuth unexpected error:", err);
       setError("Erro de conexão com o Google. Tente novamente.");
       setGoogleLoading(false);
     }
