@@ -1,34 +1,35 @@
-import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 
 /**
- * Helper that detects the current domain and uses the appropriate
- * OAuth method:
- * - On Lovable domains (*.lovable.app, *.lovableproject.com): uses managed OAuth proxy
- * - On custom domains (Vercel, custom): uses Supabase Auth directly
+ * Sign in with Google using Lovable's managed OAuth proxy.
+ * Works on all domains (Lovable, Vercel, custom) — no Supabase OAuth secrets needed.
  */
-function isLovableDomain(): boolean {
-  const host = window.location.hostname;
-  return host.endsWith(".lovable.app") || host.endsWith(".lovableproject.com") || host === "localhost";
-}
-
 export async function signInWithGoogle(redirectPath: string = "/auth/callback") {
   const redirectUrl = `${window.location.origin}${redirectPath}`;
 
-  if (isLovableDomain()) {
-    // Use Lovable managed OAuth (works on Lovable domains)
-    return lovable.auth.signInWithOAuth("google", {
+  try {
+    const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: redirectUrl,
     });
+
+    if (result?.error) {
+      console.error("Google OAuth error:", result.error);
+      return {
+        error: new Error(
+          "Não foi possível conectar com o Google. Tente novamente ou use e-mail e senha."
+        ),
+        data: null,
+      };
+    }
+
+    return { error: null, data: result };
+  } catch (err) {
+    console.error("Google OAuth unexpected error:", err);
+    return {
+      error: new Error(
+        "Erro de conexão com o Google. Tente novamente mais tarde."
+      ),
+      data: null,
+    };
   }
-
-  // Use Supabase Auth directly (works on any domain with Google OAuth configured)
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: redirectUrl,
-    },
-  });
-
-  return { error: error || null, data };
 }
