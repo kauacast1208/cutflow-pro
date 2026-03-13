@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Check, Crown, Loader2, Sparkles, Zap, Shield, CreditCard,
-  ExternalLink, Star, CheckCircle2, AlertTriangle,
+  ExternalLink, Star, CheckCircle2, AlertTriangle, ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -41,6 +41,7 @@ export default function BillingPage() {
       toast({ title: "Faça login primeiro", variant: "destructive" });
       return;
     }
+    if (loadingPlan) return; // Prevent double-clicks
     setLoadingPlan(planKey);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
@@ -48,24 +49,29 @@ export default function BillingPage() {
       });
       if (error) throw error;
       if (data?.url) window.location.href = data.url;
+      else throw new Error("Não foi possível iniciar o checkout.");
     } catch (err: any) {
-      toast({ title: "Erro ao criar checkout", description: err.message || "Tente novamente.", variant: "destructive" });
+      toast({
+        title: "Erro ao criar checkout",
+        description: "Não foi possível iniciar o pagamento. Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
     } finally {
       setLoadingPlan(null);
     }
   };
 
   const handleOpenPortal = async () => {
+    if (portalLoading) return;
     setPortalLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("customer-portal");
       if (error) throw error;
       
-      // Handle graceful trial/no-customer responses
       if (data?.error === "trial_no_customer" || data?.error === "no_subscription") {
         toast({
           title: "Plano em teste",
-          description: data.message,
+          description: "Ative sua assinatura primeiro para gerenciar cobrança e pagamento.",
         });
         setPortalLoading(false);
         return;
@@ -73,7 +79,11 @@ export default function BillingPage() {
       
       if (data?.url) window.open(data.url, "_blank");
     } catch (err: any) {
-      toast({ title: "Erro ao abrir portal", description: err.message || "Tente novamente.", variant: "destructive" });
+      toast({
+        title: "Portal indisponível",
+        description: "Não foi possível abrir o portal de pagamento. Tente novamente.",
+        variant: "destructive",
+      });
     } finally {
       setPortalLoading(false);
     }
@@ -85,8 +95,9 @@ export default function BillingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">Carregando seu plano...</p>
       </div>
     );
   }
@@ -115,7 +126,7 @@ export default function BillingPage() {
                         <h3 className="text-lg font-bold">Plano {STRIPE_PLANS[currentPlan].name}</h3>
                         {isTrial ? (
                           <Badge variant="secondary" className="bg-amber-500/10 text-amber-700 border-amber-500/20 text-[11px]">
-                            Plano em teste
+                            Em teste
                           </Badge>
                         ) : (
                           <Badge variant={statusInfo.variant} className="text-[11px]">{statusInfo.label}</Badge>
@@ -137,12 +148,12 @@ export default function BillingPage() {
                   {isTrial && daysRemaining !== null && (
                     <div className="rounded-xl bg-accent/40 p-3.5">
                       <p className="text-muted-foreground text-xs mb-0.5">Dias restantes</p>
-                      <p className="font-bold text-lg">{daysRemaining} dias</p>
+                      <p className="font-bold text-lg">{daysRemaining} {daysRemaining === 1 ? "dia" : "dias"}</p>
                     </div>
                   )}
                   {subscription.trial_ends_at && isTrial && (
                     <div className="rounded-xl bg-accent/40 p-3.5">
-                      <p className="text-muted-foreground text-xs mb-0.5">Trial expira em</p>
+                      <p className="text-muted-foreground text-xs mb-0.5">Teste expira em</p>
                       <p className="font-semibold">{format(new Date(subscription.trial_ends_at), "dd MMM yyyy", { locale: ptBR })}</p>
                     </div>
                   )}
@@ -154,14 +165,14 @@ export default function BillingPage() {
                   )}
                 </div>
 
-                {/* Trial info banner */}
+                {/* Trial guidance banner */}
                 {isTrial && !hasStripeSubscription && (
-                  <div className="mt-4 rounded-xl bg-amber-500/5 border border-amber-500/15 p-4 flex items-start gap-3">
-                    <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                  <div className="mt-4 rounded-xl bg-primary/[0.03] border border-primary/10 p-4 flex items-start gap-3">
+                    <CreditCard className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                     <div>
-                      <p className="text-sm font-medium text-amber-800">Período de teste ativo</p>
-                      <p className="text-xs text-amber-700/70 mt-0.5">
-                        Seu plano está em período de teste. Escolha um plano abaixo para ativar sua assinatura e continuar usando após o teste.
+                      <p className="text-sm font-medium">Você está no período de teste gratuito</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Sem cobrança durante o teste. Escolha um plano abaixo para garantir a continuidade após os {daysRemaining} dias restantes. Você pode trocar de plano a qualquer momento.
                       </p>
                     </div>
                   </div>
@@ -186,9 +197,14 @@ export default function BillingPage() {
 
         {/* Plans grid */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-          <h2 className="text-lg font-bold mb-5">
-            {hasStripeSubscription ? "Alterar plano" : isTrial ? "Ativar assinatura" : "Escolha seu plano"}
-          </h2>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-lg font-bold">
+              {hasStripeSubscription ? "Alterar plano" : isTrial ? "Ativar assinatura" : "Escolha seu plano"}
+            </h2>
+            {isTrial && (
+              <span className="text-xs text-muted-foreground hidden sm:block">Você pode trocar de plano durante o teste</span>
+            )}
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
             {(Object.entries(STRIPE_PLANS) as [StripePlanKey, typeof STRIPE_PLANS[StripePlanKey]][]).map(
@@ -196,6 +212,7 @@ export default function BillingPage() {
                 const isCurrentTrialPlan = isTrial && currentPlan === key;
                 const isCurrentActivePlan = !isTrial && isActive && currentPlan === key;
                 const isRecommended = key === "pro";
+                const isLoadingThis = loadingPlan === key;
 
                 return (
                   <motion.div
@@ -206,10 +223,14 @@ export default function BillingPage() {
                   >
                     <Card
                       className={`relative h-full flex flex-col transition-all duration-300 ${
-                        isRecommended
+                        isCurrentTrialPlan
+                          ? "border-primary/40 bg-primary/[0.02] ring-2 ring-primary/20 shadow-md"
+                          : isCurrentActivePlan
+                          ? "border-primary ring-2 ring-primary/30 shadow-md"
+                          : isRecommended
                           ? "border-primary shadow-md ring-2 ring-primary/15"
                           : "border-border/70"
-                      } ${isCurrentTrialPlan || isCurrentActivePlan ? "ring-2 ring-primary/30" : ""}`}
+                      }`}
                     >
                       {isRecommended && !isCurrentTrialPlan && !isCurrentActivePlan && (
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -220,15 +241,17 @@ export default function BillingPage() {
                         </div>
                       )}
                       {isCurrentTrialPlan && (
-                        <div className="absolute -top-3 right-4">
-                          <span className="bg-amber-500/10 text-amber-700 border border-amber-500/20 text-[11px] font-semibold px-3 py-1 rounded-full">
-                            Plano em teste
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                          <span className="bg-primary text-primary-foreground text-[11px] font-semibold px-3.5 py-1 rounded-full shadow-sm flex items-center gap-1">
+                            <CheckCircle2 className="h-3 w-3" />
+                            Seu plano atual
                           </span>
                         </div>
                       )}
                       {isCurrentActivePlan && (
-                        <div className="absolute -top-3 right-4">
-                          <span className="bg-primary/10 text-primary border border-primary/20 text-[11px] font-semibold px-3 py-1 rounded-full">
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                          <span className="bg-primary text-primary-foreground text-[11px] font-semibold px-3.5 py-1 rounded-full shadow-sm flex items-center gap-1">
+                            <CheckCircle2 className="h-3 w-3" />
                             Plano ativo
                           </span>
                         </div>
@@ -236,7 +259,11 @@ export default function BillingPage() {
 
                       <div className="p-5 sm:p-6 pb-4">
                         <div className="flex items-center gap-3 mb-3">
-                          <div className="h-9 w-9 rounded-xl bg-primary/[0.08] text-primary flex items-center justify-center">
+                          <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${
+                            isCurrentTrialPlan || isCurrentActivePlan
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-primary/[0.08] text-primary"
+                          }`}>
                             {planIcons[key]}
                           </div>
                           <div>
@@ -269,24 +296,46 @@ export default function BillingPage() {
                             Gerenciar plano
                           </Button>
                         ) : isCurrentTrialPlan ? (
-                          <Button className="w-full rounded-xl h-12 sm:h-11 text-sm font-semibold" variant={isRecommended ? "default" : "outline"} disabled={loadingPlan !== null} onClick={() => handleSubscribe(key)}>
-                            {loadingPlan === key ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                            Ativar este plano
+                          <Button
+                            className="w-full rounded-xl h-12 sm:h-11 text-sm font-semibold"
+                            disabled={loadingPlan !== null}
+                            onClick={() => handleSubscribe(key)}
+                          >
+                            {isLoadingThis ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            ) : (
+                              <ArrowRight className="h-4 w-4 mr-1.5" />
+                            )}
+                            {isLoadingThis ? "Abrindo checkout..." : "Ativar este plano"}
                           </Button>
                         ) : hasStripeSubscription ? (
-                          <Button className="w-full rounded-xl h-12 sm:h-11 text-sm font-semibold" variant={isRecommended ? "default" : "outline"} onClick={handleOpenPortal} disabled={portalLoading}>
+                          <Button className="w-full rounded-xl h-12 sm:h-11 text-sm font-semibold" variant="outline" onClick={handleOpenPortal} disabled={portalLoading}>
                             {portalLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                             Trocar para este plano
                           </Button>
                         ) : isTrial ? (
-                          <Button className="w-full rounded-xl h-12 sm:h-11 text-sm font-semibold" variant={isRecommended ? "default" : "outline"} disabled={loadingPlan !== null} onClick={() => handleSubscribe(key)}>
-                            {loadingPlan === key ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                            Trocar para este plano
+                          <Button
+                            className="w-full rounded-xl h-12 sm:h-11 text-sm font-semibold"
+                            variant={isRecommended ? "default" : "outline"}
+                            disabled={loadingPlan !== null}
+                            onClick={() => handleSubscribe(key)}
+                          >
+                            {isLoadingThis ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            ) : null}
+                            {isLoadingThis ? "Abrindo checkout..." : "Trocar para este plano"}
                           </Button>
                         ) : (
-                          <Button className="w-full rounded-xl h-12 sm:h-11 text-sm font-semibold" variant={isRecommended ? "default" : "outline"} disabled={loadingPlan !== null} onClick={() => handleSubscribe(key)}>
-                            {loadingPlan === key ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                            Começar teste gratuito
+                          <Button
+                            className="w-full rounded-xl h-12 sm:h-11 text-sm font-semibold"
+                            variant={isRecommended ? "default" : "outline"}
+                            disabled={loadingPlan !== null}
+                            onClick={() => handleSubscribe(key)}
+                          >
+                            {isLoadingThis ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            ) : null}
+                            {isLoadingThis ? "Abrindo checkout..." : "Começar teste gratuito"}
                           </Button>
                         )}
                       </CardContent>
@@ -298,22 +347,22 @@ export default function BillingPage() {
           </div>
 
           {/* Trust signals */}
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-5 mt-7 text-xs sm:text-[13px] text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mt-8 text-xs sm:text-[13px] text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <Shield className="h-3.5 w-3.5 text-primary/60" />
               <span>Pagamento seguro via Stripe</span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary/60" />
-              <span>Teste gratuito de 7 dias</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-primary/60" />
-              <span>Cancele quando quiser</span>
+              <span>7 dias grátis</span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary/60" />
               <span>Sem fidelidade</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-primary/60" />
+              <span>Cancele quando quiser</span>
             </div>
           </div>
         </motion.div>

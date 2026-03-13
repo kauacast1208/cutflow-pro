@@ -42,6 +42,7 @@ export default function CheckoutPage() {
       navigate("/login?redirect=/checkout?plan=" + selectedPlan);
       return;
     }
+    if (submitting) return;
     setSubmitting(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
@@ -49,8 +50,13 @@ export default function CheckoutPage() {
       });
       if (error) throw error;
       if (data?.url) window.location.href = data.url;
+      else throw new Error("URL not returned");
     } catch (err: any) {
-      toast({ title: "Erro ao iniciar checkout", description: err.message || "Tente novamente.", variant: "destructive" });
+      toast({
+        title: "Erro ao iniciar checkout",
+        description: "Não foi possível redirecionar para o pagamento. Tente novamente.",
+        variant: "destructive",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -139,7 +145,7 @@ export default function CheckoutPage() {
                   <span>R$ {plan.price}/mês</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Trial (7 dias grátis)</span>
+                  <span className="text-muted-foreground">Teste gratuito (7 dias)</span>
                   <span className="text-primary font-medium">- R$ {plan.price}</span>
                 </div>
                 <div className="border-t border-dashed border-border pt-3 flex justify-between font-bold">
@@ -147,7 +153,7 @@ export default function CheckoutPage() {
                   <span className="text-xl text-primary">R$ 0,00</span>
                 </div>
                 <p className="text-[11px] text-muted-foreground text-center pt-1">
-                  Cancelamento a qualquer momento.
+                  Sem fidelidade · Cancele quando quiser
                 </p>
               </div>
             </div>
@@ -190,8 +196,14 @@ export default function CheckoutPage() {
                 onClick={handleCheckout}
                 disabled={submitting}
               >
-                {submitting ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
-                Começar teste gratuito
+                {submitting ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                    Redirecionando para o pagamento...
+                  </>
+                ) : (
+                  "Começar teste gratuito"
+                )}
               </Button>
 
               {/* Trust signals */}

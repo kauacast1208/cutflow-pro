@@ -84,7 +84,8 @@ serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    // Never expose raw Stripe/internal errors to client
+    return new Response(JSON.stringify({ error: "Não foi possível abrir o portal de pagamento. Tente novamente." }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
