@@ -1,12 +1,23 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Loader2, Mail, Lock, User, Check, Scissors } from "lucide-react";
+import { Eye, EyeOff, Loader2, Mail, Lock, User, Check, Scissors, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import { useToast } from "@/hooks/use-toast";
 import { SignupBrandingPanel } from "@/components/signup/SignupBrandingPanel";
 import { PasswordStrengthIndicator } from "@/components/signup/PasswordStrengthIndicator";
 import { GoogleIcon } from "@/components/signup/GoogleIcon";
 import { cn } from "@/lib/utils";
+
+function AuthError({ message }: { message: string }) {
+  if (!message) return null;
+  return (
+    <div className="flex items-start gap-2.5 rounded-xl bg-destructive/[0.06] border border-destructive/10 px-3.5 py-3 text-[13px] text-destructive leading-snug">
+      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+      <span>{message}</span>
+    </div>
+  );
+}
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState("");
@@ -34,43 +45,50 @@ export default function SignupPage() {
 
     setLoading(true);
 
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: fullName },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-
-    if (signUpError) {
-      const msg = signUpError.message?.toLowerCase();
-      if (msg?.includes("already registered") || msg?.includes("already been registered")) {
-        setError("Este e-mail já está cadastrado. Faça login ou recupere sua senha.");
-      } else if (msg?.includes("password") && msg?.includes("leaked")) {
-        setError("Esta senha foi encontrada em vazamentos de dados. Escolha uma senha diferente.");
-      } else if (msg?.includes("valid email")) {
-        setError("Informe um endereço de e-mail válido.");
-      } else {
-        setError("Não foi possível criar sua conta. Tente novamente.");
-      }
-      setLoading(false);
-      return;
-    }
-
-    // Check if email confirmation is required (user exists but session is null)
-    if (data.user && !data.session) {
-      toast({
-        title: "Verifique seu e-mail",
-        description: "Enviamos um link de confirmação para " + email,
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: { full_name: fullName.trim() },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
-      setLoading(false);
-      return;
-    }
 
-    // If auto-confirm is on, user gets a session immediately
-    toast({ title: "Conta criada!", description: "Bem-vindo ao CutFlow!" });
-    navigate("/onboarding");
+      if (signUpError) {
+        const msg = signUpError.message?.toLowerCase() || "";
+        if (msg.includes("already registered") || msg.includes("already been registered")) {
+          setError("Este e-mail já está cadastrado. Faça login ou recupere sua senha.");
+        } else if (msg.includes("password") && msg.includes("leaked")) {
+          setError("Esta senha foi encontrada em vazamentos de dados. Escolha uma senha mais segura.");
+        } else if (msg.includes("valid email")) {
+          setError("Informe um endereço de e-mail válido.");
+        } else if (msg.includes("password") && (msg.includes("short") || msg.includes("length"))) {
+          setError("A senha deve ter pelo menos 6 caracteres.");
+        } else {
+          setError("Não foi possível criar sua conta. Tente novamente.");
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Email confirmation required (user exists but no session)
+      if (data.user && !data.session) {
+        toast({
+          title: "Verifique seu e-mail",
+          description: "Enviamos um link de confirmação para " + email.trim(),
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Auto-confirm on: user gets session immediately
+      toast({ title: "Conta criada!", description: "Bem-vindo ao CutFlow!" });
+      navigate("/onboarding");
+    } catch {
+      setError("Erro inesperado. Tente novamente.");
+      setLoading(false);
+    }
   };
 
   const handleGoogleSignup = async () => {
@@ -78,21 +96,18 @@ export default function SignupPage() {
       setGoogleLoading(true);
       setError("");
 
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
       });
 
-      if (error) {
-        console.error("Erro no signup com Google:", error);
+      if (result.error) {
+        console.error("Erro no signup com Google:", result.error);
         setError("Não foi possível entrar com Google. Tente usar e-mail e senha.");
+        setGoogleLoading(false);
       }
     } catch (err) {
       console.error(err);
-      setError("Erro inesperado. Tente novamente.");
-    } finally {
+      setError("Erro inesperado ao conectar com Google.");
       setGoogleLoading(false);
     }
   };
@@ -163,7 +178,7 @@ export default function SignupPage() {
                     type="text"
                     placeholder="João da Silva"
                     value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
+                    onChange={(e) => { setFullName(e.target.value); setError(""); }}
                     required
                     autoComplete="name"
                     className={cn(
@@ -187,7 +202,7 @@ export default function SignupPage() {
                     type="email"
                     placeholder="seu@email.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => { setEmail(e.target.value); setError(""); }}
                     required
                     autoComplete="email"
                     className={cn(
@@ -211,7 +226,7 @@ export default function SignupPage() {
                     type={showPassword ? "text" : "password"}
                     placeholder="Mínimo 6 caracteres"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => { setPassword(e.target.value); setError(""); }}
                     required
                     autoComplete="new-password"
                     className={cn(
@@ -233,11 +248,7 @@ export default function SignupPage() {
                 <PasswordStrengthIndicator password={password} />
               </div>
 
-              {error && (
-                <div className="text-[13px] text-destructive bg-destructive/5 border border-destructive/10 rounded-xl px-3.5 py-2.5 leading-snug">
-                  {error}
-                </div>
-              )}
+              <AuthError message={error} />
 
               <button
                 type="submit"
