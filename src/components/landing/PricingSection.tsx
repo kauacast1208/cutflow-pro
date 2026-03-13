@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Check, Star, CheckCircle2 } from "lucide-react";
+import { Check, Star, CheckCircle2, Shield, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -55,6 +55,18 @@ const planLabels: Record<string, string> = {
   premium: "Business",
 };
 
+const originalPrices: Record<string, number> = {
+  starter: 59,
+  pro: 97,
+  premium: 147,
+};
+
+const promoPrices: Record<string, number> = {
+  starter: 29,
+  pro: 49,
+  premium: 79,
+};
+
 const fallbackPlans: PlanRow[] = [
   { id: "1", slug: "starter", label: "Starter", price: 29, max_professionals: 1, features: [] },
   { id: "2", slug: "pro", label: "Pro", price: 49, max_professionals: 5, features: [] },
@@ -89,15 +101,32 @@ export function PricingSection() {
     <section id="pricing" className="section-padding bg-secondary/30">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-10 sm:mb-14">
-          <span className="inline-flex items-center gap-2 rounded-full bg-primary/[0.06] border border-primary/12 px-4 py-1.5 text-xs sm:text-sm font-medium text-primary mb-4 sm:mb-5">
-            Planos e preços
-          </span>
-          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-[-0.025em] mb-3 sm:mb-4">
-            Escolha o plano ideal para sua barbearia
-          </h2>
-          <p className="text-muted-foreground text-[15px] sm:text-lg max-w-lg mx-auto">
-            7 dias grátis. Cancele quando quiser. Sem taxas escondidas.
-          </p>
+          <motion.span
+            initial={{ opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-2 rounded-full bg-primary/[0.06] border border-primary/12 px-4 py-1.5 text-xs sm:text-sm font-medium text-primary mb-4 sm:mb-5"
+          >
+            <Zap className="h-3.5 w-3.5" />
+            Preço de lançamento
+          </motion.span>
+          <motion.h2
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-2xl sm:text-4xl font-extrabold tracking-[-0.025em] mb-3 sm:mb-4"
+          >
+            Hoje por apenas uma fração do valor
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.05 }}
+            className="text-muted-foreground text-[15px] sm:text-lg max-w-lg mx-auto"
+          >
+            Aproveite o preço especial de lançamento. Sem fidelidade, sem taxa escondida.
+          </motion.p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 max-w-5xl mx-auto items-start">
@@ -106,6 +135,9 @@ export function PricingSection() {
             const highlights = planHighlights[plan.slug] || [];
             const desc = planDescriptions[plan.slug] || "";
             const displayLabel = planLabels[plan.slug] || plan.label;
+            const original = originalPrices[plan.slug] || plan.price * 2;
+            const promo = promoPrices[plan.slug] || plan.price;
+            const discount = Math.round(((original - promo) / original) * 100);
 
             return (
               <motion.div
@@ -127,6 +159,13 @@ export function PricingSection() {
                   </div>
                 )}
 
+                {/* Discount badge */}
+                <div className="absolute -top-2.5 right-4">
+                  <span className="inline-flex items-center rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                    -{discount}%
+                  </span>
+                </div>
+
                 <div className="mb-4 sm:mb-5">
                   <h3 className={`font-bold ${isPopular ? "text-xl sm:text-2xl" : "text-lg sm:text-xl"}`}>
                     {displayLabel}
@@ -135,10 +174,17 @@ export function PricingSection() {
                 </div>
 
                 <div className="mb-5 sm:mb-6">
-                  <div className="flex items-baseline gap-0.5">
-                    <span className="text-xs sm:text-sm text-muted-foreground">R$</span>
+                  {/* Original price strikethrough */}
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs sm:text-sm text-muted-foreground/60 line-through">
+                      De R$ {original}/mês
+                    </span>
+                  </div>
+                  {/* Promo price */}
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xs sm:text-sm text-muted-foreground">por R$</span>
                     <span className={`font-extrabold tracking-tight ${isPopular ? "text-4xl sm:text-5xl" : "text-3xl sm:text-4xl"}`}>
-                      {plan.slug === "starter" ? 29 : plan.slug === "pro" ? 49 : 79}
+                      {promo}
                     </span>
                     <span className="text-muted-foreground text-xs sm:text-sm">/mês</span>
                   </div>
@@ -170,16 +216,22 @@ export function PricingSection() {
                 </Link>
 
                 <p className="text-center text-[10px] sm:text-[11px] text-muted-foreground mt-3">
-                  Cancele quando quiser
+                  Cancele quando quiser · Sem fidelidade
                 </p>
               </motion.div>
             );
           })}
         </div>
 
-        <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 mt-8 sm:mt-10 text-xs sm:text-[13px] text-muted-foreground">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3 }}
+          className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 mt-8 sm:mt-10 text-xs sm:text-[13px] text-muted-foreground"
+        >
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-primary/60" />
+            <Shield className="h-4 w-4 text-primary/60" />
             <span>Pagamento seguro via Stripe</span>
           </div>
           <div className="flex items-center gap-2">
@@ -188,13 +240,17 @@ export function PricingSection() {
           </div>
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 text-primary/60" />
-            <span>Cancele quando quiser</span>
+            <span>Sem taxa escondida</span>
           </div>
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 text-primary/60" />
-            <span>Sem taxas escondidas</span>
+            <span>Sem fidelidade</span>
           </div>
-        </div>
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-primary/60" />
+            <span>Cancele quando quiser</span>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
