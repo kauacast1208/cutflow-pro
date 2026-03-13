@@ -53,23 +53,25 @@ export default function SignupPage() {
   };
 
   const handleGoogleSignup = async () => {
-    setError("");
-    setGoogleLoading(true);
-    console.info("[Auth] Google signup clicked → lovable.auth.signInWithOAuth('google')");
-
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${window.location.origin}/auth/callback`,
+      setGoogleLoading(true);
+      setError("");
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
 
-      if (result?.error) {
-        console.error("[Auth] Google OAuth error:", result.error);
-        setError("Não foi possível conectar com o Google. Tente novamente ou cadastre com e-mail e senha.");
-        setGoogleLoading(false);
+      if (error) {
+        setError("Não foi possível entrar com Google.");
+        console.error("Erro no signup com Google:", error);
       }
     } catch (err) {
-      console.error("[Auth] Google OAuth unexpected error:", err);
-      setError("Erro de conexão com o Google. Tente novamente.");
+      console.error(err);
+      setError("Erro inesperado ao entrar com Google.");
+    } finally {
       setGoogleLoading(false);
     }
   };
