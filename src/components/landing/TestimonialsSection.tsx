@@ -20,10 +20,10 @@ const testimonials = [
   },
   {
     barbershop: "Black Zone Barber",
-    city: "Belo Horizonte, MG",
+    city: "Curitiba, PR",
     monogram: "BZ",
     gradient: "from-zinc-700 to-zinc-900",
-    content: "Finalmente conseguimos controlar agenda e clientes sem confusão. O sistema é simples e funciona de verdade.",
+    content: "Agora conseguimos controlar clientes e horários sem papel. O sistema é simples e funciona de verdade.",
     rating: 5,
   },
   {
