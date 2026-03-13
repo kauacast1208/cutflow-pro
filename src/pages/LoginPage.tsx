@@ -1,11 +1,22 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Loader2, Mail, Lock, Scissors } from "lucide-react";
+import { Eye, EyeOff, Loader2, Mail, Lock, Scissors, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import { useToast } from "@/hooks/use-toast";
 import { SignupBrandingPanel } from "@/components/signup/SignupBrandingPanel";
 import { GoogleIcon } from "@/components/signup/GoogleIcon";
 import { cn } from "@/lib/utils";
+
+function AuthError({ message }: { message: string }) {
+  if (!message) return null;
+  return (
+    <div className="flex items-start gap-2.5 rounded-xl bg-destructive/[0.06] border border-destructive/10 px-3.5 py-3 text-[13px] text-destructive leading-snug">
+      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+      <span>{message}</span>
+    </div>
+  );
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -22,25 +33,30 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
 
-    if (signInError) {
-      const msg = signInError.message?.toLowerCase();
-      if (msg?.includes("invalid login credentials") || msg?.includes("invalid_credentials")) {
-        setError("E-mail ou senha incorretos. Verifique e tente novamente.");
-      } else if (msg?.includes("email not confirmed")) {
-        setError("Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada.");
-      } else if (msg?.includes("too many requests") || msg?.includes("rate")) {
-        setError("Muitas tentativas. Aguarde alguns minutos e tente novamente.");
-      } else {
-        setError("Não foi possível fazer login. Tente novamente.");
+      if (signInError) {
+        const msg = signInError.message?.toLowerCase() || "";
+        if (msg.includes("invalid login credentials") || msg.includes("invalid_credentials")) {
+          setError("E-mail ou senha incorretos. Verifique e tente novamente.");
+        } else if (msg.includes("email not confirmed")) {
+          setError("Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada.");
+        } else if (msg.includes("too many requests") || msg.includes("rate")) {
+          setError("Muitas tentativas. Aguarde alguns minutos e tente novamente.");
+        } else {
+          setError("Não foi possível fazer login. Tente novamente.");
+        }
+        setLoading(false);
+        return;
       }
-      setLoading(false);
-      return;
-    }
 
-    toast({ title: "Bem-vindo de volta!", description: "Login realizado com sucesso." });
-    navigate("/dashboard");
+      toast({ title: "Bem-vindo de volta!", description: "Login realizado com sucesso." });
+      navigate("/dashboard");
+    } catch {
+      setError("Erro inesperado. Tente novamente.");
+      setLoading(false);
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -48,21 +64,18 @@ export default function LoginPage() {
       setGoogleLoading(true);
       setError("");
 
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
       });
 
-      if (error) {
-        console.error("Erro no login com Google:", error);
+      if (result.error) {
+        console.error("Erro no login com Google:", result.error);
         setError("Não foi possível entrar com Google. Tente usar e-mail e senha.");
+        setGoogleLoading(false);
       }
     } catch (err) {
       console.error(err);
-      setError("Erro inesperado. Tente novamente.");
-    } finally {
+      setError("Erro inesperado ao conectar com Google.");
       setGoogleLoading(false);
     }
   };
@@ -133,7 +146,7 @@ export default function LoginPage() {
                     type="email"
                     placeholder="seu@email.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => { setEmail(e.target.value); setError(""); }}
                     required
                     autoComplete="email"
                     className={cn(
@@ -162,7 +175,7 @@ export default function LoginPage() {
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => { setPassword(e.target.value); setError(""); }}
                     required
                     autoComplete="current-password"
                     className={cn(
@@ -183,11 +196,7 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {error && (
-                <div className="text-[13px] text-destructive bg-destructive/5 border border-destructive/10 rounded-xl px-3.5 py-2.5 leading-snug">
-                  {error}
-                </div>
-              )}
+              <AuthError message={error} />
 
               <button
                 type="submit"

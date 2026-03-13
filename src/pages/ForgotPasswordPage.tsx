@@ -1,22 +1,52 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Loader2, Mail, ArrowLeft, Scissors } from "lucide-react";
+import { Loader2, Mail, ArrowLeft, Scissors, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+
+function AuthError({ message }: { message: string }) {
+  if (!message) return null;
+  return (
+    <div className="flex items-start gap-2.5 rounded-xl bg-destructive/[0.06] border border-destructive/10 px-3.5 py-3 text-[13px] text-destructive leading-snug">
+      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+      <span>{message}</span>
+    </div>
+  );
+}
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+
+    if (!email.trim()) {
+      setError("Informe seu e-mail.");
+      return;
+    }
+
     setLoading(true);
-    await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    setSent(true);
-    setLoading(false);
+
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (resetError) {
+        console.error("Reset password error:", resetError);
+        // Don't reveal whether email exists — always show success
+      }
+
+      setSent(true);
+    } catch {
+      setError("Erro inesperado. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -39,7 +69,7 @@ export default function ForgotPasswordPage() {
               </div>
               <h1 className="text-[22px] font-bold tracking-tight mb-2">Verifique seu e-mail</h1>
               <p className="text-muted-foreground text-sm mb-6">
-                Enviamos um link de recuperação para <strong>{email}</strong>.
+                Se existe uma conta com <strong>{email}</strong>, enviamos um link de recuperação.
               </p>
               <Link
                 to="/login"
@@ -70,7 +100,7 @@ export default function ForgotPasswordPage() {
                       type="email"
                       placeholder="seu@email.com"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => { setEmail(e.target.value); setError(""); }}
                       required
                       autoComplete="email"
                       className={cn(
@@ -82,6 +112,9 @@ export default function ForgotPasswordPage() {
                     />
                   </div>
                 </div>
+
+                <AuthError message={error} />
+
                 <button
                   type="submit"
                   disabled={loading}

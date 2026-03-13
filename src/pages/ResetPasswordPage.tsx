@@ -1,9 +1,19 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Loader2, Lock, Check, Scissors } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Eye, EyeOff, Loader2, Lock, Check, Scissors, AlertCircle, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { PasswordStrengthIndicator } from "@/components/signup/PasswordStrengthIndicator";
 import { cn } from "@/lib/utils";
+
+function AuthError({ message }: { message: string }) {
+  if (!message) return null;
+  return (
+    <div className="flex items-start gap-2.5 rounded-xl bg-destructive/[0.06] border border-destructive/10 px-3.5 py-3 text-[13px] text-destructive leading-snug">
+      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+      <span>{message}</span>
+    </div>
+  );
+}
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -13,33 +23,43 @@ export default function ResetPasswordPage() {
   const [sessionReady, setSessionReady] = useState(false);
   const [sessionError, setSessionError] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [formError, setFormError] = useState("");
+  const sessionReadyRef = useRef(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
 
-  // Wait for Supabase to process the recovery token from the URL hash
   useEffect(() => {
     let mounted = true;
 
+    const markReady = () => {
+      if (mounted && !sessionReadyRef.current) {
+        sessionReadyRef.current = true;
+        setSessionReady(true);
+      }
+    };
+
+    // Listen for PASSWORD_RECOVERY or SIGNED_IN events from the recovery link
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
-      if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && session)) {
-        setSessionReady(true);
+      if (event === "PASSWORD_RECOVERY" && session) {
+        markReady();
+      } else if (event === "SIGNED_IN" && session) {
+        markReady();
       }
     });
 
-    // Also check if session already exists (e.g. page reload)
+    // Check if a session already exists (e.g., page was reloaded after token was consumed)
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (mounted && session) {
-        setSessionReady(true);
+        markReady();
       }
     });
 
-    // Timeout after 8s
+    // Timeout: if no session after 10s, the link is expired/invalid
     const timeout = setTimeout(() => {
-      if (mounted && !sessionReady) {
+      if (mounted && !sessionReadyRef.current) {
         setSessionError(true);
       }
-    }, 8000);
+    }, 10000);
 
     return () => {
       mounted = false;
@@ -50,28 +70,43 @@ export default function ResetPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError("");
+
     if (password.length < 6) {
-      toast({ title: "Erro", description: "A senha deve ter pelo menos 6 caracteres.", variant: "destructive" });
+      setFormError("A senha deve ter pelo menos 6 caracteres.");
       return;
     }
     if (password !== confirmPassword) {
-      toast({ title: "Erro", description: "As senhas não coincidem.", variant: "destructive" });
+      setFormError("As senhas não coincidem.");
       return;
     }
+
     setLoading(true);
-    const { error } = await supabase.auth.updateUser({ password });
-    if (error) {
-      const msg = error.message.includes("same_password")
-        ? "A nova senha não pode ser igual à anterior."
-        : "Não foi possível redefinir a senha. Solicite um novo link.";
-      toast({ title: "Erro", description: msg, variant: "destructive" });
+
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) {
+        const msg = error.message?.toLowerCase() || "";
+        if (msg.includes("same_password") || msg.includes("different")) {
+          setFormError("A nova senha não pode ser igual à anterior.");
+        } else if (msg.includes("session") || msg.includes("not authenticated")) {
+          setFormError("Sessão expirada. Solicite um novo link de recuperação.");
+        } else {
+          setFormError("Não foi possível redefinir a senha. Solicite um novo link.");
+        }
+        setLoading(false);
+        return;
+      }
+
+      setSuccess(true);
+      setTimeout(() => navigate("/dashboard"), 2500);
+    } catch {
+      setFormError("Erro inesperado. Tente novamente.");
       setLoading(false);
-      return;
     }
-    setSuccess(true);
-    setTimeout(() => navigate("/dashboard"), 2000);
   };
 
+  // Expired / invalid link
   if (sessionError) {
     return (
       <div className="min-h-screen bg-muted/30 flex items-center justify-center px-4 py-8">
@@ -100,6 +135,7 @@ export default function ResetPasswordPage() {
     );
   }
 
+  // Success
   if (success) {
     return (
       <div className="min-h-screen bg-muted/30 flex items-center justify-center px-4 py-8">
@@ -116,6 +152,7 @@ export default function ResetPasswordPage() {
     );
   }
 
+  // Loading session
   if (!sessionReady) {
     return (
       <div className="min-h-screen bg-muted/30 flex items-center justify-center px-4 py-8">
@@ -127,6 +164,7 @@ export default function ResetPasswordPage() {
     );
   }
 
+  // Reset form
   return (
     <div className="min-h-screen bg-muted/30 flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-[420px]">
@@ -155,7 +193,7 @@ export default function ResetPasswordPage() {
                   type={showPassword ? "text" : "password"}
                   placeholder="Mínimo 6 caracteres"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => { setPassword(e.target.value); setFormError(""); }}
                   required
                   autoComplete="new-password"
                   className={cn(
@@ -174,6 +212,7 @@ export default function ResetPasswordPage() {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+              <PasswordStrengthIndicator password={password} />
             </div>
 
             <div className="space-y-1.5">
@@ -187,7 +226,7 @@ export default function ResetPasswordPage() {
                   type={showPassword ? "text" : "password"}
                   placeholder="Repita a nova senha"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) => { setConfirmPassword(e.target.value); setFormError(""); }}
                   required
                   autoComplete="new-password"
                   className={cn(
@@ -203,6 +242,8 @@ export default function ResetPasswordPage() {
                 <p className="text-[11px] text-destructive">As senhas não coincidem</p>
               )}
             </div>
+
+            <AuthError message={formError} />
 
             <button
               type="submit"
@@ -222,6 +263,12 @@ export default function ResetPasswordPage() {
             </button>
           </form>
         </div>
+
+        <p className="text-center text-sm text-muted-foreground mt-5">
+          <Link to="/login" className="text-primary font-medium hover:underline inline-flex items-center gap-1">
+            <ArrowLeft className="h-3 w-3" /> Voltar ao login
+          </Link>
+        </p>
       </div>
     </div>
   );
