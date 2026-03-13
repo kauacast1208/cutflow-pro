@@ -28,7 +28,7 @@ const testimonials = [
   },
   {
     barbershop: "Elite Barber Shop",
-    city: "Curitiba, PR",
+    city: "Rio de Janeiro, RJ",
     monogram: "EB",
     gradient: "from-amber-600 to-amber-800",
     content: "Meus barbeiros conseguem ver a agenda deles pelo celular. O controle financeiro melhorou demais desde que começamos a usar.",
