@@ -11,7 +11,7 @@ const problems = [
   {
     icon: AlarmClock,
     title: "Clientes esquecendo horários",
-    description: "Sem lembretes automáticos, faltas constantes geram prejuízo.",
+    description: "Sem lembretes automáticos, faltas constantes geram prejuízo direto.",
   },
   {
     icon: Clock,
@@ -20,8 +20,8 @@ const problems = [
   },
   {
     icon: DollarSign,
-    title: "Falta de controle financeiro",
-    description: "Sem dados claros de faturamento, ticket médio e desempenho.",
+    title: "Sem controle do faturamento",
+    description: "Sem dados claros de receita, ticket médio e desempenho por profissional.",
   },
   {
     icon: MessageCircleWarning,
@@ -58,7 +58,7 @@ export function PainPointsSection() {
             transition={{ delay: 0.1 }}
             className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto leading-relaxed"
           >
-            Barbearias modernas usam sistemas profissionais para organizar seus atendimentos.
+            Se você ainda organiza tudo pelo WhatsApp ou caderninho, está perdendo tempo e dinheiro.
           </motion.p>
         </div>
 

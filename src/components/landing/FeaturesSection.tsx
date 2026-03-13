@@ -4,33 +4,33 @@ import { Calendar, Users, BarChart3, Globe, Bell, UserCheck } from "lucide-react
 const features = [
   {
     icon: Bell,
-    title: "Nunca mais esqueça clientes",
-    description: "O sistema envia lembretes automáticos e reduz faltas.",
+    title: "Reduza faltas com lembretes automáticos",
+    description: "Envie lembretes por WhatsApp e reduza no-shows em até 40%.",
   },
   {
     icon: Calendar,
-    title: "Menos estresse no dia a dia",
-    description: "Pare de organizar tudo pelo WhatsApp.",
-  },
-  {
-    icon: Globe,
-    title: "Agenda sempre organizada",
-    description: "Veja horários livres e ocupados em segundos.",
+    title: "Organize sua agenda sem complicação",
+    description: "Visualize horários livres e ocupados em um painel profissional.",
   },
   {
     icon: Users,
-    title: "Mais clientes retornando",
-    description: "Histórico e gestão ajudam fidelizar clientes.",
+    title: "Faça seus clientes voltarem mais",
+    description: "Histórico completo, aniversários e gestão inteligente de clientes.",
   },
   {
     icon: BarChart3,
-    title: "Controle financeiro simples",
-    description: "Saiba quanto sua barbearia fatura.",
+    title: "Veja faturamento e resultados com facilidade",
+    description: "Relatórios claros de receita, ticket médio e desempenho.",
+  },
+  {
+    icon: Globe,
+    title: "Página pública de agendamento",
+    description: "Link profissional para seus clientes agendarem sozinhos, 24h por dia.",
   },
   {
     icon: UserCheck,
-    title: "Sistema feito para barbeiros",
-    description: "Simples, rápido e fácil de usar.",
+    title: "Feito para barbeiros de verdade",
+    description: "Simples de usar, sem complicação. Setup em menos de 5 minutos.",
   },
 ];
 
@@ -46,7 +46,7 @@ export function FeaturesSection() {
             viewport={{ once: true }}
             className="inline-flex items-center gap-2 rounded-full bg-primary/[0.06] border border-primary/12 px-4 py-1.5 text-xs sm:text-sm font-medium text-primary mb-4 sm:mb-5"
           >
-            A solução
+            Resultados reais
           </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
