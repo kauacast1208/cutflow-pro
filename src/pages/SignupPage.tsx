@@ -39,7 +39,10 @@ export default function SignupPage() {
     });
 
     if (error) {
-      setError(error.message);
+      const message = error.message?.toLowerCase().includes("already registered")
+        ? "Este e-mail já está cadastrado. Faça login ou recupere sua senha."
+        : "Não foi possível criar sua conta. Tente novamente.";
+      setError(message);
       setLoading(false);
       return;
     }
