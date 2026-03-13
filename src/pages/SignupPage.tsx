@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import { Scissors, Eye, EyeOff, ArrowRight, Loader2, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { signInWithGoogle } from "@/lib/auth-helpers";
+
 import { useToast } from "@/hooks/use-toast";
 
 export default function SignupPage() {
@@ -39,7 +39,10 @@ export default function SignupPage() {
     });
 
     if (error) {
-      setError(error.message);
+      const message = error.message?.toLowerCase().includes("already registered")
+        ? "Este e-mail já está cadastrado. Faça login ou recupere sua senha."
+        : "Não foi possível criar sua conta. Tente novamente.";
+      setError(message);
       setLoading(false);
       return;
     }
@@ -102,9 +105,15 @@ export default function SignupPage() {
               setError("");
               setLoading(true);
               try {
-                const { error } = await signInWithGoogle("/auth/callback");
+                const { error } = await supabase.auth.signInWithOAuth({
+                  provider: "google",
+                  options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                  },
+                });
+
                 if (error) {
-                  console.error("Google OAuth error:", error);
+                  console.error("Google OAuth error:", error.message);
                   setError("Não foi possível conectar com o Google. Tente novamente ou cadastre com e-mail e senha.");
                   setLoading(false);
                 }

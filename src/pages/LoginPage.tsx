@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import { Scissors, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { signInWithGoogle } from "@/lib/auth-helpers";
+
 import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
@@ -87,9 +87,15 @@ export default function LoginPage() {
               setError("");
               setLoading(true);
               try {
-                const { error } = await signInWithGoogle("/auth/callback");
+                const { error } = await supabase.auth.signInWithOAuth({
+                  provider: "google",
+                  options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                  },
+                });
+
                 if (error) {
-                  console.error("Google OAuth error:", error);
+                  console.error("Google OAuth error:", error.message);
                   setError("Não foi possível conectar com o Google. Tente novamente ou use e-mail e senha.");
                   setLoading(false);
                 }
