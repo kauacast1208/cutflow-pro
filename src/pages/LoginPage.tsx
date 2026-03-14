@@ -6,6 +6,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { useToast } from "@/hooks/use-toast";
 import { SignupBrandingPanel } from "@/components/signup/SignupBrandingPanel";
 import { GoogleIcon } from "@/components/signup/GoogleIcon";
+import { mapLoginError, mapOAuthError } from "@/lib/authErrors";
 import { cn } from "@/lib/utils";
 
 function AuthError({ message }: { message: string }) {
@@ -41,16 +42,7 @@ export default function LoginPage() {
 
       if (signInError) {
         console.error("Login error:", signInError.message, signInError.status);
-        const msg = signInError.message?.toLowerCase() || "";
-        if (msg.includes("invalid login credentials") || msg.includes("invalid_credentials")) {
-          setError("E-mail ou senha incorretos. Verifique e tente novamente.");
-        } else if (msg.includes("email not confirmed")) {
-          setError("Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada.");
-        } else if (msg.includes("too many requests") || msg.includes("rate")) {
-          setError("Muitas tentativas. Aguarde alguns minutos e tente novamente.");
-        } else {
-          setError(signInError.message || "Não foi possível fazer login. Tente novamente.");
-        }
+        setError(mapLoginError(signInError.message));
         setLoading(false);
         return;
       }
@@ -75,17 +67,18 @@ export default function LoginPage() {
       setError("");
 
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: `${window.location.origin}/auth/callback`,
       });
 
       if (result.error) {
         console.error("Erro no login com Google:", result.error);
-        setError("Não foi possível entrar com Google. Tente usar e-mail e senha.");
+        const rawMessage = result.error instanceof Error ? result.error.message : String(result.error);
+        setError(mapOAuthError(rawMessage, "login"));
         setGoogleLoading(false);
       }
     } catch (err) {
       console.error(err);
-      setError("Erro inesperado ao conectar com Google.");
+      setError(mapOAuthError(err instanceof Error ? err.message : undefined, "login"));
       setGoogleLoading(false);
     }
   };

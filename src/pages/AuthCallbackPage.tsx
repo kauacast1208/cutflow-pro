@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { isInvalidApiKeyMessage } from "@/lib/authErrors";
 import { Loader2, Scissors } from "lucide-react";
 
 export default function AuthCallbackPage() {
@@ -50,7 +51,11 @@ export default function AuthCallbackPage() {
 
         if (sessionError) {
           console.error("Auth callback session error:", sessionError.message);
-          setError("Erro ao autenticar. Tente novamente.");
+          setError(
+            isInvalidApiKeyMessage(sessionError.message)
+              ? "Erro de configuração da autenticação. Recarregue a página e tente novamente."
+              : "Erro ao autenticar. Tente novamente."
+          );
           setTimeout(() => navigate("/login", { replace: true }), 2000);
           return;
         }
@@ -81,8 +86,13 @@ export default function AuthCallbackPage() {
           setError("Sessão não encontrada. Faça login novamente.");
           setTimeout(() => navigate("/login", { replace: true }), 1500);
         }, 8000);
-      } catch {
-        setError("Erro inesperado. Redirecionando...");
+      } catch (err) {
+        const rawMessage = err instanceof Error ? err.message : undefined;
+        setError(
+          isInvalidApiKeyMessage(rawMessage)
+            ? "Erro de configuração da autenticação. Recarregue a página e tente novamente."
+            : "Erro inesperado. Redirecionando..."
+        );
         setTimeout(() => navigate("/login", { replace: true }), 2000);
       }
     };
