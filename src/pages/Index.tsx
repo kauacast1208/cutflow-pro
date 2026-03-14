@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/landing/Navbar";
 import { HeroSection } from "@/components/landing/HeroSection";
+import { MacBookShowcase } from "@/components/landing/MacBookShowcase";
 import { PainPointsSection } from "@/components/landing/PainPointsSection";
 import { ComparisonSection } from "@/components/landing/ComparisonSection";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
@@ -22,6 +23,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <HeroSection />
+      <MacBookShowcase />
       <PainPointsSection />
       <ComparisonSection />
       <div id="features"><FeaturesSection /></div>
