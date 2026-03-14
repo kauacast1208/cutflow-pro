@@ -106,7 +106,7 @@ export default function SignupPage() {
       }
     } catch (err) {
       console.error(err);
-      setError("Erro inesperado ao conectar com Google.");
+      setError(mapOAuthError(err instanceof Error ? err.message : undefined, "signup"));
       setGoogleLoading(false);
     }
   };

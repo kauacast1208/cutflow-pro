@@ -86,8 +86,13 @@ export default function AuthCallbackPage() {
           setError("Sessão não encontrada. Faça login novamente.");
           setTimeout(() => navigate("/login", { replace: true }), 1500);
         }, 8000);
-      } catch {
-        setError("Erro inesperado. Redirecionando...");
+      } catch (err) {
+        const rawMessage = err instanceof Error ? err.message : undefined;
+        setError(
+          isInvalidApiKeyMessage(rawMessage)
+            ? "Erro de configuração da autenticação. Recarregue a página e tente novamente."
+            : "Erro inesperado. Redirecionando..."
+        );
         setTimeout(() => navigate("/login", { replace: true }), 2000);
       }
     };
