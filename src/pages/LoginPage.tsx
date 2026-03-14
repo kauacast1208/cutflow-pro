@@ -42,16 +42,7 @@ export default function LoginPage() {
 
       if (signInError) {
         console.error("Login error:", signInError.message, signInError.status);
-        const msg = signInError.message?.toLowerCase() || "";
-        if (msg.includes("invalid login credentials") || msg.includes("invalid_credentials")) {
-          setError("E-mail ou senha incorretos. Verifique e tente novamente.");
-        } else if (msg.includes("email not confirmed")) {
-          setError("Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada.");
-        } else if (msg.includes("too many requests") || msg.includes("rate")) {
-          setError("Muitas tentativas. Aguarde alguns minutos e tente novamente.");
-        } else {
-          setError(signInError.message || "Não foi possível fazer login. Tente novamente.");
-        }
+        setError(mapLoginError(signInError.message));
         setLoading(false);
         return;
       }
