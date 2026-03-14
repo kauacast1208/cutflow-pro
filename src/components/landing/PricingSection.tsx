@@ -55,22 +55,16 @@ const planLabels: Record<string, string> = {
   premium: "Business",
 };
 
-const originalPrices: Record<string, number> = {
+const planPrices: Record<string, number> = {
   starter: 59,
-  pro: 99,
-  premium: 149,
-};
-
-const promoPrices: Record<string, number> = {
-  starter: 29,
-  pro: 49,
-  premium: 79,
+  pro: 89,
+  premium: 119,
 };
 
 const fallbackPlans: PlanRow[] = [
-  { id: "1", slug: "starter", label: "Starter", price: 29, max_professionals: 1, features: [] },
-  { id: "2", slug: "pro", label: "Pro", price: 49, max_professionals: 5, features: [] },
-  { id: "3", slug: "premium", label: "Business", price: 79, max_professionals: 999, features: [] },
+  { id: "1", slug: "starter", label: "Starter", price: 59, max_professionals: 1, features: [] },
+  { id: "2", slug: "pro", label: "Pro", price: 89, max_professionals: 5, features: [] },
+  { id: "3", slug: "premium", label: "Business", price: 119, max_professionals: 999, features: [] },
 ];
 
 export function PricingSection() {
