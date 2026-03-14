@@ -95,12 +95,13 @@ export default function SignupPage() {
       setError("");
 
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: `${window.location.origin}/auth/callback`,
       });
 
       if (result.error) {
         console.error("Erro no signup com Google:", result.error);
-        setError("Não foi possível entrar com Google. Tente usar e-mail e senha.");
+        const rawMessage = result.error instanceof Error ? result.error.message : String(result.error);
+        setError(mapOAuthError(rawMessage, "signup"));
         setGoogleLoading(false);
       }
     } catch (err) {
