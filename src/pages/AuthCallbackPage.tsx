@@ -51,7 +51,11 @@ export default function AuthCallbackPage() {
 
         if (sessionError) {
           console.error("Auth callback session error:", sessionError.message);
-          setError("Erro ao autenticar. Tente novamente.");
+          setError(
+            isInvalidApiKeyMessage(sessionError.message)
+              ? "Erro de configuração da autenticação. Recarregue a página e tente novamente."
+              : "Erro ao autenticar. Tente novamente."
+          );
           setTimeout(() => navigate("/login", { replace: true }), 2000);
           return;
         }
