@@ -129,9 +129,7 @@ export function PricingSection() {
             const highlights = planHighlights[plan.slug] || [];
             const desc = planDescriptions[plan.slug] || "";
             const displayLabel = planLabels[plan.slug] || plan.label;
-            const original = originalPrices[plan.slug] || plan.price * 2;
-            const promo = promoPrices[plan.slug] || plan.price;
-            const discount = Math.round(((original - promo) / original) * 100);
+            const price = planPrices[plan.slug] || plan.price;
 
             return (
               <motion.div
@@ -153,13 +151,6 @@ export function PricingSection() {
                   </div>
                 )}
 
-                {/* Discount badge */}
-                <div className="absolute -top-2.5 right-4">
-                  <span className="inline-flex items-center rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                    -{discount}%
-                  </span>
-                </div>
-
                 <div className="mb-4 sm:mb-5">
                   <h3 className={`font-bold ${isPopular ? "text-xl sm:text-2xl" : "text-lg sm:text-xl"}`}>
                     {displayLabel}
@@ -168,17 +159,10 @@ export function PricingSection() {
                 </div>
 
                 <div className="mb-5 sm:mb-6">
-                  {/* Original price strikethrough */}
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs sm:text-sm text-muted-foreground/60 line-through">
-                      De R$ {original}/mês
-                    </span>
-                  </div>
-                  {/* Promo price */}
                   <div className="flex items-baseline gap-1">
-                    <span className="text-xs sm:text-sm text-muted-foreground">por R$</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">R$</span>
                     <span className={`font-extrabold tracking-tight ${isPopular ? "text-4xl sm:text-5xl" : "text-3xl sm:text-4xl"}`}>
-                      {promo}
+                      {price}
                     </span>
                     <span className="text-muted-foreground text-xs sm:text-sm">/mês</span>
                   </div>
