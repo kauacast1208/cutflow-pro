@@ -58,18 +58,7 @@ export default function SignupPage() {
 
       if (signUpError) {
         console.error("Signup error:", signUpError.message);
-        const msg = signUpError.message?.toLowerCase() || "";
-        if (msg.includes("already registered") || msg.includes("already been registered")) {
-          setError("Este e-mail já está cadastrado. Faça login ou recupere sua senha.");
-        } else if (msg.includes("password") && msg.includes("leaked")) {
-          setError("Esta senha foi encontrada em vazamentos de dados. Escolha uma senha mais segura.");
-        } else if (msg.includes("valid email")) {
-          setError("Informe um endereço de e-mail válido.");
-        } else if (msg.includes("password") && (msg.includes("short") || msg.includes("length"))) {
-          setError("A senha deve ter pelo menos 6 caracteres.");
-        } else {
-          setError(signUpError.message || "Não foi possível criar sua conta. Tente novamente.");
-        }
+        setError(mapSignupError(signUpError.message));
         setLoading(false);
         return;
       }
