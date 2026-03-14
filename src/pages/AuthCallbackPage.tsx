@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { isInvalidApiKeyMessage } from "@/lib/authErrors";
 import { Loader2, Scissors } from "lucide-react";
 
 export default function AuthCallbackPage() {

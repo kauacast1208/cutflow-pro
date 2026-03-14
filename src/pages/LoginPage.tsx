@@ -6,6 +6,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { useToast } from "@/hooks/use-toast";
 import { SignupBrandingPanel } from "@/components/signup/SignupBrandingPanel";
 import { GoogleIcon } from "@/components/signup/GoogleIcon";
+import { mapLoginError, mapOAuthError } from "@/lib/authErrors";
 import { cn } from "@/lib/utils";
 
 function AuthError({ message }: { message: string }) {
