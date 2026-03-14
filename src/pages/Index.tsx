@@ -25,7 +25,7 @@ const Index = () => {
       <PainPointsSection />
       <ComparisonSection />
       <div id="features"><FeaturesSection /></div>
-      <div id="how-it-works"><HowItWorksSection /></div>
+      <HowItWorksSection />
       <WhatsAppFeatureSection />
       <LiveDemoSection />
       <DemoSection />
