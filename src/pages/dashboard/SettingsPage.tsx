@@ -15,6 +15,7 @@ import {
 import SubscriptionManager from "@/components/billing/SubscriptionManager";
 import WhatsAppSettingsPanel from "@/components/admin/WhatsAppSettingsPanel";
 import GoogleCalendarSettings from "@/components/settings/GoogleCalendarSettings";
+import LogoUpload from "@/components/settings/LogoUpload";
 
 const fadeUp = (i: number) => ({
   initial: { opacity: 0, y: 14 },
