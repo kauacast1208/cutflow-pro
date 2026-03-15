@@ -25,11 +25,12 @@ export default defineConfig(({ mode }) => {
       },
     },
     define: {
-      "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(supabaseUrl),
-      "import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY": JSON.stringify(supabasePublishableKey),
-      "import.meta.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(
-        env.VITE_SUPABASE_ANON_KEY ?? supabasePublishableKey
-      ),
+      // Only define ANON_KEY alias if not already set, to avoid double-definition issues
+      ...(env.VITE_SUPABASE_ANON_KEY
+        ? {}
+        : {
+            "import.meta.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(supabasePublishableKey),
+          }),
     },
   };
 });

@@ -6,7 +6,7 @@ function hasAny(msg: string, terms: string[]) {
 
 export function isInvalidApiKeyMessage(message?: string | null): boolean {
   const msg = normalize(message);
-  return hasAny(msg, ["invalid api key", "invalid apikey", "apikey"]);
+  return hasAny(msg, ["invalid api key", "invalid apikey"]);
 }
 
 export function mapLoginError(rawMessage?: string | null): string {
