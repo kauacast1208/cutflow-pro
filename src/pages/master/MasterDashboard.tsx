@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, TrendingUp, AlertTriangle } from "lucide-react";
+import { Building2, Users, TrendingUp, AlertTriangle, DollarSign, Calendar } from "lucide-react";
 
 interface Stats {
   totalTenants: number;
@@ -10,6 +10,9 @@ interface Stats {
   expiredTenants: number;
   totalProfessionals: number;
   totalClients: number;
+  totalUsers: number;
+  totalAppointments: number;
+  estimatedMRR: number;
 }
 
 export default function MasterDashboard() {
@@ -18,21 +21,32 @@ export default function MasterDashboard() {
 
   useEffect(() => {
     async function fetchStats() {
-      const [barbershops, subscriptions, professionals, clients] = await Promise.all([
+      const [barbershops, subscriptions, professionals, clients, profiles, appointments] = await Promise.all([
         supabase.from("barbershops").select("id", { count: "exact", head: true }),
-        supabase.from("subscriptions").select("status"),
+        supabase.from("subscriptions").select("status, plan"),
         supabase.from("professionals").select("id", { count: "exact", head: true }),
         supabase.from("clients").select("id", { count: "exact", head: true }),
+        supabase.from("profiles").select("id", { count: "exact", head: true }),
+        supabase.from("appointments").select("id", { count: "exact", head: true }),
       ]);
 
-      const statuses = subscriptions.data || [];
+      const subs = subscriptions.data || [];
+      const activeSubs = subs.filter((s) => s.status === "active");
+
+      // Estimate MRR from active subscriptions
+      const planPrices: Record<string, number> = { starter: 79, pro: 129, premium: 189, franquias: 349 };
+      const mrr = activeSubs.reduce((sum, s) => sum + (planPrices[s.plan] || 0), 0);
+
       setStats({
         totalTenants: barbershops.count || 0,
-        activeTenants: statuses.filter((s) => s.status === "active").length,
-        trialTenants: statuses.filter((s) => s.status === "trial").length,
-        expiredTenants: statuses.filter((s) => s.status === "expired" || s.status === "cancelled").length,
+        activeTenants: activeSubs.length,
+        trialTenants: subs.filter((s) => s.status === "trial").length,
+        expiredTenants: subs.filter((s) => s.status === "expired" || s.status === "cancelled").length,
         totalProfessionals: professionals.count || 0,
         totalClients: clients.count || 0,
+        totalUsers: profiles.count || 0,
+        totalAppointments: appointments.count || 0,
+        estimatedMRR: mrr,
       });
       setLoading(false);
     }
@@ -48,7 +62,10 @@ export default function MasterDashboard() {
     { title: "Contas Ativas", value: stats?.activeTenants, icon: TrendingUp, color: "text-emerald-600" },
     { title: "Em Trial", value: stats?.trialTenants, icon: AlertTriangle, color: "text-amber-600" },
     { title: "Expirados / Cancelados", value: stats?.expiredTenants, icon: AlertTriangle, color: "text-destructive" },
-    { title: "Total Profissionais", value: stats?.totalProfessionals, icon: Users, color: "text-primary" },
+    { title: "MRR Estimado", value: `R$ ${(stats?.estimatedMRR || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, icon: DollarSign, color: "text-emerald-600", isString: true },
+    { title: "Total Usuários", value: stats?.totalUsers, icon: Users, color: "text-primary" },
+    { title: "Total Profissionais", value: stats?.totalProfessionals, icon: Users, color: "text-muted-foreground" },
+    { title: "Total Agendamentos", value: stats?.totalAppointments, icon: Calendar, color: "text-primary" },
     { title: "Total Clientes (finais)", value: stats?.totalClients, icon: Users, color: "text-muted-foreground" },
   ];
 
@@ -67,7 +84,9 @@ export default function MasterDashboard() {
               <card.icon className={`h-4 w-4 ${card.color}`} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{card.value ?? 0}</div>
+              <div className="text-2xl font-bold">
+                {(card as any).isString ? card.value : (card.value ?? 0)}
+              </div>
             </CardContent>
           </Card>
         ))}
