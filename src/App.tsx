@@ -19,6 +19,7 @@ import TrialExpiredPage from "./pages/TrialExpiredPage";
 import PublicBookingPage from "./pages/PublicBookingPage";
 import ReschedulePage from "./pages/ReschedulePage";
 import FAQPage from "./pages/FAQPage";
+import AmbassadorPage from "./pages/AmbassadorPage";
 import BillingPage from "./pages/BillingPage";
 import BillingSuccessPage from "./pages/BillingSuccessPage";
 import BillingCancelPage from "./pages/BillingCancelPage";
