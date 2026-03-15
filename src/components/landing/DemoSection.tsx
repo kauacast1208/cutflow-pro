@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, BarChart3, Users, LayoutDashboard, TrendingUp, Star, Bell, Search, Settings, ChevronRight, Scissors, Clock, CheckCircle2, ArrowUpRight, Globe, MapPin, Phone, Check } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 const tabs = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -11,12 +11,12 @@ const tabs = [
 ];
 
 const sidebarItems = [
-  { icon: LayoutDashboard, label: "Dashboard", active: false },
-  { icon: Calendar, label: "Agenda", active: false },
-  { icon: Users, label: "Clientes", active: false },
-  { icon: Scissors, label: "Serviços", active: false },
-  { icon: BarChart3, label: "Relatórios", active: false },
-  { icon: Settings, label: "Configurações", active: false },
+  { icon: LayoutDashboard, label: "Dashboard" },
+  { icon: Calendar, label: "Agenda" },
+  { icon: Users, label: "Clientes" },
+  { icon: Scissors, label: "Serviços" },
+  { icon: BarChart3, label: "Relatórios" },
+  { icon: Settings, label: "Configurações" },
 ];
 
 function Sidebar({ activeTab }: { activeTab: string }) {
@@ -27,12 +27,12 @@ function Sidebar({ activeTab }: { activeTab: string }) {
     reports: "Relatórios",
   };
   return (
-    <div className="hidden lg:flex flex-col w-[180px] border-r border-border bg-muted/10 py-3 px-2 shrink-0">
+    <div className="hidden lg:flex flex-col w-[180px] border-r border-white/[0.06] bg-white/[0.02] py-3 px-2 shrink-0">
       <div className="flex items-center gap-2 px-2 mb-4">
-        <div className="h-7 w-7 rounded-lg bg-primary flex items-center justify-center">
-          <Scissors className="h-3.5 w-3.5 text-primary-foreground" />
+        <div className="h-7 w-7 rounded-lg bg-emerald-500 flex items-center justify-center">
+          <Scissors className="h-3.5 w-3.5 text-white" />
         </div>
-        <span className="text-xs font-bold">CutFlow</span>
+        <span className="text-xs font-bold text-white">CutFlow</span>
       </div>
       <div className="space-y-0.5">
         {sidebarItems.map((item) => {
@@ -42,8 +42,8 @@ function Sidebar({ activeTab }: { activeTab: string }) {
               key={item.label}
               className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors ${
                 isActive
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground"
+                  ? "bg-emerald-500/15 text-emerald-400"
+                  : "text-white/40 hover:text-white/60"
               }`}
             >
               <item.icon className="h-3.5 w-3.5" />
@@ -58,17 +58,17 @@ function Sidebar({ activeTab }: { activeTab: string }) {
 
 function TopBar() {
   return (
-    <div className="flex items-center justify-between px-4 sm:px-5 py-2.5 border-b border-border bg-background/80">
-      <div className="flex items-center gap-2 bg-muted/40 rounded-lg px-2.5 py-1.5 text-[10px] text-muted-foreground w-36 sm:w-48">
+    <div className="flex items-center justify-between px-4 sm:px-5 py-2.5 border-b border-white/[0.06] bg-white/[0.02]">
+      <div className="flex items-center gap-2 bg-white/[0.04] rounded-lg px-2.5 py-1.5 text-[10px] text-white/30 w-36 sm:w-48 border border-white/[0.06]">
         <Search className="h-3 w-3 shrink-0" />
         <span>Buscar...</span>
       </div>
       <div className="flex items-center gap-2">
         <div className="relative">
-          <Bell className="h-3.5 w-3.5 text-muted-foreground" />
-          <div className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-destructive" />
+          <Bell className="h-3.5 w-3.5 text-white/40" />
+          <div className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-400" />
         </div>
-        <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-[9px] font-bold text-primary">
+        <div className="h-6 w-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-[9px] font-bold text-emerald-400">
           CS
         </div>
       </div>
@@ -79,46 +79,43 @@ function TopBar() {
 function DashboardMockup() {
   return (
     <div className="p-4 sm:p-5 space-y-4">
-      {/* Greeting */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-semibold">Bom dia, Carlos 👋</p>
-          <p className="text-[10px] text-muted-foreground">Terça-feira, 11 de março de 2026</p>
+          <p className="text-sm font-semibold text-white">Bom dia, Carlos 👋</p>
+          <p className="text-[10px] text-white/40">Terça-feira, 11 de março de 2026</p>
         </div>
-        <div className="text-[10px] px-2.5 py-1 rounded-full bg-primary/10 text-primary font-medium flex items-center gap-1">
+        <div className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-medium flex items-center gap-1 border border-emerald-500/20">
           <CheckCircle2 className="h-3 w-3" /> Online
         </div>
       </div>
 
-      {/* Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
         {[
-          { label: "Agendamentos hoje", value: "12", change: "+3", icon: Calendar, accent: "bg-primary/10 text-primary" },
-          { label: "Clientes ativos", value: "248", change: "+18", icon: Users, accent: "bg-blue-50 text-blue-600" },
-          { label: "Faturamento", value: "R$ 18.5k", change: "+12%", icon: TrendingUp, accent: "bg-emerald-50 text-emerald-600" },
-          { label: "Presença", value: "94%", change: "+2%", icon: Star, accent: "bg-amber-50 text-amber-600" },
+          { label: "Agendamentos hoje", value: "12", change: "+3", icon: Calendar },
+          { label: "Clientes ativos", value: "248", change: "+18", icon: Users },
+          { label: "Faturamento", value: "R$ 18.5k", change: "+12%", icon: TrendingUp },
+          { label: "Presença", value: "94%", change: "+2%", icon: Star },
         ].map((m) => (
-          <div key={m.label} className="rounded-xl border border-border bg-background p-3 group hover:shadow-sm transition-shadow">
+          <div key={m.label} className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3 hover:bg-white/[0.05] transition-colors">
             <div className="flex items-center justify-between mb-2">
-              <div className={`h-7 w-7 rounded-lg flex items-center justify-center ${m.accent}`}>
-                <m.icon className="h-3.5 w-3.5" />
+              <div className="h-7 w-7 rounded-lg flex items-center justify-center bg-emerald-500/10">
+                <m.icon className="h-3.5 w-3.5 text-emerald-400" />
               </div>
-              <span className="text-[9px] font-medium text-emerald-600 flex items-center gap-0.5">
+              <span className="text-[9px] font-medium text-emerald-400 flex items-center gap-0.5">
                 <ArrowUpRight className="h-2.5 w-2.5" />{m.change}
               </span>
             </div>
-            <p className="text-base sm:text-lg font-bold tracking-tight">{m.value}</p>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5">{m.label}</p>
+            <p className="text-base sm:text-lg font-bold tracking-tight text-white">{m.value}</p>
+            <p className="text-[9px] sm:text-[10px] text-white/40 mt-0.5">{m.label}</p>
           </div>
         ))}
       </div>
 
-      {/* Chart + upcoming */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-2.5">
-        <div className="lg:col-span-3 rounded-xl border border-border bg-background p-4">
+        <div className="lg:col-span-3 rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-semibold">Faturamento semanal</p>
-            <span className="text-[9px] text-muted-foreground">Esta semana</span>
+            <p className="text-[11px] font-semibold text-white">Faturamento semanal</p>
+            <span className="text-[9px] text-white/30">Esta semana</span>
           </div>
           <div className="flex items-end gap-2 h-20 sm:h-28">
             {[40, 65, 50, 80, 70, 95, 75].map((h, i) => (
@@ -128,33 +125,33 @@ function DashboardMockup() {
                   whileInView={{ height: `${h}%` }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.08, duration: 0.5, ease: "easeOut" }}
-                  className={`w-full rounded-md ${i === 5 ? "bg-primary" : "bg-primary/60"}`}
+                  className={`w-full rounded-md ${i === 5 ? "bg-emerald-400" : "bg-emerald-500/50"}`}
                 />
-                <span className="text-[8px] sm:text-[9px] text-muted-foreground font-medium">
+                <span className="text-[8px] sm:text-[9px] text-white/30 font-medium">
                   {["S", "T", "Q", "Q", "S", "S", "D"][i]}
                 </span>
               </div>
             ))}
           </div>
         </div>
-        <div className="lg:col-span-2 rounded-xl border border-border bg-background p-4">
+        <div className="lg:col-span-2 rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-semibold">Próximos</p>
-            <ChevronRight className="h-3 w-3 text-muted-foreground" />
+            <p className="text-[11px] font-semibold text-white">Próximos</p>
+            <ChevronRight className="h-3 w-3 text-white/30" />
           </div>
           <div className="space-y-2">
             {[
-              { time: "09:00", name: "João Silva", service: "Corte + Barba", color: "bg-primary" },
-              { time: "10:30", name: "Pedro Santos", service: "Corte", color: "bg-blue-500" },
-              { time: "11:00", name: "Lucas Oliveira", service: "Barba", color: "bg-amber-500" },
+              { time: "09:00", name: "João Silva", service: "Corte + Barba", color: "bg-emerald-400" },
+              { time: "10:30", name: "Pedro Santos", service: "Corte", color: "bg-blue-400" },
+              { time: "11:00", name: "Lucas Oliveira", service: "Barba", color: "bg-amber-400" },
             ].map((a) => (
-              <div key={a.time} className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-muted/30 transition-colors">
+              <div key={a.time} className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-white/[0.04] transition-colors">
                 <div className={`h-8 w-1 rounded-full ${a.color}`} />
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-medium truncate">{a.name}</p>
-                  <p className="text-[9px] text-muted-foreground">{a.service}</p>
+                  <p className="text-[11px] font-medium text-white truncate">{a.name}</p>
+                  <p className="text-[9px] text-white/40">{a.service}</p>
                 </div>
-                <span className="font-mono text-[10px] text-muted-foreground shrink-0">{a.time}</span>
+                <span className="font-mono text-[10px] text-white/30 shrink-0">{a.time}</span>
               </div>
             ))}
           </div>
@@ -167,9 +164,9 @@ function DashboardMockup() {
 function AgendaMockup() {
   const hours = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00"];
   const professionals = [
-    { name: "Carlos", color: "bg-primary" },
-    { name: "Rafael", color: "bg-blue-500" },
-    { name: "André", color: "bg-amber-500" },
+    { name: "Carlos", color: "bg-emerald-400" },
+    { name: "Rafael", color: "bg-blue-400" },
+    { name: "André", color: "bg-amber-400" },
   ];
   const appointments: Record<string, { col: number; label: string; client: string; duration: string }> = {
     "09:00": { col: 0, label: "Corte + Barba", client: "João Silva", duration: "45 min" },
@@ -183,12 +180,12 @@ function AgendaMockup() {
     <div className="p-4 sm:p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <p className="text-xs font-semibold">Ter, 11 Mar 2026</p>
-          <span className="text-[9px] text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">Hoje</span>
+          <p className="text-xs font-semibold text-white">Ter, 11 Mar 2026</p>
+          <span className="text-[9px] text-white/40 bg-white/[0.04] px-2 py-0.5 rounded-full border border-white/[0.06]">Hoje</span>
         </div>
         <div className="flex gap-1.5">
           {professionals.map((p) => (
-            <div key={p.name} className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border border-border bg-background">
+            <div key={p.name} className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border border-white/[0.08] bg-white/[0.03] text-white/60">
               <div className={`h-1.5 w-1.5 rounded-full ${p.color}`} />
               <span className="hidden sm:inline">{p.name}</span>
             </div>
@@ -206,7 +203,7 @@ function AgendaMockup() {
           };
           return (
             <div key={hour} className="flex items-stretch gap-2 min-h-[40px]">
-              <span className="text-[10px] font-mono text-muted-foreground w-10 pt-2 shrink-0">{hour}</span>
+              <span className="text-[10px] font-mono text-white/30 w-10 pt-2 shrink-0">{hour}</span>
               <div className="flex-1 grid grid-cols-3 gap-1">
                 {[0, 1, 2].map((col) => {
                   const apt = getApt(hour, col);
@@ -215,18 +212,14 @@ function AgendaMockup() {
                       key={col}
                       className={`rounded-lg border text-[10px] px-2 py-1.5 transition-colors ${
                         apt
-                          ? `${professionals[col].color}/10 border-${professionals[col].color.replace("bg-", "")}/20 text-foreground`
-                          : "border-dashed border-border/40"
+                          ? "border-emerald-500/20 bg-emerald-500/[0.08]"
+                          : "border-dashed border-white/[0.06]"
                       }`}
-                      style={apt ? {
-                        backgroundColor: `hsl(var(--${col === 0 ? "primary" : col === 1 ? "primary" : "primary"}) / 0.08)`,
-                        borderColor: `hsl(var(--${col === 0 ? "primary" : col === 1 ? "primary" : "primary"}) / 0.2)`,
-                      } : undefined}
                     >
                       {apt && (
                         <>
-                          <p className="font-medium truncate">{apt.label}</p>
-                          <p className="text-[9px] text-muted-foreground truncate">{apt.client} · {apt.duration}</p>
+                          <p className="font-medium text-white truncate">{apt.label}</p>
+                          <p className="text-[9px] text-white/40 truncate">{apt.client} · {apt.duration}</p>
                         </>
                       )}
                     </div>
@@ -243,28 +236,26 @@ function AgendaMockup() {
 
 function ClientsMockup() {
   const clients = [
-    { name: "João Silva", visits: 12, last: "Hoje", tag: "VIP", tagClass: "bg-amber-50 text-amber-700 border-amber-200", revenue: "R$ 780" },
-    { name: "Pedro Santos", visits: 8, last: "3 dias", tag: "Ativo", tagClass: "bg-emerald-50 text-emerald-700 border-emerald-200", revenue: "R$ 520" },
-    { name: "Lucas Oliveira", visits: 3, last: "2 sem", tag: "Novo", tagClass: "bg-blue-50 text-blue-700 border-blue-200", revenue: "R$ 195" },
-    { name: "Rafael Costa", visits: 15, last: "1 sem", tag: "VIP", tagClass: "bg-amber-50 text-amber-700 border-amber-200", revenue: "R$ 975" },
-    { name: "Marcos Lima", visits: 6, last: "5 dias", tag: "Ativo", tagClass: "bg-emerald-50 text-emerald-700 border-emerald-200", revenue: "R$ 390" },
+    { name: "João Silva", visits: 12, last: "Hoje", tag: "VIP", tagClass: "bg-amber-500/10 text-amber-400 border-amber-500/20", revenue: "R$ 780" },
+    { name: "Pedro Santos", visits: 8, last: "3 dias", tag: "Ativo", tagClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", revenue: "R$ 520" },
+    { name: "Lucas Oliveira", visits: 3, last: "2 sem", tag: "Novo", tagClass: "bg-blue-500/10 text-blue-400 border-blue-500/20", revenue: "R$ 195" },
+    { name: "Rafael Costa", visits: 15, last: "1 sem", tag: "VIP", tagClass: "bg-amber-500/10 text-amber-400 border-amber-500/20", revenue: "R$ 975" },
+    { name: "Marcos Lima", visits: 6, last: "5 dias", tag: "Ativo", tagClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", revenue: "R$ 390" },
   ];
 
   return (
     <div className="p-4 sm:p-5">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-xs font-semibold">Clientes</p>
-          <p className="text-[9px] text-muted-foreground">248 ativos · 32 VIP · 15 aniversariantes</p>
+          <p className="text-xs font-semibold text-white">Clientes</p>
+          <p className="text-[9px] text-white/40">248 ativos · 32 VIP · 15 aniversariantes</p>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-muted/40 rounded-lg px-2 py-1 text-[9px] text-muted-foreground">
-            <Search className="h-2.5 w-2.5" /> Buscar cliente...
-          </div>
+        <div className="flex items-center gap-1.5 bg-white/[0.04] rounded-lg px-2 py-1 text-[9px] text-white/30 border border-white/[0.06]">
+          <Search className="h-2.5 w-2.5" /> Buscar cliente...
         </div>
       </div>
-      <div className="rounded-xl border border-border overflow-hidden">
-        <div className="grid grid-cols-5 gap-0 text-[9px] sm:text-[10px] font-semibold text-muted-foreground bg-muted/30 px-3 py-2 border-b border-border uppercase tracking-wider">
+      <div className="rounded-xl border border-white/[0.06] overflow-hidden">
+        <div className="grid grid-cols-5 gap-0 text-[9px] sm:text-[10px] font-semibold text-white/40 bg-white/[0.03] px-3 py-2 border-b border-white/[0.06] uppercase tracking-wider">
           <span className="col-span-1">Cliente</span><span>Visitas</span><span>Último</span><span>Receita</span><span>Status</span>
         </div>
         {clients.map((c, i) => (
@@ -274,17 +265,17 @@ function ClientsMockup() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.05 }}
-            className="grid grid-cols-5 gap-0 text-[10px] sm:text-xs px-3 py-2 border-b border-border/40 last:border-0 items-center hover:bg-muted/20 transition-colors"
+            className="grid grid-cols-5 gap-0 text-[10px] sm:text-xs px-3 py-2 border-b border-white/[0.04] last:border-0 items-center hover:bg-white/[0.02] transition-colors"
           >
             <div className="flex items-center gap-1.5 col-span-1">
-              <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[8px] font-bold text-muted-foreground shrink-0">
+              <div className="h-5 w-5 rounded-full bg-white/[0.06] flex items-center justify-center text-[8px] font-bold text-white/40 shrink-0">
                 {c.name.split(" ").map(n => n[0]).join("")}
               </div>
-              <span className="font-medium truncate">{c.name}</span>
+              <span className="font-medium text-white truncate">{c.name}</span>
             </div>
-            <span className="text-muted-foreground">{c.visits}</span>
-            <span className="text-muted-foreground">{c.last}</span>
-            <span className="font-medium">{c.revenue}</span>
+            <span className="text-white/40">{c.visits}</span>
+            <span className="text-white/40">{c.last}</span>
+            <span className="font-medium text-white">{c.revenue}</span>
             <span className={`text-[9px] px-1.5 py-0.5 rounded-full w-fit font-medium border ${c.tagClass}`}>{c.tag}</span>
           </motion.div>
         ))}
@@ -297,8 +288,8 @@ function ReportsMockup() {
   return (
     <div className="p-4 sm:p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold">Relatórios — Março 2026</p>
-        <span className="text-[9px] text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">Este mês</span>
+        <p className="text-xs font-semibold text-white">Relatórios — Março 2026</p>
+        <span className="text-[9px] text-white/40 bg-white/[0.04] px-2 py-0.5 rounded-full border border-white/[0.06]">Este mês</span>
       </div>
       <div className="grid grid-cols-3 gap-2.5">
         {[
@@ -306,18 +297,18 @@ function ReportsMockup() {
           { label: "Ticket médio", value: "R$ 65", change: "+R$ 5", positive: true },
           { label: "Taxa de retorno", value: "78%", change: "-2%", positive: false },
         ].map((m) => (
-          <div key={m.label} className="rounded-xl border border-border bg-background p-3">
-            <p className="text-[9px] text-muted-foreground mb-1">{m.label}</p>
-            <p className="text-base sm:text-lg font-bold">{m.value}</p>
-            <span className={`text-[9px] font-medium flex items-center gap-0.5 mt-1 ${m.positive ? "text-emerald-600" : "text-destructive"}`}>
+          <div key={m.label} className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
+            <p className="text-[9px] text-white/40 mb-1">{m.label}</p>
+            <p className="text-base sm:text-lg font-bold text-white">{m.value}</p>
+            <span className={`text-[9px] font-medium flex items-center gap-0.5 mt-1 ${m.positive ? "text-emerald-400" : "text-red-400"}`}>
               <ArrowUpRight className={`h-2.5 w-2.5 ${!m.positive ? "rotate-90" : ""}`} />
               {m.change}
             </span>
           </div>
         ))}
       </div>
-      <div className="rounded-xl border border-border bg-background p-4">
-        <p className="text-[11px] font-semibold mb-3">Ranking de profissionais</p>
+      <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+        <p className="text-[11px] font-semibold text-white mb-3">Ranking de profissionais</p>
         <div className="space-y-3">
           {[
             { name: "Carlos", revenue: "R$ 7.200", clients: 42, pct: 85 },
@@ -326,25 +317,25 @@ function ReportsMockup() {
           ].map((p, i) => (
             <div key={p.name} className="flex items-center gap-3">
               <div className={`h-6 w-6 rounded-full flex items-center justify-center text-[9px] font-bold ${
-                i === 0 ? "bg-amber-100 text-amber-700" : "bg-muted text-muted-foreground"
+                i === 0 ? "bg-amber-500/15 text-amber-400" : "bg-white/[0.06] text-white/40"
               }`}>
                 {i + 1}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between text-[11px] mb-1">
-                  <span className="font-medium">{p.name}</span>
+                  <span className="font-medium text-white">{p.name}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-[9px] text-muted-foreground">{p.clients} clientes</span>
-                    <span className="font-semibold">{p.revenue}</span>
+                    <span className="text-[9px] text-white/30">{p.clients} clientes</span>
+                    <span className="font-semibold text-white">{p.revenue}</span>
                   </div>
                 </div>
-                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     whileInView={{ width: `${p.pct}%` }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.15, duration: 0.6, ease: "easeOut" }}
-                    className="h-full rounded-full bg-primary/70"
+                    className="h-full rounded-full bg-emerald-500/60"
                   />
                 </div>
               </div>
@@ -370,39 +361,27 @@ function BookingMockup() {
 
   return (
     <div className="flex min-h-[340px] sm:min-h-[400px]">
-      {/* Booking sidebar - barbershop info */}
-      <div className="hidden lg:flex flex-col w-[200px] border-r border-border bg-muted/10 p-4 shrink-0">
-        <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
-          <Scissors className="h-5 w-5 text-primary" />
+      <div className="hidden lg:flex flex-col w-[200px] border-r border-white/[0.06] bg-white/[0.02] p-4 shrink-0">
+        <div className="h-12 w-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-3">
+          <Scissors className="h-5 w-5 text-emerald-400" />
         </div>
-        <h3 className="text-sm font-bold mb-0.5">Barbearia Central</h3>
-        <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-3">
-          <Star className="h-2.5 w-2.5 fill-warning text-warning" />
+        <h3 className="text-sm font-bold mb-0.5 text-white">Barbearia Central</h3>
+        <div className="flex items-center gap-1 text-[10px] text-white/40 mb-3">
+          <Star className="h-2.5 w-2.5 fill-amber-400 text-amber-400" />
           4.9 · 248 avaliações
         </div>
-        <div className="space-y-2 text-[10px] text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <MapPin className="h-3 w-3 shrink-0" />
-            <span>Rua Augusta, 1200 · SP</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Phone className="h-3 w-3 shrink-0" />
-            <span>(11) 99999-0000</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Clock className="h-3 w-3 shrink-0" />
-            <span>Seg–Sáb · 09:00–20:00</span>
-          </div>
+        <div className="space-y-2 text-[10px] text-white/40">
+          <div className="flex items-center gap-1.5"><MapPin className="h-3 w-3 shrink-0" /><span>Rua Augusta, 1200 · SP</span></div>
+          <div className="flex items-center gap-1.5"><Phone className="h-3 w-3 shrink-0" /><span>(11) 99999-0000</span></div>
+          <div className="flex items-center gap-1.5"><Clock className="h-3 w-3 shrink-0" /><span>Seg–Sáb · 09:00–20:00</span></div>
         </div>
-
-        {/* Step indicator */}
         <div className="mt-auto pt-4 space-y-1.5">
           {["Serviço", "Profissional", "Data e hora", "Seus dados"].map((s, i) => (
             <div key={s} className={`flex items-center gap-2 text-[10px] ${
-              i === step ? "text-primary font-semibold" : i < step ? "text-primary/50" : "text-muted-foreground"
+              i === step ? "text-emerald-400 font-semibold" : i < step ? "text-emerald-500/40" : "text-white/30"
             }`}>
               <div className={`h-4 w-4 rounded-full flex items-center justify-center text-[8px] font-bold ${
-                i < step ? "bg-primary text-primary-foreground" : i === step ? "border-2 border-primary text-primary" : "border border-border"
+                i < step ? "bg-emerald-500 text-white" : i === step ? "border-2 border-emerald-400 text-emerald-400" : "border border-white/20"
               }`}>
                 {i < step ? <Check className="h-2.5 w-2.5" /> : i + 1}
               </div>
@@ -412,34 +391,31 @@ function BookingMockup() {
         </div>
       </div>
 
-      {/* Main booking content */}
       <div className="flex-1 p-4 sm:p-5">
         <AnimatePresence mode="wait">
           {step === 0 && (
             <motion.div key="services" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.15 }}>
-              <p className="text-xs font-semibold mb-1">Escolha o serviço</p>
-              <p className="text-[10px] text-muted-foreground mb-3">Selecione o serviço desejado para continuar</p>
+              <p className="text-xs font-semibold mb-1 text-white">Escolha o serviço</p>
+              <p className="text-[10px] text-white/40 mb-3">Selecione o serviço desejado para continuar</p>
               <div className="space-y-2">
                 {services.map((s, i) => (
                   <button
                     key={s.name}
                     onClick={() => setStep(1)}
                     className={`w-full flex items-center justify-between rounded-xl border p-3 text-left transition-all ${
-                      i === 0 ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+                      i === 0 ? "border-emerald-500/30 bg-emerald-500/[0.06]" : "border-white/[0.06] hover:border-emerald-500/20"
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
-                        i === 0 ? "bg-primary/10" : "bg-muted/50"
-                      }`}>
-                        <Scissors className="h-3.5 w-3.5 text-primary" />
+                      <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${i === 0 ? "bg-emerald-500/10" : "bg-white/[0.04]"}`}>
+                        <Scissors className="h-3.5 w-3.5 text-emerald-400" />
                       </div>
                       <div>
-                        <p className="text-[11px] font-medium">{s.name}</p>
-                        <p className="text-[9px] text-muted-foreground">{s.duration}</p>
+                        <p className="text-[11px] font-medium text-white">{s.name}</p>
+                        <p className="text-[9px] text-white/40">{s.duration}</p>
                       </div>
                     </div>
-                    <span className="text-[11px] font-bold">{s.price}</span>
+                    <span className="text-[11px] font-bold text-white">{s.price}</span>
                   </button>
                 ))}
               </div>
@@ -447,8 +423,8 @@ function BookingMockup() {
           )}
           {step === 1 && (
             <motion.div key="professionals" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.15 }}>
-              <p className="text-xs font-semibold mb-1">Escolha o profissional</p>
-              <p className="text-[10px] text-muted-foreground mb-3">Corte Masculino · R$ 45 · 30 min</p>
+              <p className="text-xs font-semibold mb-1 text-white">Escolha o profissional</p>
+              <p className="text-[10px] text-white/40 mb-3">Corte Masculino · R$ 45 · 30 min</p>
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { name: "Carlos", specialty: "Corte & Barba" },
@@ -459,14 +435,14 @@ function BookingMockup() {
                     key={p.name}
                     onClick={() => setStep(2)}
                     className={`flex flex-col items-center rounded-xl border p-3 transition-all ${
-                      i === 0 ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+                      i === 0 ? "border-emerald-500/30 bg-emerald-500/[0.06]" : "border-white/[0.06] hover:border-emerald-500/20"
                     }`}
                   >
-                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground mb-2">
+                    <div className="h-10 w-10 rounded-full bg-white/[0.06] flex items-center justify-center text-xs font-bold text-white/40 mb-2">
                       {p.name[0]}
                     </div>
-                    <p className="text-[11px] font-medium">{p.name}</p>
-                    <p className="text-[9px] text-muted-foreground">{p.specialty}</p>
+                    <p className="text-[11px] font-medium text-white">{p.name}</p>
+                    <p className="text-[9px] text-white/40">{p.specialty}</p>
                   </button>
                 ))}
               </div>
@@ -474,16 +450,16 @@ function BookingMockup() {
           )}
           {step === 2 && (
             <motion.div key="datetime" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.15 }}>
-              <p className="text-xs font-semibold mb-1">Escolha a data e horário</p>
-              <p className="text-[10px] text-muted-foreground mb-3">Corte Masculino · Carlos · 30 min</p>
-              <p className="text-[10px] font-medium mb-2">Terça, 11 de março</p>
+              <p className="text-xs font-semibold mb-1 text-white">Escolha a data e horário</p>
+              <p className="text-[10px] text-white/40 mb-3">Corte Masculino · Carlos · 30 min</p>
+              <p className="text-[10px] font-medium mb-2 text-white/60">Terça, 11 de março</p>
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
                 {times.map((t, i) => (
                   <button
                     key={t}
                     onClick={() => setStep(3)}
                     className={`rounded-lg border py-2 text-[11px] font-medium transition-all ${
-                      i === 2 ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary/40"
+                      i === 2 ? "border-emerald-500 bg-emerald-500 text-white" : "border-white/[0.08] text-white/60 hover:border-emerald-500/30"
                     }`}
                   >
                     {t}
@@ -495,30 +471,25 @@ function BookingMockup() {
           {step === 3 && (
             <motion.div key="confirm" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.15 }}>
               <div className="flex flex-col items-center text-center py-4 sm:py-8">
-                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <CheckCircle2 className="h-7 w-7 text-primary" />
+                <div className="h-14 w-14 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4">
+                  <CheckCircle2 className="h-7 w-7 text-emerald-400" />
                 </div>
-                <p className="text-sm font-bold mb-1">Agendamento confirmado!</p>
-                <p className="text-[11px] text-muted-foreground mb-4">Você receberá uma confirmação por e-mail</p>
-                <div className="rounded-xl border border-border bg-muted/20 p-4 text-left w-full max-w-xs space-y-2">
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-muted-foreground">Serviço</span>
-                    <span className="font-medium">Corte Masculino</span>
-                  </div>
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-muted-foreground">Profissional</span>
-                    <span className="font-medium">Carlos</span>
-                  </div>
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-muted-foreground">Data</span>
-                    <span className="font-medium">11/03 às 10:00</span>
-                  </div>
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-muted-foreground">Valor</span>
-                    <span className="font-bold text-primary">R$ 45</span>
-                  </div>
+                <p className="text-sm font-bold mb-1 text-white">Agendamento confirmado!</p>
+                <p className="text-[11px] text-white/40 mb-4">Você receberá uma confirmação por e-mail</p>
+                <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4 text-left w-full max-w-xs space-y-2">
+                  {[
+                    ["Serviço", "Corte Masculino"],
+                    ["Profissional", "Carlos"],
+                    ["Data", "11/03 às 10:00"],
+                    ["Valor", "R$ 45"],
+                  ].map(([label, value]) => (
+                    <div key={label} className="flex justify-between text-[11px]">
+                      <span className="text-white/40">{label}</span>
+                      <span className={`font-medium ${label === "Valor" ? "text-emerald-400 font-bold" : "text-white"}`}>{value}</span>
+                    </div>
+                  ))}
                 </div>
-                <button onClick={() => setStep(0)} className="mt-4 text-[10px] text-primary font-medium hover:underline">
+                <button onClick={() => setStep(0)} className="mt-4 text-[10px] text-emerald-400 font-medium hover:underline">
                   ← Ver novamente
                 </button>
               </div>
@@ -540,26 +511,87 @@ const mockups: Record<string, () => JSX.Element> = {
 
 export function DemoSection() {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const resetTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setActiveTab((prev) => {
+        const currentIdx = tabs.findIndex((t) => t.id === prev);
+        return tabs[(currentIdx + 1) % tabs.length].id;
+      });
+    }, 3000);
+  }, []);
+
+  useEffect(() => {
+    resetTimer();
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [resetTimer]);
+
+  const handleTabClick = (id: string) => {
+    setActiveTab(id);
+    resetTimer();
+  };
+
   const ActiveMockup = mockups[activeTab];
 
   return (
-    <section className="section-padding bg-secondary/30 relative overflow-hidden">
-      <div className="absolute inset-0 glow-bg opacity-30" />
-      <div className="max-w-7xl mx-auto relative">
+    <section id="showcase" className="relative overflow-hidden scroll-mt-20 py-20 sm:py-28 lg:py-36">
+      {/* Premium dark background */}
+      <div className="absolute inset-0 bg-[hsl(240,20%,4%)]" />
+
+      {/* Purple/green glow effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Top-left purple glow */}
+        <div className="absolute -top-40 -left-40 w-[700px] h-[700px] rounded-full bg-purple-600/[0.07] blur-[120px]" />
+        {/* Center green glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] rounded-full bg-emerald-500/[0.05] blur-[100px]" />
+        {/* Bottom-right purple glow */}
+        <div className="absolute -bottom-32 -right-32 w-[600px] h-[600px] rounded-full bg-purple-500/[0.06] blur-[120px]" />
+
+        {/* Subtle curved glow lines */}
+        <svg className="absolute top-0 left-0 w-full h-full opacity-[0.04]" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M-100 400C200 200 400 600 700 300S1100 500 1300 200" stroke="url(#glow1)" strokeWidth="1.5" />
+          <path d="M-100 500C300 300 500 700 800 400S1200 600 1400 300" stroke="url(#glow2)" strokeWidth="1" />
+          <defs>
+            <linearGradient id="glow1" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="hsl(270,70%,60%)" />
+              <stop offset="50%" stopColor="hsl(160,60%,50%)" />
+              <stop offset="100%" stopColor="hsl(270,70%,60%)" />
+            </linearGradient>
+            <linearGradient id="glow2" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="hsl(160,60%,50%)" />
+              <stop offset="100%" stopColor="hsl(270,70%,60%)" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        {/* Grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:80px_80px]" />
+      </div>
+
+      <div className="max-w-7xl mx-auto relative px-5 sm:px-6 lg:px-8">
+        {/* Header */}
         <div className="text-center mb-10 sm:mb-14">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 rounded-full bg-primary/8 border border-primary/15 px-4 py-1.5 text-xs sm:text-sm font-medium text-primary mb-4 sm:mb-5"
+            className="inline-flex items-center gap-2 rounded-full bg-emerald-500/[0.08] border border-emerald-500/20 px-4 py-1.5 text-xs sm:text-sm font-medium text-emerald-400 mb-4 sm:mb-5"
           >
-            O sistema
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+            </span>
+            Explore o sistema
           </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-2xl sm:text-4xl lg:text-[2.75rem] font-extrabold tracking-[-0.02em] mb-4 sm:mb-5"
+            className="text-2xl sm:text-4xl lg:text-[2.75rem] font-extrabold tracking-[-0.02em] mb-4 sm:mb-5 text-white"
           >
             Conheça o CutFlow por dentro
           </motion.h2>
@@ -568,13 +600,13 @@ export function DemoSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto leading-relaxed"
+            className="text-white/50 text-base sm:text-lg max-w-xl mx-auto leading-relaxed"
           >
             Explore as telas reais do sistema que vai transformar sua barbearia.
           </motion.p>
         </div>
 
-        {/* Tab selector — pill style */}
+        {/* Tab selector */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -582,24 +614,47 @@ export function DemoSection() {
           transition={{ delay: 0.12 }}
           className="flex justify-center mb-6"
         >
-          <div className="inline-flex items-center gap-1 rounded-xl border border-border bg-card p-1 shadow-sm">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`relative flex items-center gap-1.5 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 ${
-                  activeTab === tab.id
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                }`}
-              >
-                <tab.icon className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{tab.label}</span>
-              </button>
-            ))}
+          <div className="inline-flex items-center gap-1 rounded-xl border border-white/[0.08] bg-white/[0.04] p-1 backdrop-blur-sm">
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => handleTabClick(tab.id)}
+                  className={`relative flex items-center gap-1.5 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 ${
+                    isActive
+                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                      : "text-white/40 hover:text-white/70 hover:bg-white/[0.04]"
+                  }`}
+                >
+                  <tab.icon className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
         </motion.div>
 
+        {/* Progress bar */}
+        <div className="flex justify-center mb-6">
+          <div className="flex gap-1.5">
+            {tabs.map((tab) => (
+              <div key={tab.id} className="w-12 h-0.5 rounded-full bg-white/[0.08] overflow-hidden">
+                {activeTab === tab.id && (
+                  <motion.div
+                    key={`progress-${tab.id}-${activeTab}`}
+                    className="h-full bg-emerald-400/60 rounded-full"
+                    initial={{ width: "0%" }}
+                    animate={{ width: "100%" }}
+                    transition={{ duration: 3, ease: "linear" }}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Browser window */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -607,17 +662,16 @@ export function DemoSection() {
           transition={{ delay: 0.15 }}
           className="max-w-5xl mx-auto"
         >
-          {/* Browser window */}
-          <div className="rounded-2xl border border-border/80 bg-card shadow-2xl overflow-hidden">
+          <div className="rounded-2xl border border-white/[0.08] bg-[hsl(240,16%,8%)] shadow-2xl shadow-black/40 overflow-hidden ring-1 ring-white/[0.04]">
             {/* Title bar */}
-            <div className="flex items-center gap-3 px-4 sm:px-5 py-2.5 border-b border-border bg-muted/20">
+            <div className="flex items-center gap-3 px-4 sm:px-5 py-2.5 border-b border-white/[0.06] bg-white/[0.02]">
               <div className="flex gap-1.5">
-                <div className="h-2.5 w-2.5 rounded-full bg-[hsl(0_70%_65%)]" />
-                <div className="h-2.5 w-2.5 rounded-full bg-[hsl(45_80%_60%)]" />
-                <div className="h-2.5 w-2.5 rounded-full bg-[hsl(140_50%_55%)]" />
+                <div className="h-2.5 w-2.5 rounded-full bg-red-500/40" />
+                <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/40" />
+                <div className="h-2.5 w-2.5 rounded-full bg-green-500/40" />
               </div>
               <div className="flex-1 flex justify-center">
-                <div className="text-[10px] sm:text-[11px] text-muted-foreground bg-background/60 rounded-md px-4 py-1 border border-border/50 font-mono">
+                <div className="text-[10px] sm:text-[11px] text-white/30 bg-white/[0.04] rounded-md px-4 py-1 border border-white/[0.06] font-mono">
                   {activeTab === "booking" ? "cutflow.app/b/barbearia-central" : "cutflow.app/dashboard"}
                 </div>
               </div>
@@ -641,7 +695,7 @@ export function DemoSection() {
                 <Sidebar activeTab={activeTab} />
                 <div className="flex-1 flex flex-col min-w-0">
                   <TopBar />
-                  <div className="flex-1 bg-muted/5 overflow-hidden">
+                  <div className="flex-1 bg-[hsl(240,16%,7%)] overflow-hidden">
                     <AnimatePresence mode="wait">
                       <motion.div
                         key={activeTab}
@@ -658,6 +712,10 @@ export function DemoSection() {
               </div>
             )}
           </div>
+
+          {/* Laptop base */}
+          <div className="mx-auto w-[60%] h-3 bg-gradient-to-b from-white/[0.06] to-transparent rounded-b-xl" />
+          <div className="mx-auto w-[75%] h-1.5 bg-white/[0.03] rounded-b-2xl" />
         </motion.div>
       </div>
     </section>
