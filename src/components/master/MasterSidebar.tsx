@@ -14,7 +14,11 @@ import { Badge } from "@/components/ui/badge";
 const items = [
   { title: "Visão Geral", url: "/master", icon: LayoutDashboard },
   { title: "Clientes (Tenants)", url: "/master/tenants", icon: Building2 },
+  { title: "Planos", url: "/master/plans", icon: Layers },
+  { title: "Assinaturas", url: "/master/subscriptions", icon: CreditCard },
   { title: "Usuários", url: "/master/users", icon: Users },
+  { title: "Logs", url: "/master/logs", icon: FileText },
+  { title: "Configurações", url: "/master/settings", icon: Settings },
 ];
 
 export default function MasterSidebar() {
