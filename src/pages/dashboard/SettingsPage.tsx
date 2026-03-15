@@ -242,52 +242,56 @@ export default function SettingsPage() {
 
           {/* INFO */}
           <TabsContent value="info">
-            <CardSection className="space-y-5">
-              <SectionTitle>Informações da barbearia</SectionTitle>
+            <div className="space-y-5">
+              <LogoUpload />
 
-              <div className="rounded-2xl bg-primary/[0.04] border border-primary/15 p-5 space-y-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Globe className="h-4 w-4 text-primary" />
-                  <Label className="text-sm font-semibold text-foreground">Link público de agendamento</Label>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Compartilhe este link com seus clientes para receberem agendamentos online.
-                </p>
-                <div className="flex items-center gap-2 rounded-xl bg-card border border-border p-2.5">
-                  <code className="flex-1 text-xs sm:text-sm font-mono text-foreground truncate select-all px-1">
-                    {bookingUrl}
-                  </code>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="shrink-0 h-8 rounded-lg gap-1.5 text-xs"
-                    onClick={() => { navigator.clipboard.writeText(bookingUrl); toast({ title: "Link copiado!" }); }}
-                  >
-                    <Copy className="h-3.5 w-3.5" />
-                    Copiar
-                  </Button>
-                  <a href={bookingUrl} target="_blank" rel="noopener noreferrer" className="shrink-0">
-                    <Button size="sm" variant="outline" className="h-8 rounded-lg gap-1.5 text-xs">
-                      <ExternalLink className="h-3.5 w-3.5" />
-                      Abrir
+              <CardSection className="space-y-5">
+                <SectionTitle>Informações da barbearia</SectionTitle>
+
+                <div className="rounded-2xl bg-primary/[0.04] border border-primary/15 p-5 space-y-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Globe className="h-4 w-4 text-primary" />
+                    <Label className="text-sm font-semibold text-foreground">Link público de agendamento</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Compartilhe este link com seus clientes para receberem agendamentos online.
+                  </p>
+                  <div className="flex items-center gap-2 rounded-xl bg-card border border-border p-2.5">
+                    <code className="flex-1 text-xs sm:text-sm font-mono text-foreground truncate select-all px-1">
+                      {bookingUrl}
+                    </code>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="shrink-0 h-8 rounded-lg gap-1.5 text-xs"
+                      onClick={() => { navigator.clipboard.writeText(bookingUrl); toast({ title: "Link copiado!" }); }}
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                      Copiar
                     </Button>
-                  </a>
+                    <a href={bookingUrl} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                      <Button size="sm" variant="outline" className="h-8 rounded-lg gap-1.5 text-xs">
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        Abrir
+                      </Button>
+                    </a>
+                  </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FieldGroup label="Nome" value={name} onChange={setName} />
-                <FieldGroup label="Telefone" value={phone} onChange={setPhone} />
-                <FieldGroup label="Endereço" value={address} onChange={setAddress} />
-                <FieldGroup label="Complemento" value={addressComplement} onChange={setAddressComplement} placeholder="Apartamento, sala, bloco" />
-                <FieldGroup label="Instagram" value={instagram} onChange={setInstagram} placeholder="@suabarbearia" />
-                <FieldGroup label="WhatsApp" value={whatsapp} onChange={setWhatsapp} />
-                <div className="sm:col-span-2">
-                  <FieldGroup label="Descrição" value={description} onChange={setDescription} placeholder="Uma breve descrição" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FieldGroup label="Nome" value={name} onChange={setName} />
+                  <FieldGroup label="Telefone" value={phone} onChange={setPhone} />
+                  <FieldGroup label="Endereço" value={address} onChange={setAddress} />
+                  <FieldGroup label="Complemento" value={addressComplement} onChange={setAddressComplement} placeholder="Apartamento, sala, bloco" />
+                  <FieldGroup label="Instagram" value={instagram} onChange={setInstagram} placeholder="@suabarbearia" />
+                  <FieldGroup label="WhatsApp" value={whatsapp} onChange={setWhatsapp} />
+                  <div className="sm:col-span-2">
+                    <FieldGroup label="Descrição" value={description} onChange={setDescription} placeholder="Uma breve descrição" />
+                  </div>
                 </div>
-              </div>
-              <SaveButton saving={saving} onClick={saveBarbershop} label="Salvar alterações" />
-            </CardSection>
+                <SaveButton saving={saving} onClick={saveBarbershop} label="Salvar alterações" />
+              </CardSection>
+            </div>
           </TabsContent>
 
           {/* SERVICES */}
