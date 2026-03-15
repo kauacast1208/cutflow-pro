@@ -803,6 +803,92 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_ambassadors: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          referral_code: string
+          referral_link: string
+          status: string
+          total_conversions: number
+          total_invites: number
+          total_rewards_earned: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          referral_code: string
+          referral_link: string
+          status?: string
+          total_conversions?: number
+          total_invites?: number
+          total_rewards_earned?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          referral_code?: string
+          referral_link?: string
+          status?: string
+          total_conversions?: number
+          total_invites?: number
+          total_rewards_earned?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      platform_referral_leads: {
+        Row: {
+          ambassador_id: string
+          converted_at: string | null
+          created_at: string
+          id: string
+          referred_email: string | null
+          referred_name: string | null
+          reward_amount: number | null
+          reward_status: string | null
+          status: string
+        }
+        Insert: {
+          ambassador_id: string
+          converted_at?: string | null
+          created_at?: string
+          id?: string
+          referred_email?: string | null
+          referred_name?: string | null
+          reward_amount?: number | null
+          reward_status?: string | null
+          status?: string
+        }
+        Update: {
+          ambassador_id?: string
+          converted_at?: string | null
+          created_at?: string
+          id?: string
+          referred_email?: string | null
+          referred_name?: string | null
+          reward_amount?: number | null
+          reward_status?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_referral_leads_ambassador_id_fkey"
+            columns: ["ambassador_id"]
+            isOneToOne: false
+            referencedRelation: "platform_ambassadors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professional_availability: {
         Row: {
           created_at: string
