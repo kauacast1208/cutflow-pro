@@ -18,6 +18,7 @@ import CheckoutPage from "./pages/CheckoutPage";
 import TrialExpiredPage from "./pages/TrialExpiredPage";
 import PublicBookingPage from "./pages/PublicBookingPage";
 import ReschedulePage from "./pages/ReschedulePage";
+import FAQPage from "./pages/FAQPage";
 import BillingPage from "./pages/BillingPage";
 import BillingSuccessPage from "./pages/BillingSuccessPage";
 import BillingCancelPage from "./pages/BillingCancelPage";
@@ -102,6 +103,7 @@ function RedirectToBooking() {
 const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Index />} />
+    <Route path="/faq" element={<FAQPage />} />
     <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
     <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
     <Route path="/auth/callback" element={<AuthCallbackPage />} />
