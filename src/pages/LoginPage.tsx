@@ -8,6 +8,7 @@ import { SignupBrandingPanel } from "@/components/signup/SignupBrandingPanel";
 import { GoogleIcon } from "@/components/signup/GoogleIcon";
 import { mapLoginError, mapOAuthError } from "@/lib/authErrors";
 import { cn } from "@/lib/utils";
+import { startGoogleOAuthFlow } from "@/lib/oauth";
 
 function AuthError({ message }: { message: string }) {
   if (!message) return null;
@@ -56,7 +57,7 @@ export default function LoginPage() {
       }
     } catch (err) {
       console.error("Login unexpected error:", err);
-      setError("Erro inesperado. Tente novamente.");
+      setError(mapLoginError(err instanceof Error ? err.message : undefined));
       setLoading(false);
     }
   };
@@ -66,16 +67,10 @@ export default function LoginPage() {
       setGoogleLoading(true);
       setError("");
 
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
+      const oauthErrorMessage = await startGoogleOAuthFlow(`${window.location.origin}/auth/callback`);
 
-      if (oauthError) {
-        console.error("Erro no login com Google:", oauthError);
-        setError(mapOAuthError(oauthError.message, "login"));
+      if (oauthErrorMessage) {
+        setError(oauthErrorMessage);
         setGoogleLoading(false);
       }
     } catch (err) {

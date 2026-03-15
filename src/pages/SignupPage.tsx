@@ -9,6 +9,7 @@ import { PasswordStrengthIndicator } from "@/components/signup/PasswordStrengthI
 import { GoogleIcon } from "@/components/signup/GoogleIcon";
 import { mapOAuthError, mapSignupError } from "@/lib/authErrors";
 import { cn } from "@/lib/utils";
+import { startGoogleOAuthFlow } from "@/lib/oauth";
 
 function AuthError({ message }: { message: string }) {
   if (!message) return null;
@@ -63,6 +64,13 @@ export default function SignupPage() {
         return;
       }
 
+      // Existing account edge case (Supabase may return user without identities)
+      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        setError("Este e-mail já está cadastrado. Faça login ou recupere sua senha.");
+        setLoading(false);
+        return;
+      }
+
       // Email confirmation required (user exists but no session)
       if (data.user && !data.session) {
         toast({
@@ -80,11 +88,11 @@ export default function SignupPage() {
         return;
       }
 
-      // Fallback
+      setError("Não foi possível concluir seu cadastro. Tente novamente.");
       setLoading(false);
     } catch (err) {
       console.error("Signup unexpected error:", err);
-      setError("Erro inesperado. Tente novamente.");
+      setError(mapSignupError(err instanceof Error ? err.message : undefined));
       setLoading(false);
     }
   };
@@ -94,16 +102,10 @@ export default function SignupPage() {
       setGoogleLoading(true);
       setError("");
 
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
+      const oauthErrorMessage = await startGoogleOAuthFlow(`${window.location.origin}/auth/callback`);
 
-      if (oauthError) {
-        console.error("Erro no signup com Google:", oauthError);
-        setError(mapOAuthError(oauthError.message, "signup"));
+      if (oauthErrorMessage) {
+        setError(oauthErrorMessage);
         setGoogleLoading(false);
       }
     } catch (err) {

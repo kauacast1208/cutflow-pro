@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { isInvalidApiKeyMessage } from "@/lib/authErrors";
+import { isInvalidApiKeyMessage, mapOAuthError } from "@/lib/authErrors";
 import { Loader2, Scissors } from "lucide-react";
 
 export default function AuthCallbackPage() {
@@ -41,8 +41,26 @@ export default function AuthCallbackPage() {
       }
     };
 
+    const getCallbackError = () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+
+      return (
+        searchParams.get("error_description") ||
+        hashParams.get("error_description") ||
+        searchParams.get("error") ||
+        hashParams.get("error")
+      );
+    };
+
     const handleCallback = async () => {
       try {
+        const callbackError = getCallbackError();
+        if (callbackError) {
+          setError(mapOAuthError(callbackError, "login"));
+          setTimeout(() => navigate("/login", { replace: true }), 2500);
+          return;
+        }
         // Wait for auth state to settle after OAuth redirect
         const {
           data: { session },

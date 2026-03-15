@@ -4,6 +4,7 @@ import { Eye, EyeOff, Loader2, Lock, Check, Scissors, AlertCircle, ArrowLeft } f
 import { supabase } from "@/integrations/supabase/client";
 import { PasswordStrengthIndicator } from "@/components/signup/PasswordStrengthIndicator";
 import { cn } from "@/lib/utils";
+import { mapResetPasswordError } from "@/lib/authErrors";
 
 function AuthError({ message }: { message: string }) {
   if (!message) return null;
@@ -22,6 +23,7 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
   const [sessionError, setSessionError] = useState(false);
+  const [sessionErrorMessage, setSessionErrorMessage] = useState("");
   const [success, setSuccess] = useState(false);
   const [formError, setFormError] = useState("");
   const sessionReadyRef = useRef(false);
@@ -37,27 +39,56 @@ export default function ResetPasswordPage() {
       }
     };
 
+    const markSessionError = (message: string) => {
+      if (!mounted) return;
+      setSessionErrorMessage(message);
+      setSessionError(true);
+    };
+
     // Listen for PASSWORD_RECOVERY or SIGNED_IN events from the recovery link
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
-      if (event === "PASSWORD_RECOVERY" && session) {
-        markReady();
-      } else if (event === "SIGNED_IN" && session) {
+      if ((event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") && session) {
         markReady();
       }
     });
 
-    // Check if a session already exists (e.g., page was reloaded after token was consumed)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (mounted && session) {
+    const bootstrapRecoverySession = async () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+
+      const callbackError =
+        searchParams.get("error_description") ||
+        hashParams.get("error_description") ||
+        searchParams.get("error") ||
+        hashParams.get("error");
+
+      if (callbackError) {
+        markSessionError(mapResetPasswordError(callbackError));
+        return;
+      }
+
+      const code = searchParams.get("code");
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          markSessionError(mapResetPasswordError(error.message));
+          return;
+        }
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
         markReady();
       }
-    });
+    };
+
+    void bootstrapRecoverySession();
 
     // Timeout: if no session after 10s, the link is expired/invalid
     const timeout = setTimeout(() => {
       if (mounted && !sessionReadyRef.current) {
-        setSessionError(true);
+        markSessionError("Sessão de recuperação não encontrada. Solicite um novo link.");
       }
     }, 10000);
 
@@ -84,24 +115,24 @@ export default function ResetPasswordPage() {
     setLoading(true);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setFormError("Sessão expirada. Solicite um novo link de recuperação.");
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase.auth.updateUser({ password });
       if (error) {
-        const msg = error.message?.toLowerCase() || "";
-        if (msg.includes("same_password") || msg.includes("different")) {
-          setFormError("A nova senha não pode ser igual à anterior.");
-        } else if (msg.includes("session") || msg.includes("not authenticated")) {
-          setFormError("Sessão expirada. Solicite um novo link de recuperação.");
-        } else {
-          setFormError("Não foi possível redefinir a senha. Solicite um novo link.");
-        }
+        setFormError(mapResetPasswordError(error.message));
         setLoading(false);
         return;
       }
 
       setSuccess(true);
       setTimeout(() => navigate("/dashboard"), 2500);
-    } catch {
-      setFormError("Erro inesperado. Tente novamente.");
+    } catch (err) {
+      setFormError(mapResetPasswordError(err instanceof Error ? err.message : undefined));
       setLoading(false);
     }
   };
@@ -117,7 +148,7 @@ export default function ResetPasswordPage() {
             </div>
             <h1 className="text-[22px] font-bold tracking-tight mb-2">Link expirado</h1>
             <p className="text-muted-foreground text-sm mb-6">
-              Este link de recuperação expirou ou já foi utilizado. Solicite um novo link.
+              {sessionErrorMessage || "Este link de recuperação expirou ou já foi utilizado. Solicite um novo link."}
             </p>
             <button
               onClick={() => navigate("/forgot-password")}
