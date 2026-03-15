@@ -14,6 +14,18 @@ export default function AuthCallbackPage() {
     let authSubscription: { unsubscribe: () => void } | null = null;
 
     const resolveRedirect = async (userId: string) => {
+      // Check if master user
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (roleData?.role === "master") {
+        navigate("/master", { replace: true });
+        return;
+      }
+
       // Check if user has a barbershop (completed onboarding)
       const { data: barbershop } = await supabase
         .from("barbershops")

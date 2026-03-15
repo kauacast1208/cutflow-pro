@@ -49,8 +49,20 @@ export default function LoginPage() {
       }
 
       if (data.session) {
+        // Check if master user
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", data.session.user.id)
+          .maybeSingle();
+
         toast({ title: "Bem-vindo de volta!", description: "Login realizado com sucesso." });
-        navigate("/dashboard");
+
+        if (roleData?.role === "master") {
+          navigate("/master");
+        } else {
+          navigate("/dashboard");
+        }
       } else {
         setError("Não foi possível iniciar a sessão. Tente novamente.");
         setLoading(false);
