@@ -77,6 +77,7 @@ export default function AuthCallbackPage() {
 
         if (code) {
           const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          console.info("[AuthCallback] Code exchange result:", exchangeError ? exchangeError.message : "success");
 
           if (exchangeError) {
             const {
