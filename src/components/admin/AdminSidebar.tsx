@@ -8,7 +8,7 @@ import {
 import {
   LayoutDashboard, Calendar, Users, UserCog, DollarSign, BarChart3,
   Settings, Scissors, LogOut, ExternalLink, Copy, Lock, Megaphone,
-  Mail, UserPlus, Gift, Zap, UserX, Cake, Trophy, Heart, Clock,
+  Mail, UserPlus, Gift, Zap, UserX, Cake, Trophy, Heart, Clock, HeartHandshake,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useBarbershop } from "@/hooks/useBarbershop";
@@ -38,14 +38,15 @@ const items: MenuItem[] = [
   { title: "Serviços", url: "/dashboard/services", icon: Scissors, feature: "services", roles: ["owner", "admin"], group: "main" },
   { title: "Financeiro", url: "/dashboard/finance", icon: DollarSign, feature: "finance", roles: ["owner", "admin"], group: "main" },
   { title: "Relatórios", url: "/dashboard/reports", icon: BarChart3, feature: "basic_reports", roles: ["owner", "admin"], group: "main" },
+  { title: "CRM", url: "/dashboard/crm", icon: HeartHandshake, roles: ["owner", "admin"], group: "crm" },
+  { title: "Clientes Inativos", url: "/dashboard/inactive-clients", icon: UserX, roles: ["owner", "admin"], group: "crm" },
+  { title: "Aniversariantes", url: "/dashboard/birthdays", icon: Cake, roles: ["owner", "admin"], group: "crm" },
+  { title: "Retenção", url: "/dashboard/retention", icon: Heart, roles: ["owner", "admin"], group: "crm" },
+  { title: "Fidelidade", url: "/dashboard/loyalty", icon: Trophy, roles: ["owner", "admin"], group: "crm" },
+  { title: "Indicações", url: "/dashboard/referrals", icon: Gift, roles: ["owner", "admin"], group: "crm" },
   { title: "Visão geral", url: "/dashboard/marketing", icon: Megaphone, roles: ["owner", "admin"], group: "marketing" },
   { title: "Campanhas", url: "/dashboard/campaigns", icon: Mail, feature: "simple_campaigns", roles: ["owner", "admin"], group: "marketing" },
   { title: "Automações", url: "/dashboard/automations", icon: Zap, roles: ["owner", "admin"], group: "marketing" },
-  { title: "Clientes Inativos", url: "/dashboard/inactive-clients", icon: UserX, roles: ["owner", "admin"], group: "marketing" },
-  { title: "Aniversariantes", url: "/dashboard/birthdays", icon: Cake, roles: ["owner", "admin"], group: "marketing" },
-  { title: "Indicações", url: "/dashboard/referrals", icon: Gift, roles: ["owner", "admin"], group: "marketing" },
-  { title: "Fidelidade", url: "/dashboard/loyalty", icon: Trophy, roles: ["owner", "admin"], group: "marketing" },
-  { title: "Retenção", url: "/dashboard/retention", icon: Heart, roles: ["owner", "admin"], group: "marketing" },
   { title: "Equipe", url: "/dashboard/team", icon: UserPlus, roles: ["owner", "admin"], group: "admin" },
   { title: "Configurações", url: "/dashboard/settings", icon: Settings, roles: ["owner", "admin"], group: "admin" },
 ];
@@ -88,6 +89,7 @@ export default function AdminSidebar() {
   });
 
   const mainItems = visibleItems.filter((i) => i.group === "main");
+  const crmItems = visibleItems.filter((i) => i.group === "crm");
   const marketingItems = visibleItems.filter((i) => i.group === "marketing");
   const adminItems = visibleItems.filter((i) => i.group === "admin");
 
@@ -164,6 +166,7 @@ export default function AdminSidebar() {
         )}
 
         {renderGroup("Principal", mainItems)}
+        {renderGroup("CRM", crmItems)}
         {renderGroup("Marketing", marketingItems)}
         {renderGroup("Administração", adminItems)}
 

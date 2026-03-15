@@ -25,6 +25,7 @@ const routeLabels: Record<string, string> = {
   "/dashboard/referrals": "Indicações",
   "/dashboard/loyalty": "Fidelidade",
   "/dashboard/retention": "Retenção",
+  "/dashboard/crm": "CRM",
 };
 
 export default function AdminTopbar() {
