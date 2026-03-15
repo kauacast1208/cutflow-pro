@@ -748,33 +748,57 @@ export type Database = {
       }
       plans: {
         Row: {
+          billing_cycle: string
           created_at: string
+          description: string | null
           features: string[]
           id: string
+          is_active: boolean
           label: string
+          max_clients: number
           max_professionals: number
+          max_services: number
+          max_units: number
+          max_users: number
           price: number
           slug: Database["public"]["Enums"]["subscription_plan"]
+          trial_days: number
           updated_at: string
         }
         Insert: {
+          billing_cycle?: string
           created_at?: string
+          description?: string | null
           features?: string[]
           id?: string
+          is_active?: boolean
           label: string
+          max_clients?: number
           max_professionals?: number
+          max_services?: number
+          max_units?: number
+          max_users?: number
           price?: number
           slug: Database["public"]["Enums"]["subscription_plan"]
+          trial_days?: number
           updated_at?: string
         }
         Update: {
+          billing_cycle?: string
           created_at?: string
+          description?: string | null
           features?: string[]
           id?: string
+          is_active?: boolean
           label?: string
+          max_clients?: number
           max_professionals?: number
+          max_services?: number
+          max_units?: number
+          max_users?: number
           price?: number
           slug?: Database["public"]["Enums"]["subscription_plan"]
+          trial_days?: number
           updated_at?: string
         }
         Relationships: []
