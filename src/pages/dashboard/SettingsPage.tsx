@@ -10,10 +10,11 @@ import { useBarbershop } from "@/hooks/useBarbershop";
 import { useToast } from "@/hooks/use-toast";
 import {
   Store, Clock, Scissors, Users, Shield, Loader2, Plus,
-  Trash2, Save, Copy, ExternalLink, CreditCard, MessageCircle, Globe,
+  Trash2, Save, Copy, ExternalLink, CreditCard, MessageCircle, Globe, Plug,
 } from "lucide-react";
 import SubscriptionManager from "@/components/billing/SubscriptionManager";
 import WhatsAppSettingsPanel from "@/components/admin/WhatsAppSettingsPanel";
+import GoogleCalendarSettings from "@/components/settings/GoogleCalendarSettings";
 
 const fadeUp = (i: number) => ({
   initial: { opacity: 0, y: 14 },
@@ -232,6 +233,9 @@ export default function SettingsPage() {
             </TabsTrigger>
             <TabsTrigger value="whatsapp" className="text-xs rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
               <MessageCircle className="h-3.5 w-3.5 mr-1.5" /> WhatsApp
+            </TabsTrigger>
+            <TabsTrigger value="integrations" className="text-xs rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
+              <Plug className="h-3.5 w-3.5 mr-1.5" /> Integrações
             </TabsTrigger>
           </TabsList>
 
@@ -503,6 +507,11 @@ export default function SettingsPage() {
           {/* WHATSAPP SETTINGS */}
           <TabsContent value="whatsapp">
             <WhatsAppSettingsPanel />
+          </TabsContent>
+
+          {/* INTEGRATIONS */}
+          <TabsContent value="integrations">
+            <GoogleCalendarSettings />
           </TabsContent>
 
           {/* PREFERENCES */}

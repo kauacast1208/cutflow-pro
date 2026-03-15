@@ -16,6 +16,7 @@ import { DateTimeStep } from "@/components/booking/DateTimeStep";
 import { ClientInfoStep } from "@/components/booking/ClientInfoStep";
 import { ConfirmStep } from "@/components/booking/ConfirmStep";
 import { BookingSuccess } from "@/components/booking/BookingSuccess";
+import { LocationMap } from "@/components/booking/LocationMap";
 import { useBookingSlots } from "@/hooks/useBookingSlots";
 import { sendBookingEmail } from "@/lib/email";
 import { generateTimeSlots } from "@/lib/booking";
@@ -457,6 +458,17 @@ export default function PublicBookingPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Location Map */}
+                {barbershop.address && (
+                  <div className="mt-5">
+                    <LocationMap
+                      address={barbershop.address}
+                      name={barbershop.name}
+                      addressComplement={barbershop.address_complement}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
