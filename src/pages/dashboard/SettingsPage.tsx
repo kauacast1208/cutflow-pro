@@ -10,10 +10,11 @@ import { useBarbershop } from "@/hooks/useBarbershop";
 import { useToast } from "@/hooks/use-toast";
 import {
   Store, Clock, Scissors, Users, Shield, Loader2, Plus,
-  Trash2, Save, Copy, ExternalLink, CreditCard, MessageCircle, Globe,
+  Trash2, Save, Copy, ExternalLink, CreditCard, MessageCircle, Globe, Plug,
 } from "lucide-react";
 import SubscriptionManager from "@/components/billing/SubscriptionManager";
 import WhatsAppSettingsPanel from "@/components/admin/WhatsAppSettingsPanel";
+import GoogleCalendarSettings from "@/components/settings/GoogleCalendarSettings";
 
 const fadeUp = (i: number) => ({
   initial: { opacity: 0, y: 14 },
