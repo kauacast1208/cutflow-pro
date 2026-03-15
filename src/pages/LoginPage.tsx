@@ -56,7 +56,7 @@ export default function LoginPage() {
       }
     } catch (err) {
       console.error("Login unexpected error:", err);
-      setError("Erro inesperado. Tente novamente.");
+      setError(mapLoginError(err instanceof Error ? err.message : undefined));
       setLoading(false);
     }
   };
