@@ -163,6 +163,7 @@ export type Database = {
           allow_online_reschedule: boolean
           auto_confirm: boolean
           buffer_minutes: number
+          business_group_id: string | null
           cancellation_limit_hours: number
           closed_days: number[] | null
           closing_time: string
@@ -191,6 +192,7 @@ export type Database = {
           allow_online_reschedule?: boolean
           auto_confirm?: boolean
           buffer_minutes?: number
+          business_group_id?: string | null
           cancellation_limit_hours?: number
           closed_days?: number[] | null
           closing_time?: string
@@ -219,6 +221,7 @@ export type Database = {
           allow_online_reschedule?: boolean
           auto_confirm?: boolean
           buffer_minutes?: number
+          business_group_id?: string | null
           cancellation_limit_hours?: number
           closed_days?: number[] | null
           closing_time?: string
@@ -240,7 +243,15 @@ export type Database = {
           updated_at?: string
           whatsapp?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "barbershops_business_group_id_fkey"
+            columns: ["business_group_id"]
+            isOneToOne: false
+            referencedRelation: "business_groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       blocked_times: {
         Row: {
@@ -312,6 +323,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      business_groups: {
+        Row: {
+          created_at: string
+          id: string
+          logo_url: string | null
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       campaign_recipients: {
         Row: {
@@ -1359,7 +1397,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "owner" | "professional" | "receptionist"
+      app_role: "admin" | "owner" | "professional" | "receptionist" | "master"
       appointment_status:
         | "scheduled"
         | "confirmed"
@@ -1368,7 +1406,7 @@ export type Database = {
         | "rescheduled"
       loyalty_reward_status: "in_progress" | "earned" | "redeemed" | "expired"
       loyalty_type: "visits" | "spending" | "specific_service"
-      subscription_plan: "starter" | "pro" | "premium"
+      subscription_plan: "starter" | "pro" | "premium" | "franquias"
       subscription_status:
         | "trial"
         | "active"
@@ -1502,7 +1540,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "owner", "professional", "receptionist"],
+      app_role: ["admin", "owner", "professional", "receptionist", "master"],
       appointment_status: [
         "scheduled",
         "confirmed",
@@ -1512,7 +1550,7 @@ export const Constants = {
       ],
       loyalty_reward_status: ["in_progress", "earned", "redeemed", "expired"],
       loyalty_type: ["visits", "spending", "specific_service"],
-      subscription_plan: ["starter", "pro", "premium"],
+      subscription_plan: ["starter", "pro", "premium", "franquias"],
       subscription_status: [
         "trial",
         "active",

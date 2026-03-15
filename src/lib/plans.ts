@@ -5,7 +5,7 @@
  * Adding a new feature? Add it to PlanFeature and the planConfig below.
  */
 
-export type PlanTier = "starter" | "pro" | "premium";
+export type PlanTier = "starter" | "pro" | "premium" | "franquias";
 
 export type PlanFeature =
   | "agenda"
@@ -92,8 +92,31 @@ export const planConfig: Record<PlanTier, PlanConfig> = {
       professionals: Infinity,
     },
   },
+  franquias: {
+    label: "Franquias",
+    price: 349,
+    features: [
+      "agenda",
+      "clients",
+      "services",
+      "basic_reports",
+      "advanced_reports",
+      "finance",
+      "blocked_times",
+      "simple_campaigns",
+      "advanced_campaigns",
+      "basic_mailing",
+      "mailing",
+      "marketing_automation",
+      "priority_support",
+      "chat_support",
+      "integrations",
+    ],
+    limits: {
+      professionals: Infinity,
+    },
+  },
 };
-
 /** Human-readable feature labels */
 export const featureLabels: Record<PlanFeature, string> = {
   agenda: "Agenda online",

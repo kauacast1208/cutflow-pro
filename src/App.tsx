@@ -23,6 +23,12 @@ import BillingPage from "./pages/BillingPage";
 import BillingSuccessPage from "./pages/BillingSuccessPage";
 import BillingCancelPage from "./pages/BillingCancelPage";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
+import MasterLayout from "./components/master/MasterLayout";
+import MasterDashboard from "./pages/master/MasterDashboard";
+import MasterTenantsPage from "./pages/master/MasterTenantsPage";
+import MasterTenantDetailPage from "./pages/master/MasterTenantDetailPage";
+import MasterUsersPage from "./pages/master/MasterUsersPage";
+import { useMasterRole } from "./hooks/useMasterRole";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import AgendaPage from "./pages/dashboard/AgendaPage";
 import ClientsPage from "./pages/dashboard/ClientsPage";
@@ -87,10 +93,20 @@ function TenantGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/** Guard for Master-only routes */
+function MasterGuard({ children }: { children: React.ReactNode }) {
+  const { isMaster, loading } = useMasterRole();
+  if (loading) return <FullScreenLoader />;
+  if (!isMaster) return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
+}
+
 /** Redirects authenticated users away from login/signup */
 function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  if (loading) return <FullScreenLoader />;
+  const { isMaster, loading: masterLoading } = useMasterRole();
+  if (loading || masterLoading) return <FullScreenLoader />;
+  if (user && isMaster) return <Navigate to="/master" replace />;
   if (user) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 }
@@ -150,6 +166,22 @@ const AppRoutes = () => (
       <Route path="birthdays" element={<BirthdaysPage />} />
       <Route path="loyalty" element={<LoyaltyPage />} />
       <Route path="retention" element={<RetentionPage />} />
+    </Route>
+    {/* Master routes */}
+    <Route
+      path="/master"
+      element={
+        <ProtectedRoute>
+          <MasterGuard>
+            <MasterLayout />
+          </MasterGuard>
+        </ProtectedRoute>
+      }
+    >
+      <Route index element={<MasterDashboard />} />
+      <Route path="tenants" element={<MasterTenantsPage />} />
+      <Route path="tenants/:tenantId" element={<MasterTenantDetailPage />} />
+      <Route path="users" element={<MasterUsersPage />} />
     </Route>
     <Route path="*" element={<NotFound />} />
   </Routes>
