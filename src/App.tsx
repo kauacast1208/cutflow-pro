@@ -28,6 +28,10 @@ import MasterDashboard from "./pages/master/MasterDashboard";
 import MasterTenantsPage from "./pages/master/MasterTenantsPage";
 import MasterTenantDetailPage from "./pages/master/MasterTenantDetailPage";
 import MasterUsersPage from "./pages/master/MasterUsersPage";
+import MasterPlansPage from "./pages/master/MasterPlansPage";
+import MasterSubscriptionsPage from "./pages/master/MasterSubscriptionsPage";
+import MasterLogsPage from "./pages/master/MasterLogsPage";
+import MasterSettingsPage from "./pages/master/MasterSettingsPage";
 import { useMasterRole } from "./hooks/useMasterRole";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import AgendaPage from "./pages/dashboard/AgendaPage";
@@ -183,7 +187,11 @@ const AppRoutes = () => (
       <Route index element={<MasterDashboard />} />
       <Route path="tenants" element={<MasterTenantsPage />} />
       <Route path="tenants/:tenantId" element={<MasterTenantDetailPage />} />
+      <Route path="plans" element={<MasterPlansPage />} />
+      <Route path="subscriptions" element={<MasterSubscriptionsPage />} />
       <Route path="users" element={<MasterUsersPage />} />
+      <Route path="logs" element={<MasterLogsPage />} />
+      <Route path="settings" element={<MasterSettingsPage />} />
     </Route>
     <Route path="*" element={<NotFound />} />
   </Routes>

@@ -6,7 +6,11 @@ import { useLocation } from "react-router-dom";
 const routeLabels: Record<string, string> = {
   "/master": "Visão Geral",
   "/master/tenants": "Clientes (Tenants)",
+  "/master/plans": "Planos",
+  "/master/subscriptions": "Assinaturas",
   "/master/users": "Usuários",
+  "/master/logs": "Logs",
+  "/master/settings": "Configurações",
 };
 
 export default function MasterTopbar() {
