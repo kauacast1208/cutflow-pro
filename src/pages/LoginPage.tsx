@@ -65,8 +65,10 @@ export default function LoginPage() {
         toast({ title: "Bem-vindo de volta!", description: "Login realizado com sucesso." });
 
         if (roleData?.role === "master") {
+          console.info("[Login] Redirecting to /master");
           navigate("/master", { replace: true });
         } else {
+          console.info("[Login] Redirecting to /dashboard");
           navigate("/dashboard", { replace: true });
         }
       } else {

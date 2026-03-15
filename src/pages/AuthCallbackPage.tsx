@@ -113,10 +113,13 @@ export default function AuthCallbackPage() {
         }
 
         if (session?.user) {
+          console.info("[AuthCallback] Session found, resolving redirect for user:", session.user.id);
           settled = true;
           await resolveRedirect(session.user.id);
           return;
         }
+
+        console.info("[AuthCallback] No session yet, waiting for auth state change...");
 
         const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
           if (!nextSession?.user || settled) return;
