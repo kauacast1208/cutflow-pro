@@ -145,12 +145,20 @@ export default function AdminSidebar() {
     <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-sidebar-background">
       {/* Brand */}
       <div className="flex h-16 items-center gap-3 px-4 border-b border-sidebar-border">
-        <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm">
-          <Scissors className="h-4 w-4 text-primary-foreground" />
-        </div>
+        {barbershop?.logo_url ? (
+          <img
+            src={barbershop.logo_url}
+            alt={barbershop.name || "Logo"}
+            className="h-9 w-9 rounded-xl object-cover border border-sidebar-border/40 shadow-sm shrink-0"
+          />
+        ) : (
+          <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm">
+            <Scissors className="h-4 w-4 text-primary-foreground" />
+          </div>
+        )}
         {!collapsed && (
-          <span className="font-bold text-lg tracking-tight text-sidebar-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            CutFlow
+          <span className="font-bold text-lg tracking-tight text-sidebar-foreground truncate" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            {barbershop?.name || "CutFlow"}
           </span>
         )}
       </div>
