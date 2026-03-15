@@ -114,6 +114,15 @@ function MasterGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/** Guard for Franquias routes — requires franquias plan */
+function FranchiseGuard({ children }: { children: React.ReactNode }) {
+  const { subscription, loading } = useSubscription();
+  const { status } = useTenant();
+  if (loading || status === "loading") return <FullScreenLoader />;
+  if (subscription?.plan !== "franquias") return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
+}
+
 /** Redirects authenticated users away from login/signup */
 function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
