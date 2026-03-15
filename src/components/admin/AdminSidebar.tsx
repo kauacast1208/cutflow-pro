@@ -49,6 +49,7 @@ const items: MenuItem[] = [
   { title: "Automações", url: "/dashboard/automations", icon: Zap, feature: "automations", roles: ["owner", "admin"], group: "marketing" },
   { title: "Equipe", url: "/dashboard/team", icon: UserPlus, roles: ["owner", "admin"], group: "admin" },
   { title: "Configurações", url: "/dashboard/settings", icon: Settings, roles: ["owner", "admin"], group: "admin" },
+  { title: "Painel Franquias", url: "/franquias", icon: Building2, feature: "multi_unit_enabled", roles: ["owner", "admin"], group: "admin" },
 ];
 
 const roleLabels: Record<string, string> = {
