@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Loader2, Mail, Lock, Scissors, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+
 import { useToast } from "@/hooks/use-toast";
 import { SignupBrandingPanel } from "@/components/signup/SignupBrandingPanel";
 import { GoogleIcon } from "@/components/signup/GoogleIcon";
@@ -66,14 +66,16 @@ export default function LoginPage() {
       setGoogleLoading(true);
       setError("");
 
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${window.location.origin}/auth/callback`,
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
 
-      if (result.error) {
-        console.error("Erro no login com Google:", result.error);
-        const rawMessage = result.error instanceof Error ? result.error.message : String(result.error);
-        setError(mapOAuthError(rawMessage, "login"));
+      if (oauthError) {
+        console.error("Erro no login com Google:", oauthError);
+        setError(mapOAuthError(oauthError.message, "login"));
         setGoogleLoading(false);
       }
     } catch (err) {
