@@ -1,9 +1,11 @@
+import { motion } from "framer-motion";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { HelpCircle } from "lucide-react";
 
 const faqs = [
   { q: "Como funciona o CutFlow?", a: "O CutFlow é uma plataforma completa de gestão para barbearias. Você cria sua conta, configura seus serviços e profissionais, e compartilha um link de agendamento online com seus clientes. Tudo é gerenciado pelo painel administrativo." },
@@ -18,26 +20,56 @@ const faqs = [
 
 export function FAQSection() {
   return (
-    <section className="section-padding bg-background">
-      <div className="max-w-3xl mx-auto">
+    <section className="section-padding bg-background relative overflow-hidden">
+      {/* Subtle glow */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full bg-primary/[0.03] blur-[100px]" />
+      </div>
+
+      <div className="max-w-3xl mx-auto relative">
         <div className="text-center mb-8 sm:mb-12">
-          <span className="inline-flex items-center gap-2 rounded-full bg-primary/8 border border-primary/15 px-4 py-1.5 text-xs sm:text-sm font-medium text-primary mb-4 sm:mb-5">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-2 rounded-full bg-primary/[0.06] border border-primary/12 px-4 py-1.5 text-xs sm:text-sm font-medium text-primary mb-4 sm:mb-5"
+          >
+            <HelpCircle className="h-3.5 w-3.5" />
             Dúvidas frequentes
-          </span>
-          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-[-0.02em]">Perguntas frequentes</h2>
+          </motion.div>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-2xl sm:text-4xl font-extrabold tracking-[-0.02em] text-foreground"
+          >
+            Perguntas frequentes
+          </motion.h2>
         </div>
-        <Accordion type="single" collapsible className="space-y-2.5 sm:space-y-3">
-          {faqs.map((faq, i) => (
-            <AccordionItem key={i} value={`item-${i}`} className="rounded-2xl border border-border/80 bg-card px-4 sm:px-6 shadow-card">
-              <AccordionTrigger className="text-left font-medium text-sm sm:text-base py-3.5 sm:py-4 hover:no-underline">
-                {faq.q}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground text-xs sm:text-sm pb-3.5 sm:pb-4 leading-relaxed">
-                {faq.a}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.1 }}
+        >
+          <Accordion type="single" collapsible className="space-y-2.5 sm:space-y-3">
+            {faqs.map((faq, i) => (
+              <AccordionItem
+                key={i}
+                value={`item-${i}`}
+                className="rounded-2xl border border-border/60 bg-card dark:bg-card/60 px-4 sm:px-6 shadow-sm hover:shadow-md transition-shadow duration-200"
+              >
+                <AccordionTrigger className="text-left font-semibold text-sm sm:text-base py-4 sm:py-5 hover:no-underline text-foreground">
+                  {faq.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground text-xs sm:text-sm pb-4 sm:pb-5 leading-relaxed">
+                  {faq.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </motion.div>
       </div>
     </section>
   );
