@@ -725,69 +725,82 @@ export function DemoSection() {
           </div>
         </div>
 
-        {/* Browser window */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.15 }}
-          className="max-w-5xl mx-auto"
-        >
-          <div className="rounded-2xl border border-white/[0.08] bg-[hsl(240,16%,8%)] shadow-2xl shadow-black/40 overflow-hidden ring-1 ring-white/[0.04]">
-            {/* Title bar */}
-            <div className="flex items-center gap-3 px-4 sm:px-5 py-2.5 border-b border-white/[0.06] bg-white/[0.02]">
-              <div className="flex gap-1.5">
-                <div className="h-2.5 w-2.5 rounded-full bg-red-500/40" />
-                <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/40" />
-                <div className="h-2.5 w-2.5 rounded-full bg-green-500/40" />
-              </div>
-              <div className="flex-1 flex justify-center">
-                <div className="text-[10px] sm:text-[11px] text-white/30 bg-white/[0.04] rounded-md px-4 py-1 border border-white/[0.06] font-mono">
-                  {activeTab === "booking" ? "cutflow.app/b/barbearia-central" : "cutflow.app/dashboard"}
+        {/* Browser window + Activity feed */}
+        <div className="flex flex-col lg:flex-row items-start gap-6 lg:gap-8 max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.15 }}
+            className="flex-1 min-w-0"
+          >
+            <div className="rounded-2xl border border-white/[0.08] bg-[hsl(240,16%,8%)] shadow-2xl shadow-black/40 overflow-hidden ring-1 ring-white/[0.04]">
+              {/* Title bar */}
+              <div className="flex items-center gap-3 px-4 sm:px-5 py-2.5 border-b border-white/[0.06] bg-white/[0.02]">
+                <div className="flex gap-1.5">
+                  <div className="h-2.5 w-2.5 rounded-full bg-red-500/40" />
+                  <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/40" />
+                  <div className="h-2.5 w-2.5 rounded-full bg-green-500/40" />
                 </div>
-              </div>
-            </div>
-
-            {/* App content */}
-            {activeTab === "booking" ? (
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <ActiveMockup />
-                </motion.div>
-              </AnimatePresence>
-            ) : (
-              <div className="flex min-h-[340px] sm:min-h-[400px]">
-                <Sidebar activeTab={activeTab} />
-                <div className="flex-1 flex flex-col min-w-0">
-                  <TopBar />
-                  <div className="flex-1 bg-[hsl(240,16%,7%)] overflow-hidden">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={activeTab}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <ActiveMockup />
-                      </motion.div>
-                    </AnimatePresence>
+                <div className="flex-1 flex justify-center">
+                  <div className="text-[10px] sm:text-[11px] text-white/30 bg-white/[0.04] rounded-md px-4 py-1 border border-white/[0.06] font-mono">
+                    {activeTab === "booking" ? "cutflow.app/b/barbearia-central" : "cutflow.app/dashboard"}
                   </div>
                 </div>
               </div>
-            )}
-          </div>
 
-          {/* Laptop base */}
-          <div className="mx-auto w-[60%] h-3 bg-gradient-to-b from-white/[0.06] to-transparent rounded-b-xl" />
-          <div className="mx-auto w-[75%] h-1.5 bg-white/[0.03] rounded-b-2xl" />
-        </motion.div>
+              {/* App content */}
+              {activeTab === "booking" ? (
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeTab}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <ActiveMockup />
+                  </motion.div>
+                </AnimatePresence>
+              ) : (
+                <div className="flex min-h-[340px] sm:min-h-[400px]">
+                  <Sidebar activeTab={activeTab} />
+                  <div className="flex-1 flex flex-col min-w-0">
+                    <TopBar />
+                    <div className="flex-1 bg-[hsl(240,16%,7%)] overflow-hidden">
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={activeTab}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -6 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <ActiveMockup />
+                        </motion.div>
+                      </AnimatePresence>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Laptop base */}
+            <div className="mx-auto w-[60%] h-3 bg-gradient-to-b from-white/[0.06] to-transparent rounded-b-xl" />
+            <div className="mx-auto w-[75%] h-1.5 bg-white/[0.03] rounded-b-2xl" />
+          </motion.div>
+
+          {/* Activity notifications */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="w-full lg:w-[280px] xl:w-[300px] shrink-0 lg:pt-10"
+          >
+            <ActivityFeed />
+          </motion.div>
+        </div>
       </div>
     </section>
   );
