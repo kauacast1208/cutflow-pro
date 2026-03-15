@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard, Building2, Users, LogOut, Shield,
+  CreditCard, FileText, Settings, Layers,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
