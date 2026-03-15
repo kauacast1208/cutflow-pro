@@ -22,13 +22,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    console.info("[Auth] Initializing auth listener...");
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.info("[Auth] onAuthStateChange:", event, session ? `user=${session.user.id}` : "no session");
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error("[Auth] getSession error:", error.message);
+      } else {
+        console.info("[Auth] getSession:", session ? `user=${session.user.id}` : "no session");
+      }
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);

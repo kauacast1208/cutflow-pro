@@ -67,6 +67,7 @@ export default function AuthCallbackPage() {
     const handleCallback = async () => {
       try {
         const { callbackError, code } = getCallbackParams();
+        console.info("[AuthCallback] Processing callback. Code present:", !!code, "Error:", callbackError || "none");
 
         if (callbackError) {
           setError(mapOAuthError(callbackError, "login"));
@@ -76,6 +77,7 @@ export default function AuthCallbackPage() {
 
         if (code) {
           const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          console.info("[AuthCallback] Code exchange result:", exchangeError ? exchangeError.message : "success");
 
           if (exchangeError) {
             const {
@@ -111,10 +113,13 @@ export default function AuthCallbackPage() {
         }
 
         if (session?.user) {
+          console.info("[AuthCallback] Session found, resolving redirect for user:", session.user.id);
           settled = true;
           await resolveRedirect(session.user.id);
           return;
         }
+
+        console.info("[AuthCallback] No session yet, waiting for auth state change...");
 
         const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
           if (!nextSession?.user || settled) return;

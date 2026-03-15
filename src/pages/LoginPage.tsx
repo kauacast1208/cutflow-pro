@@ -36,19 +36,21 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      console.info("[Login] Attempting email/password login for:", email.trim());
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
 
       if (signInError) {
-        console.error("Login error:", signInError.message, signInError.status);
+        console.error("[Login] signInWithPassword error:", signInError.message, "status:", signInError.status);
         setError(mapLoginError(signInError.message));
         setLoading(false);
         return;
       }
 
       if (data.session) {
+        console.info("[Login] Session obtained, user:", data.session.user.id);
         // Check if master user
         const { data: roleData, error: roleError } = await supabase
           .from("user_roles")
@@ -63,8 +65,10 @@ export default function LoginPage() {
         toast({ title: "Bem-vindo de volta!", description: "Login realizado com sucesso." });
 
         if (roleData?.role === "master") {
+          console.info("[Login] Redirecting to /master");
           navigate("/master", { replace: true });
         } else {
+          console.info("[Login] Redirecting to /dashboard");
           navigate("/dashboard", { replace: true });
         }
       } else {
