@@ -89,6 +89,7 @@ export default function AdminSidebar() {
   });
 
   const mainItems = visibleItems.filter((i) => i.group === "main");
+  const crmItems = visibleItems.filter((i) => i.group === "crm");
   const marketingItems = visibleItems.filter((i) => i.group === "marketing");
   const adminItems = visibleItems.filter((i) => i.group === "admin");
 
