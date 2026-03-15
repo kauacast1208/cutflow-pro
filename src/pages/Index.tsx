@@ -6,7 +6,6 @@ import { FeaturesSection } from "@/components/landing/FeaturesSection";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { WhatsAppFeatureSection } from "@/components/landing/WhatsAppFeatureSection";
 import { DemoSection } from "@/components/landing/DemoSection";
-import { LiveDemoSection } from "@/components/landing/LiveDemoSection";
 import { SocialProofSection } from "@/components/landing/SocialProofSection";
 import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 import { AboutSection } from "@/components/landing/AboutSection";
@@ -27,7 +26,6 @@ const Index = () => {
       <div id="features"><FeaturesSection /></div>
       <HowItWorksSection />
       <WhatsAppFeatureSection />
-      <LiveDemoSection />
       <DemoSection />
       <SocialProofSection />
       <TestimonialsSection />

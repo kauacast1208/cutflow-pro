@@ -6,8 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "./ThemeToggle";
 
 const links = [
-  { label: "Funcionalidades", href: "#features" },
-  { label: "Como funciona", href: "#how-it-works" },
+  { label: "Como funciona", href: "#showcase" },
   { label: "Planos", href: "#pricing" },
   { label: "FAQ", href: "#faq" },
   { label: "Agendamento", href: "/demo", isRoute: true },
