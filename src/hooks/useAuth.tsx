@@ -24,22 +24,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     console.info("[Auth] Initializing auth listener...");
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.info("[Auth] onAuthStateChange:", event, session ? `user=${session.user.id}` : "no session");
-      setSession(session);
-      setUser(session?.user ?? null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      console.info(
+        "[Auth] onAuthStateChange:",
+        event,
+        nextSession ? `user=${nextSession.user.id}` : "session=null"
+      );
+
+      setSession(nextSession);
+      setUser(nextSession?.user ?? null);
       setLoading(false);
+
+      console.info("[Auth] Loading finished via onAuthStateChange. sessionNull:", !nextSession);
     });
 
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
+    supabase.auth.getSession().then(({ data: { session: currentSession }, error }) => {
       if (error) {
         console.error("[Auth] getSession error:", error.message);
       } else {
-        console.info("[Auth] getSession:", session ? `user=${session.user.id}` : "no session");
+        console.info(
+          "[Auth] getSession result:",
+          currentSession ? `user=${currentSession.user.id}` : "session=null"
+        );
       }
-      setSession(session);
-      setUser(session?.user ?? null);
+
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
       setLoading(false);
+
+      console.info("[Auth] Loading finished via getSession. sessionNull:", !currentSession);
     });
 
     return () => subscription.unsubscribe();

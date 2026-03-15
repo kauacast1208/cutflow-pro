@@ -29,12 +29,14 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
+  const [debugRawError, setDebugRawError] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setDebugRawError("");
 
     if (!fullName.trim()) {
       setError("Informe seu nome completo.");
@@ -58,20 +60,26 @@ export default function SignupPage() {
       });
 
       if (signUpError) {
-        console.error("Signup error:", signUpError.message);
-        setError(mapSignupError(signUpError.message));
+        const rawMessage = signUpError.message || "unknown_signup_error";
+        const mappedMessage = mapSignupError(rawMessage);
+        console.error("[Signup] signUp error (raw):", rawMessage);
+        console.info("[Signup] mapped error:", mappedMessage);
+        setDebugRawError(rawMessage);
+        setError(mappedMessage);
         setLoading(false);
         return;
       }
 
-      // Existing account edge case (Supabase may return user without identities)
       if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-        setError("Este e-mail já está cadastrado. Faça login ou recupere sua senha.");
+        const rawMessage = "user_already_registered";
+        const mappedMessage = mapSignupError(rawMessage);
+        console.warn("[Signup] Existing account edge case detected.");
+        setDebugRawError(rawMessage);
+        setError(mappedMessage);
         setLoading(false);
         return;
       }
 
-      // Email confirmation required (user exists but no session)
       if (data.user && !data.session) {
         toast({
           title: "Verifique seu e-mail",
@@ -81,7 +89,6 @@ export default function SignupPage() {
         return;
       }
 
-      // Auto-confirm on: user gets session immediately
       if (data.session) {
         if (data.user?.id) {
           const { error: profileError } = await supabase
@@ -95,8 +102,9 @@ export default function SignupPage() {
             );
 
           if (profileError) {
-            console.error("Profile upsert error after signup:", profileError.message);
+            console.error("[Signup] Profile upsert error:", profileError.message);
             await supabase.auth.signOut();
+            setDebugRawError(profileError.message || "profile_upsert_failed_after_signup");
             setError("Sua conta foi criada, mas não conseguimos finalizar seu perfil agora. Faça login e tente novamente.");
             setLoading(false);
             return;
@@ -108,11 +116,19 @@ export default function SignupPage() {
         return;
       }
 
-      setError("Não foi possível concluir seu cadastro. Tente novamente.");
+      const rawMessage = "session_not_found_after_signup";
+      const mappedMessage = mapSignupError(rawMessage);
+      console.error("[Signup] Missing session and missing confirmation branch after signUp response.");
+      setDebugRawError(rawMessage);
+      setError(mappedMessage);
       setLoading(false);
     } catch (err) {
-      console.error("Signup unexpected error:", err);
-      setError(mapSignupError(err instanceof Error ? err.message : undefined));
+      const rawMessage = err instanceof Error ? err.message : "unexpected_signup_error";
+      const mappedMessage = mapSignupError(rawMessage);
+      console.error("[Signup] unexpected error (raw):", rawMessage);
+      console.info("[Signup] mapped error:", mappedMessage);
+      setDebugRawError(rawMessage);
+      setError(mappedMessage);
       setLoading(false);
     }
   };
@@ -121,16 +137,25 @@ export default function SignupPage() {
     try {
       setGoogleLoading(true);
       setError("");
+      setDebugRawError("");
 
       const oauthErrorMessage = await startGoogleOAuthFlow(`${window.location.origin}/auth/callback`);
 
       if (oauthErrorMessage) {
-        setError(oauthErrorMessage);
+        const mappedMessage = mapOAuthError(oauthErrorMessage, "signup");
+        console.error("[Signup] OAuth start error (raw):", oauthErrorMessage);
+        console.info("[Signup] OAuth mapped error:", mappedMessage);
+        setDebugRawError(oauthErrorMessage);
+        setError(mappedMessage);
         setGoogleLoading(false);
       }
     } catch (err) {
-      console.error(err);
-      setError(mapOAuthError(err instanceof Error ? err.message : undefined, "signup"));
+      const rawMessage = err instanceof Error ? err.message : "unexpected_oauth_signup_error";
+      const mappedMessage = mapOAuthError(rawMessage, "signup");
+      console.error("[Signup] OAuth unexpected error (raw):", rawMessage);
+      console.info("[Signup] OAuth mapped error:", mappedMessage);
+      setDebugRawError(rawMessage);
+      setError(mappedMessage);
       setGoogleLoading(false);
     }
   };
@@ -201,7 +226,11 @@ export default function SignupPage() {
                     type="text"
                     placeholder="João da Silva"
                     value={fullName}
-                    onChange={(e) => { setFullName(e.target.value); setError(""); }}
+                    onChange={(e) => {
+                      setFullName(e.target.value);
+                      setError("");
+                      setDebugRawError("");
+                    }}
                     required
                     autoComplete="name"
                     className={cn(
@@ -225,7 +254,11 @@ export default function SignupPage() {
                     type="email"
                     placeholder="seu@email.com"
                     value={email}
-                    onChange={(e) => { setEmail(e.target.value); setError(""); }}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setError("");
+                      setDebugRawError("");
+                    }}
                     required
                     autoComplete="email"
                     className={cn(
@@ -249,7 +282,11 @@ export default function SignupPage() {
                     type={showPassword ? "text" : "password"}
                     placeholder="Mínimo 6 caracteres"
                     value={password}
-                    onChange={(e) => { setPassword(e.target.value); setError(""); }}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setError("");
+                      setDebugRawError("");
+                    }}
                     required
                     autoComplete="new-password"
                     className={cn(
@@ -272,6 +309,11 @@ export default function SignupPage() {
               </div>
 
               <AuthError message={error} />
+              {debugRawError && (
+                <p className="text-xs text-muted-foreground break-all" aria-live="polite">
+                  Detalhe técnico: {debugRawError}
+                </p>
+              )}
 
               <button
                 type="submit"
