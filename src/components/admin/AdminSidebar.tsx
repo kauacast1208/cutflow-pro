@@ -166,6 +166,7 @@ export default function AdminSidebar() {
         )}
 
         {renderGroup("Principal", mainItems)}
+        {renderGroup("CRM", crmItems)}
         {renderGroup("Marketing", marketingItems)}
         {renderGroup("Administração", adminItems)}
 
