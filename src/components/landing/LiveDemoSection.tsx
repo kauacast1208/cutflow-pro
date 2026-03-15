@@ -18,6 +18,7 @@ import {
   ChevronRight,
   LayoutDashboard,
 } from "lucide-react";
+import { IPhoneLockScreen } from "./IPhoneLockScreen";
 
 const notifications = [
   {
@@ -82,7 +83,6 @@ function MiniDashboard() {
 
   return (
     <div className="flex h-full bg-background rounded-lg overflow-hidden">
-      {/* Sidebar */}
       <div className="hidden sm:flex flex-col w-[140px] border-r border-border bg-muted/20 py-3 px-2 shrink-0">
         <div className="flex items-center gap-1.5 px-2 mb-3">
           <div className="h-5 w-5 rounded-md bg-primary flex items-center justify-center">
@@ -95,9 +95,7 @@ function MiniDashboard() {
             <div
               key={item.label}
               className={`flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[9px] font-medium ${
-                item.active
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground"
+                item.active ? "bg-primary/10 text-primary" : "text-muted-foreground"
               }`}
             >
               <item.icon className="h-3 w-3" />
@@ -107,9 +105,7 @@ function MiniDashboard() {
         </div>
       </div>
 
-      {/* Main content */}
       <div className="flex-1 min-w-0">
-        {/* Topbar */}
         <div className="flex items-center justify-between px-3 py-2 border-b border-border">
           <div className="flex items-center gap-1.5 bg-muted/40 rounded-md px-2 py-1 text-[8px] text-muted-foreground w-28">
             <Search className="h-2.5 w-2.5" />
@@ -126,16 +122,12 @@ function MiniDashboard() {
           </div>
         </div>
 
-        {/* Dashboard content */}
         <div className="p-3 space-y-2.5">
           <div>
             <p className="text-[10px] font-semibold">Bom dia, Carlos 👋</p>
-            <p className="text-[8px] text-muted-foreground">
-              Terça-feira, 11 de março de 2026
-            </p>
+            <p className="text-[8px] text-muted-foreground">Terça-feira, 11 de março de 2026</p>
           </div>
 
-          {/* Metric cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
             {[
               { label: "Agendamentos", value: "12", icon: Calendar, accent: "text-primary" },
@@ -156,7 +148,6 @@ function MiniDashboard() {
             ))}
           </div>
 
-          {/* Upcoming */}
           <div className="rounded-lg border border-border p-2.5">
             <div className="flex items-center justify-between mb-2">
               <p className="text-[9px] font-semibold">Próximos agendamentos</p>
@@ -190,9 +181,7 @@ export function LiveDemoSection() {
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTick((prev) => prev + 1);
-    }, 3500);
+    const interval = setInterval(() => setTick((prev) => prev + 1), 3500);
     return () => clearInterval(interval);
   }, []);
 
@@ -243,7 +232,7 @@ export function LiveDemoSection() {
           </motion.p>
         </div>
 
-        {/* Laptop + Notifications */}
+        {/* Laptop + Phone */}
         <motion.div
           initial={{ opacity: 0, y: 32 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -251,12 +240,10 @@ export function LiveDemoSection() {
           transition={{ duration: 0.6 }}
           className="relative"
         >
-          <div className="flex flex-col lg:flex-row items-start gap-6 lg:gap-8">
+          <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6 lg:gap-0">
             {/* Laptop mockup */}
-            <div className="flex-1 w-full">
-              {/* Screen bezel */}
+            <div className="flex-1 w-full lg:pr-4">
               <div className="rounded-xl sm:rounded-2xl border-2 border-border/80 bg-card shadow-elevated overflow-hidden">
-                {/* Browser chrome */}
                 <div className="flex items-center gap-2 px-3 py-2 bg-muted/40 border-b border-border">
                   <div className="flex gap-1.5">
                     <div className="h-2.5 w-2.5 rounded-full bg-destructive/40" />
@@ -269,78 +256,122 @@ export function LiveDemoSection() {
                     </div>
                   </div>
                 </div>
-
-                {/* Dashboard content */}
                 <div className="h-[280px] sm:h-[340px] overflow-hidden">
                   <MiniDashboard />
                 </div>
               </div>
-
-              {/* Laptop base */}
               <div className="mx-auto w-[60%] h-3 bg-gradient-to-b from-border/60 to-border/30 rounded-b-xl" />
               <div className="mx-auto w-[75%] h-1.5 bg-border/20 rounded-b-2xl" />
             </div>
 
-            {/* Floating notifications */}
-            <div className="w-full lg:w-[280px] xl:w-[300px] shrink-0 flex flex-col gap-3 lg:pt-8">
-              <AnimatePresence mode="popLayout">
-                {visibleNotifs.map((idx, position) => {
-                  const notif = notifications[idx];
-                  const Icon = notif.icon;
-                  return (
-                    <motion.div
-                      key={`${idx}-${tick}-${position}`}
-                      initial={{ opacity: 0, x: 20, scale: 0.95 }}
-                      animate={{ opacity: 1, x: 0, scale: 1 }}
-                      exit={{ opacity: 0, x: -10, scale: 0.95 }}
-                      transition={{ duration: 0.35, delay: position * 0.08 }}
-                      className="relative group"
-                    >
-                      {/* Glow border */}
-                      <div className={`absolute -inset-px rounded-xl bg-gradient-to-r ${notif.glow} opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm`} />
+            {/* Premium 3D Phone */}
+            <motion.div
+              initial={{ opacity: 0, y: 40, rotateY: -8 }}
+              whileInView={{ opacity: 1, y: 0, rotateY: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="relative lg:-ml-16 lg:mt-8 shrink-0"
+              style={{ perspective: "1200px" }}
+            >
+              {/* Ambient glow behind phone */}
+              <div className="absolute -inset-8 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.12),transparent_70%)] blur-2xl pointer-events-none" />
+              <div className="absolute -inset-12 bg-[radial-gradient(ellipse_at_bottom,hsl(270,40%,30%,0.08),transparent_70%)] blur-3xl pointer-events-none" />
 
-                      {/* Card */}
-                      <div className="relative rounded-xl bg-card/80 dark:bg-card/60 backdrop-blur-xl border border-border/50 dark:border-border/30 px-3.5 py-3 flex items-start gap-3 shadow-card">
-                        <div className={`mt-0.5 ${notif.iconColor}`}>
-                          <Icon className="h-4 w-4" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[12px] font-medium text-foreground leading-snug">
-                            {notif.title}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">
-                            {notif.shop}{" "}
-                            <span className="text-muted-foreground/50">
-                              — {notif.time}
-                            </span>
-                          </p>
-                        </div>
-                        <div className="mt-1">
-                          <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-40" />
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary/60" />
-                          </span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
-
-              {/* Activity counter */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.5 }}
-                className="text-center lg:text-left mt-1"
+              {/* Phone container with 3D tilt */}
+              <div
+                className="relative"
+                style={{
+                  transform: "rotateY(-6deg) rotateX(2deg) rotateZ(1deg)",
+                  transformStyle: "preserve-3d",
+                }}
               >
-                <p className="text-[11px] text-muted-foreground/60">
-                  <span className="text-primary font-semibold">+2.400</span>{" "}
-                  agendamentos esta semana
-                </p>
-              </motion.div>
-            </div>
+                {/* Phone frame */}
+                <div className="relative w-[220px] sm:w-[260px] rounded-[2.2rem] overflow-hidden shadow-[0_20px_80px_-12px_rgba(0,0,0,0.5),0_8px_24px_-8px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)]">
+                  {/* Outer bezel */}
+                  <div className="absolute inset-0 rounded-[2.2rem] bg-gradient-to-b from-[hsl(220,15%,18%)] via-[hsl(220,15%,12%)] to-[hsl(220,15%,8%)]" />
+
+                  {/* Side button highlights */}
+                  <div className="absolute top-[80px] -right-[1px] w-[2px] h-[40px] bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-transparent rounded-full" />
+                  <div className="absolute top-[60px] -left-[1px] w-[2px] h-[24px] bg-gradient-to-b from-white/[0.06] via-white/[0.02] to-transparent rounded-full" />
+                  <div className="absolute top-[95px] -left-[1px] w-[2px] h-[36px] bg-gradient-to-b from-white/[0.06] via-white/[0.02] to-transparent rounded-full" />
+
+                  {/* Inner bezel ring */}
+                  <div className="absolute inset-[2px] rounded-[2rem] border border-white/[0.04]" />
+
+                  {/* Screen area */}
+                  <div className="relative m-[6px] rounded-[1.8rem] overflow-hidden">
+                    {/* Dynamic Island */}
+                    <div className="absolute top-2.5 left-1/2 -translate-x-1/2 z-30">
+                      <div className="w-[72px] h-[20px] bg-black rounded-full flex items-center justify-center gap-2">
+                        <div className="w-[6px] h-[6px] rounded-full bg-[hsl(220,15%,15%)] ring-1 ring-[hsl(220,15%,20%)]" />
+                      </div>
+                    </div>
+
+                    {/* Screen content */}
+                    <div className="aspect-[9/19.2]">
+                      <IPhoneLockScreen />
+                    </div>
+
+                    {/* Screen glare */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] via-transparent to-transparent pointer-events-none rounded-[1.8rem]" />
+                  </div>
+                </div>
+
+                {/* Reflection on surface */}
+                <div className="absolute -bottom-6 left-4 right-4 h-12 bg-gradient-to-b from-primary/[0.04] to-transparent blur-xl opacity-60 pointer-events-none" />
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Floating notification cards (desktop only) */}
+          <div className="hidden xl:flex absolute -right-4 top-8 w-[260px] flex-col gap-3">
+            <AnimatePresence mode="popLayout">
+              {visibleNotifs.map((idx, position) => {
+                const notif = notifications[idx];
+                const Icon = notif.icon;
+                return (
+                  <motion.div
+                    key={`${idx}-${tick}-${position}`}
+                    initial={{ opacity: 0, x: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    exit={{ opacity: 0, x: -10, scale: 0.95 }}
+                    transition={{ duration: 0.35, delay: position * 0.08 }}
+                    className="relative group"
+                  >
+                    <div className={`absolute -inset-px rounded-xl bg-gradient-to-r ${notif.glow} opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm`} />
+                    <div className="relative rounded-xl bg-card/80 backdrop-blur-xl border border-border/50 px-3.5 py-3 flex items-start gap-3 shadow-card">
+                      <div className={`mt-0.5 ${notif.iconColor}`}>
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[12px] font-medium text-foreground leading-snug">{notif.title}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          {notif.shop} <span className="text-muted-foreground/50">— {notif.time}</span>
+                        </p>
+                      </div>
+                      <div className="mt-1">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-40" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-primary/60" />
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.5 }}
+              className="text-left mt-1"
+            >
+              <p className="text-[11px] text-muted-foreground/60">
+                <span className="text-primary font-semibold">+2.400</span> agendamentos esta semana
+              </p>
+            </motion.div>
           </div>
         </motion.div>
       </div>
