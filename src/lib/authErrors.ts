@@ -28,6 +28,10 @@ export function mapLoginError(rawMessage?: string | null): string {
     return "Falha de conexão. Verifique sua internet e tente novamente.";
   }
 
+  if (rawMessage?.trim()) {
+    return `Não foi possível fazer login agora. Detalhe: ${rawMessage}`;
+  }
+
   return "Não foi possível fazer login agora. Tente novamente em instantes.";
 }
 
