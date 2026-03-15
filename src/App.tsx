@@ -93,10 +93,20 @@ function TenantGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/** Guard for Master-only routes */
+function MasterGuard({ children }: { children: React.ReactNode }) {
+  const { isMaster, loading } = useMasterRole();
+  if (loading) return <FullScreenLoader />;
+  if (!isMaster) return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
+}
+
 /** Redirects authenticated users away from login/signup */
 function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  if (loading) return <FullScreenLoader />;
+  const { isMaster, loading: masterLoading } = useMasterRole();
+  if (loading || masterLoading) return <FullScreenLoader />;
+  if (user && isMaster) return <Navigate to="/master" replace />;
   if (user) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 }
