@@ -39,27 +39,56 @@ export default function ResetPasswordPage() {
       }
     };
 
+    const markSessionError = (message: string) => {
+      if (!mounted) return;
+      setSessionErrorMessage(message);
+      setSessionError(true);
+    };
+
     // Listen for PASSWORD_RECOVERY or SIGNED_IN events from the recovery link
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
-      if (event === "PASSWORD_RECOVERY" && session) {
-        markReady();
-      } else if (event === "SIGNED_IN" && session) {
+      if ((event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") && session) {
         markReady();
       }
     });
 
-    // Check if a session already exists (e.g., page was reloaded after token was consumed)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (mounted && session) {
+    const bootstrapRecoverySession = async () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+
+      const callbackError =
+        searchParams.get("error_description") ||
+        hashParams.get("error_description") ||
+        searchParams.get("error") ||
+        hashParams.get("error");
+
+      if (callbackError) {
+        markSessionError(mapResetPasswordError(callbackError));
+        return;
+      }
+
+      const code = searchParams.get("code");
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          markSessionError(mapResetPasswordError(error.message));
+          return;
+        }
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
         markReady();
       }
-    });
+    };
+
+    void bootstrapRecoverySession();
 
     // Timeout: if no session after 10s, the link is expired/invalid
     const timeout = setTimeout(() => {
       if (mounted && !sessionReadyRef.current) {
-        setSessionError(true);
+        markSessionError("Sessão de recuperação não encontrada. Solicite um novo link.");
       }
     }, 10000);
 
