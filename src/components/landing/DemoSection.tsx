@@ -509,6 +509,77 @@ const mockups: Record<string, () => JSX.Element> = {
   booking: BookingMockup,
 };
 
+const activityNotifications = [
+  { icon: Calendar, title: "Novo agendamento criado", shop: "Barbearia Prime", time: "agora", iconColor: "text-emerald-400" },
+  { icon: CheckCircle2, title: "Cliente confirmou horário", shop: "Dom H Barber", time: "2 min atrás", iconColor: "text-emerald-400" },
+  { icon: Clock, title: "Horário liberado às 19:00", shop: "Elite Barber", time: "agora", iconColor: "text-blue-400" },
+  { icon: Bell, title: "Lembrete enviado no WhatsApp", shop: "Black Zone Barber", time: "3 min atrás", iconColor: "text-teal-400" },
+  { icon: Calendar, title: "Novo horário disponível", shop: "Barbearia Central", time: "1 min atrás", iconColor: "text-purple-400" },
+  { icon: Calendar, title: "Novo agendamento criado", shop: "Barber Club", time: "agora", iconColor: "text-emerald-400" },
+  { icon: CheckCircle2, title: "Cliente confirmou horário", shop: "Studio Corte", time: "4 min atrás", iconColor: "text-emerald-400" },
+];
+
+function ActivityFeed() {
+  const [visibleNotifs, setVisibleNotifs] = useState<number[]>([0, 1, 2]);
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick((prev) => prev + 1);
+    }, 3200);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const start = tick % activityNotifications.length;
+    setVisibleNotifs([0, 1, 2].map((offset) => (start + offset) % activityNotifications.length));
+  }, [tick]);
+
+  return (
+    <div className="flex flex-col gap-2.5">
+      <AnimatePresence mode="popLayout">
+        {visibleNotifs.map((idx, position) => {
+          const notif = activityNotifications[idx];
+          const Icon = notif.icon;
+          return (
+            <motion.div
+              key={`${idx}-${tick}-${position}`}
+              initial={{ opacity: 0, y: -20, x: 10, scale: 0.92 }}
+              animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.92 }}
+              transition={{ duration: 0.4, delay: position * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="group relative"
+            >
+              {/* Glow */}
+              <div className="absolute -inset-px rounded-xl bg-gradient-to-r from-purple-500/20 via-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+              
+              <div className="relative rounded-xl bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] px-3.5 py-3 flex items-start gap-3 shadow-lg shadow-black/20">
+                <div className={`mt-0.5 ${notif.iconColor}`}>
+                  <Icon className="h-4 w-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] font-medium text-white/90 leading-snug">{notif.title}</p>
+                  <p className="text-[10px] text-white/40 mt-0.5">
+                    {notif.shop} <span className="text-white/20">— {notif.time}</span>
+                  </p>
+                </div>
+                <span className="relative flex h-2 w-2 mt-1.5 shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-40" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400/60" />
+                </span>
+              </div>
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
+
+      <p className="text-[11px] text-white/30 mt-1 text-center lg:text-left">
+        <span className="text-emerald-400 font-semibold">+2.400</span> agendamentos esta semana
+      </p>
+    </div>
+  );
+}
+
 export function DemoSection() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -654,69 +725,82 @@ export function DemoSection() {
           </div>
         </div>
 
-        {/* Browser window */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.15 }}
-          className="max-w-5xl mx-auto"
-        >
-          <div className="rounded-2xl border border-white/[0.08] bg-[hsl(240,16%,8%)] shadow-2xl shadow-black/40 overflow-hidden ring-1 ring-white/[0.04]">
-            {/* Title bar */}
-            <div className="flex items-center gap-3 px-4 sm:px-5 py-2.5 border-b border-white/[0.06] bg-white/[0.02]">
-              <div className="flex gap-1.5">
-                <div className="h-2.5 w-2.5 rounded-full bg-red-500/40" />
-                <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/40" />
-                <div className="h-2.5 w-2.5 rounded-full bg-green-500/40" />
-              </div>
-              <div className="flex-1 flex justify-center">
-                <div className="text-[10px] sm:text-[11px] text-white/30 bg-white/[0.04] rounded-md px-4 py-1 border border-white/[0.06] font-mono">
-                  {activeTab === "booking" ? "cutflow.app/b/barbearia-central" : "cutflow.app/dashboard"}
+        {/* Browser window + Activity feed */}
+        <div className="flex flex-col lg:flex-row items-start gap-6 lg:gap-8 max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.15 }}
+            className="flex-1 min-w-0"
+          >
+            <div className="rounded-2xl border border-white/[0.08] bg-[hsl(240,16%,8%)] shadow-2xl shadow-black/40 overflow-hidden ring-1 ring-white/[0.04]">
+              {/* Title bar */}
+              <div className="flex items-center gap-3 px-4 sm:px-5 py-2.5 border-b border-white/[0.06] bg-white/[0.02]">
+                <div className="flex gap-1.5">
+                  <div className="h-2.5 w-2.5 rounded-full bg-red-500/40" />
+                  <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/40" />
+                  <div className="h-2.5 w-2.5 rounded-full bg-green-500/40" />
                 </div>
-              </div>
-            </div>
-
-            {/* App content */}
-            {activeTab === "booking" ? (
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <ActiveMockup />
-                </motion.div>
-              </AnimatePresence>
-            ) : (
-              <div className="flex min-h-[340px] sm:min-h-[400px]">
-                <Sidebar activeTab={activeTab} />
-                <div className="flex-1 flex flex-col min-w-0">
-                  <TopBar />
-                  <div className="flex-1 bg-[hsl(240,16%,7%)] overflow-hidden">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={activeTab}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <ActiveMockup />
-                      </motion.div>
-                    </AnimatePresence>
+                <div className="flex-1 flex justify-center">
+                  <div className="text-[10px] sm:text-[11px] text-white/30 bg-white/[0.04] rounded-md px-4 py-1 border border-white/[0.06] font-mono">
+                    {activeTab === "booking" ? "cutflow.app/b/barbearia-central" : "cutflow.app/dashboard"}
                   </div>
                 </div>
               </div>
-            )}
-          </div>
 
-          {/* Laptop base */}
-          <div className="mx-auto w-[60%] h-3 bg-gradient-to-b from-white/[0.06] to-transparent rounded-b-xl" />
-          <div className="mx-auto w-[75%] h-1.5 bg-white/[0.03] rounded-b-2xl" />
-        </motion.div>
+              {/* App content */}
+              {activeTab === "booking" ? (
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeTab}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <ActiveMockup />
+                  </motion.div>
+                </AnimatePresence>
+              ) : (
+                <div className="flex min-h-[340px] sm:min-h-[400px]">
+                  <Sidebar activeTab={activeTab} />
+                  <div className="flex-1 flex flex-col min-w-0">
+                    <TopBar />
+                    <div className="flex-1 bg-[hsl(240,16%,7%)] overflow-hidden">
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={activeTab}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -6 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <ActiveMockup />
+                        </motion.div>
+                      </AnimatePresence>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Laptop base */}
+            <div className="mx-auto w-[60%] h-3 bg-gradient-to-b from-white/[0.06] to-transparent rounded-b-xl" />
+            <div className="mx-auto w-[75%] h-1.5 bg-white/[0.03] rounded-b-2xl" />
+          </motion.div>
+
+          {/* Activity notifications */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="w-full lg:w-[280px] xl:w-[300px] shrink-0 lg:pt-10"
+          >
+            <ActivityFeed />
+          </motion.div>
+        </div>
       </div>
     </section>
   );
