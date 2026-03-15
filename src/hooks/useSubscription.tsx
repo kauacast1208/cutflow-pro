@@ -4,7 +4,7 @@ import { useBarbershop } from "./useBarbershop";
 import { useAuth } from "./useAuth";
 
 export type SubscriptionStatus = "trial" | "active" | "past_due" | "cancelled" | "expired";
-export type SubscriptionPlan = "starter" | "pro" | "premium";
+export type SubscriptionPlan = "starter" | "pro" | "premium" | "franquias";
 
 export interface Subscription {
   id: string;
