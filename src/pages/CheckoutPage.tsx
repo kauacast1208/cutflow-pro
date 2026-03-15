@@ -16,6 +16,7 @@ const planIcons: Record<StripePlanKey, React.ReactNode> = {
   starter: <Zap className="h-5 w-5" />,
   pro: <Sparkles className="h-5 w-5" />,
   premium: <Crown className="h-5 w-5" />,
+  franquias: <Shield className="h-5 w-5" />,
 };
 
 const benefits = [
