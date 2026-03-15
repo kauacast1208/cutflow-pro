@@ -50,6 +50,7 @@ export default function LoginPage() {
       }
 
       if (data.session) {
+        console.info("[Login] Session obtained, user:", data.session.user.id);
         // Check if master user
         const { data: roleData, error: roleError } = await supabase
           .from("user_roles")
