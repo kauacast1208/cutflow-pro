@@ -47,6 +47,7 @@ import MarketingOverviewPage from "./pages/dashboard/MarketingOverviewPage";
 import BirthdaysPage from "./pages/dashboard/BirthdaysPage";
 import LoyaltyPage from "./pages/dashboard/LoyaltyPage";
 import RetentionPage from "./pages/dashboard/RetentionPage";
+import CRMPage from "./pages/dashboard/CRMPage";
 import { Loader2 } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 
