@@ -67,16 +67,10 @@ export default function LoginPage() {
       setGoogleLoading(true);
       setError("");
 
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
+      const oauthErrorMessage = await startGoogleOAuthFlow(`${window.location.origin}/auth/callback`);
 
-      if (oauthError) {
-        console.error("Erro no login com Google:", oauthError);
-        setError(mapOAuthError(oauthError.message, "login"));
+      if (oauthErrorMessage) {
+        setError(oauthErrorMessage);
         setGoogleLoading(false);
       }
     } catch (err) {

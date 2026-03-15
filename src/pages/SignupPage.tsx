@@ -102,16 +102,10 @@ export default function SignupPage() {
       setGoogleLoading(true);
       setError("");
 
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
+      const oauthErrorMessage = await startGoogleOAuthFlow(`${window.location.origin}/auth/callback`);
 
-      if (oauthError) {
-        console.error("Erro no signup com Google:", oauthError);
-        setError(mapOAuthError(oauthError.message, "signup"));
+      if (oauthErrorMessage) {
+        setError(oauthErrorMessage);
         setGoogleLoading(false);
       }
     } catch (err) {
