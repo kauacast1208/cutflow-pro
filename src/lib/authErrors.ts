@@ -4,15 +4,34 @@ function hasAny(msg: string, terms: string[]) {
   return terms.some((term) => msg.includes(term));
 }
 
-export function isInvalidApiKeyMessage(message?: string | null): boolean {
+function hasAuthClientEnvConfig(): boolean {
+  const url = import.meta.env.VITE_SUPABASE_URL;
+  const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
+  return Boolean(url && key);
+}
+
+export function isAuthConfigurationError(message?: string | null): boolean {
   const msg = normalize(message);
-  return hasAny(msg, ["invalid api key", "invalid apikey"]);
+
+  if (!hasAuthClientEnvConfig()) return true;
+
+  return hasAny(msg, [
+    "supabaseurl is required",
+    "supabasekey is required",
+    "supabase url is required",
+    "supabase key is required",
+  ]);
+}
+
+// Backward-compatible alias used by existing screens.
+export function isInvalidApiKeyMessage(message?: string | null): boolean {
+  return isAuthConfigurationError(message);
 }
 
 export function mapLoginError(rawMessage?: string | null): string {
   const msg = normalize(rawMessage);
 
-  if (isInvalidApiKeyMessage(rawMessage)) {
+  if (isAuthConfigurationError(rawMessage)) {
     return "Erro de configuração da autenticação. Recarregue a página e tente novamente.";
   }
   if (hasAny(msg, ["invalid login credentials", "invalid_credentials"])) {
@@ -28,17 +47,13 @@ export function mapLoginError(rawMessage?: string | null): string {
     return "Falha de conexão. Verifique sua internet e tente novamente.";
   }
 
-  if (rawMessage?.trim()) {
-    return `Não foi possível fazer login agora. Detalhe: ${rawMessage}`;
-  }
-
   return "Não foi possível fazer login agora. Tente novamente em instantes.";
 }
 
 export function mapSignupError(rawMessage?: string | null): string {
   const msg = normalize(rawMessage);
 
-  if (isInvalidApiKeyMessage(rawMessage)) {
+  if (isAuthConfigurationError(rawMessage)) {
     return "Erro de configuração da autenticação. Recarregue a página e tente novamente.";
   }
   if (hasAny(msg, ["already registered", "already been registered", "user already registered"])) {
@@ -60,17 +75,13 @@ export function mapSignupError(rawMessage?: string | null): string {
     return "A senha deve ter pelo menos 6 caracteres.";
   }
 
-  if (rawMessage?.trim()) {
-    return `Não foi possível criar sua conta agora. Detalhe: ${rawMessage}`;
-  }
-
   return "Não foi possível criar sua conta agora. Tente novamente.";
 }
 
 export function mapOAuthError(rawMessage?: string | null, mode: "login" | "signup" = "login"): string {
   const msg = normalize(rawMessage);
 
-  if (isInvalidApiKeyMessage(rawMessage)) {
+  if (isAuthConfigurationError(rawMessage)) {
     return "Erro de configuração da autenticação. Recarregue a página e tente novamente.";
   }
 
@@ -86,25 +97,17 @@ export function mapOAuthError(rawMessage?: string | null, mode: "login" | "signu
     return "Não foi possível continuar com Google. Tente usar e-mail e senha.";
   }
 
-  if (rawMessage?.trim()) {
-    return `Não foi possível entrar com Google. Detalhe: ${rawMessage}`;
-  }
-
   return "Não foi possível entrar com Google. Tente usar e-mail e senha.";
 }
 
 export function mapPasswordRecoveryRequestError(rawMessage?: string | null): string {
   const msg = normalize(rawMessage);
 
-  if (isInvalidApiKeyMessage(rawMessage)) {
+  if (isAuthConfigurationError(rawMessage)) {
     return "Erro de configuração da autenticação. Recarregue a página e tente novamente.";
   }
   if (hasAny(msg, ["too many requests", "rate limit", "rate_limit"])) {
     return "Você solicitou muitos links em pouco tempo. Aguarde alguns minutos.";
-  }
-
-  if (rawMessage?.trim()) {
-    return `Não foi possível enviar o link agora. Detalhe: ${rawMessage}`;
   }
 
   return "Não foi possível enviar o link agora. Tente novamente.";
@@ -121,10 +124,6 @@ export function mapResetPasswordError(rawMessage?: string | null): string {
   }
   if (msg.includes("weak password")) {
     return "Sua nova senha está fraca. Use uma senha mais forte.";
-  }
-
-  if (rawMessage?.trim()) {
-    return `Não foi possível redefinir a senha. Detalhe: ${rawMessage}`;
   }
 
   return "Não foi possível redefinir a senha. Solicite um novo link.";

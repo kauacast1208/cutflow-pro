@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { isInvalidApiKeyMessage, mapOAuthError } from "@/lib/authErrors";
+import { isAuthConfigurationError, mapOAuthError } from "@/lib/authErrors";
 import { Loader2, Scissors } from "lucide-react";
 
 export default function AuthCallbackPage() {
@@ -14,7 +14,6 @@ export default function AuthCallbackPage() {
     let authSubscription: { unsubscribe: () => void } | null = null;
 
     const resolveRedirect = async (userId: string) => {
-      // Check if master user
       const { data: roleData } = await supabase
         .from("user_roles")
         .select("role")
@@ -26,7 +25,6 @@ export default function AuthCallbackPage() {
         return;
       }
 
-      // Check if user has a barbershop (completed onboarding)
       const { data: barbershop } = await supabase
         .from("barbershops")
         .select("id")
@@ -38,7 +36,6 @@ export default function AuthCallbackPage() {
         return;
       }
 
-      // Check if user is a linked professional
       const { data: pro } = await supabase
         .from("professionals")
         .select("barbershop_id")
@@ -79,14 +76,24 @@ export default function AuthCallbackPage() {
 
         if (code) {
           const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+
           if (exchangeError) {
+            const {
+              data: { session: existingSession },
+            } = await supabase.auth.getSession();
+
+            if (existingSession?.user) {
+              settled = true;
+              await resolveRedirect(existingSession.user.id);
+              return;
+            }
+
             setError(mapOAuthError(exchangeError.message, "login"));
             setTimeout(() => navigate("/login", { replace: true }), 2000);
             return;
           }
         }
 
-        // Wait for auth state to settle after OAuth/email-confirm redirect
         const {
           data: { session },
           error: sessionError,
@@ -95,7 +102,7 @@ export default function AuthCallbackPage() {
         if (sessionError) {
           console.error("Auth callback session error:", sessionError.message);
           setError(
-            isInvalidApiKeyMessage(sessionError.message)
+            isAuthConfigurationError(sessionError.message)
               ? "Erro de configuração da autenticação. Recarregue a página e tente novamente."
               : "Erro ao autenticar. Tente novamente."
           );
@@ -120,7 +127,6 @@ export default function AuthCallbackPage() {
 
         authSubscription = data.subscription;
 
-        // Timeout after 8 seconds
         timeoutId = setTimeout(() => {
           if (settled) return;
 
@@ -132,7 +138,7 @@ export default function AuthCallbackPage() {
       } catch (err) {
         const rawMessage = err instanceof Error ? err.message : undefined;
         setError(
-          isInvalidApiKeyMessage(rawMessage)
+          isAuthConfigurationError(rawMessage)
             ? "Erro de configuração da autenticação. Recarregue a página e tente novamente."
             : "Erro inesperado. Redirecionando..."
         );
