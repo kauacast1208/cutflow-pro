@@ -23,6 +23,7 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
   const [sessionError, setSessionError] = useState(false);
+  const [sessionErrorMessage, setSessionErrorMessage] = useState("");
   const [success, setSuccess] = useState(false);
   const [formError, setFormError] = useState("");
   const sessionReadyRef = useRef(false);
