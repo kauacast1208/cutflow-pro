@@ -8,7 +8,7 @@ import {
 import {
   LayoutDashboard, Calendar, Users, UserCog, DollarSign, BarChart3,
   Settings, Scissors, LogOut, ExternalLink, Copy, Lock, Megaphone,
-  Mail, UserPlus, Gift, Zap, UserX, Cake, Trophy, Heart, Clock, HeartHandshake,
+  Mail, UserPlus, Gift, Zap, UserX, Cake, Trophy, Heart, Clock, HeartHandshake, Building2,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useBarbershop } from "@/hooks/useBarbershop";
