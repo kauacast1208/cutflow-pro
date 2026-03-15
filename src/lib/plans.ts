@@ -223,7 +223,7 @@ export const resourceLabels: Record<PlanResource, string> = {
 
 /** Get the minimum plan required for a feature */
 export function getMinPlanForFeature(feature: PlanFeature): PlanTier {
-  const tiers: PlanTier[] = ["starter", "pro", "premium", "franquias"];
+  const tiers: PlanTier[] = ["starter", "pro", "premium", "franquias", "enterprise"];
   for (const tier of tiers) {
     if (planConfig[tier].features.includes(feature)) return tier;
   }
