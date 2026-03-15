@@ -24,7 +24,7 @@ export function mapLoginError(rawMessage?: string | null): string {
   if (hasAny(msg, ["too many requests", "rate limit", "rate_limit"])) {
     return "Muitas tentativas. Aguarde alguns minutos e tente novamente.";
   }
-  if (hasAny(msg, ["network", "failed to fetch", "fetch"]))) {
+  if (hasAny(msg, ["network", "failed to fetch", "fetch"])) {
     return "Falha de conexão. Verifique sua internet e tente novamente.";
   }
 
