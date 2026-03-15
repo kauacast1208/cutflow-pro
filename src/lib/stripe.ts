@@ -48,6 +48,20 @@ export const STRIPE_PLANS = {
       "Relatórios estratégicos",
     ],
   },
+  franquias: {
+    priceId: "", // To be configured
+    name: "Franquias",
+    price: 349,
+    description: "Para redes e franquias com múltiplas unidades.",
+    features: [
+      "Múltiplas unidades",
+      "Tudo do Premium",
+      "Gestão centralizada",
+      "Relatórios por unidade",
+      "Visão consolidada",
+      "Gerente de conta dedicado",
+    ],
+  },
 } as const;
 
 export type StripePlanKey = keyof typeof STRIPE_PLANS;
