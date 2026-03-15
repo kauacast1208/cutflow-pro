@@ -52,6 +52,14 @@ import BirthdaysPage from "./pages/dashboard/BirthdaysPage";
 import LoyaltyPage from "./pages/dashboard/LoyaltyPage";
 import RetentionPage from "./pages/dashboard/RetentionPage";
 import CRMPage from "./pages/dashboard/CRMPage";
+import FranchiseLayout from "./components/franchise/FranchiseLayout";
+import FranchiseDashboard from "./pages/franchise/FranchiseDashboard";
+import FranchiseUnitsPage from "./pages/franchise/FranchiseUnitsPage";
+import FranchiseProfessionalsPage from "./pages/franchise/FranchiseProfessionalsPage";
+import FranchiseServicesPage from "./pages/franchise/FranchiseServicesPage";
+import FranchiseFinancePage from "./pages/franchise/FranchiseFinancePage";
+import FranchiseReportsPage from "./pages/franchise/FranchiseReportsPage";
+import FranchiseSettingsPage from "./pages/franchise/FranchiseSettingsPage";
 import { Loader2 } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 
@@ -103,6 +111,15 @@ function MasterGuard({ children }: { children: React.ReactNode }) {
   const { isMaster, loading } = useMasterRole();
   if (loading) return <FullScreenLoader />;
   if (!isMaster) return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
+}
+
+/** Guard for Franquias routes — requires franquias plan */
+function FranchiseGuard({ children }: { children: React.ReactNode }) {
+  const { subscription, loading } = useSubscription();
+  const { status } = useTenant();
+  if (loading || status === "loading") return <FullScreenLoader />;
+  if (subscription?.plan !== "franquias") return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 }
 
@@ -172,6 +189,27 @@ const AppRoutes = () => (
       <Route path="loyalty" element={<LoyaltyPage />} />
       <Route path="retention" element={<RetentionPage />} />
       <Route path="crm" element={<CRMPage />} />
+    </Route>
+    {/* Franquias routes */}
+    <Route
+      path="/franquias"
+      element={
+        <ProtectedRoute>
+          <TenantGuard>
+            <FranchiseGuard>
+              <FranchiseLayout />
+            </FranchiseGuard>
+          </TenantGuard>
+        </ProtectedRoute>
+      }
+    >
+      <Route index element={<FranchiseDashboard />} />
+      <Route path="units" element={<FranchiseUnitsPage />} />
+      <Route path="professionals" element={<FranchiseProfessionalsPage />} />
+      <Route path="services" element={<FranchiseServicesPage />} />
+      <Route path="finance" element={<FranchiseFinancePage />} />
+      <Route path="reports" element={<FranchiseReportsPage />} />
+      <Route path="settings" element={<FranchiseSettingsPage />} />
     </Route>
     {/* Master routes */}
     <Route
