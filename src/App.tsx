@@ -190,6 +190,27 @@ const AppRoutes = () => (
       <Route path="retention" element={<RetentionPage />} />
       <Route path="crm" element={<CRMPage />} />
     </Route>
+    {/* Franquias routes */}
+    <Route
+      path="/franquias"
+      element={
+        <ProtectedRoute>
+          <TenantGuard>
+            <FranchiseGuard>
+              <FranchiseLayout />
+            </FranchiseGuard>
+          </TenantGuard>
+        </ProtectedRoute>
+      }
+    >
+      <Route index element={<FranchiseDashboard />} />
+      <Route path="units" element={<FranchiseUnitsPage />} />
+      <Route path="professionals" element={<FranchiseProfessionalsPage />} />
+      <Route path="services" element={<FranchiseServicesPage />} />
+      <Route path="finance" element={<FranchiseFinancePage />} />
+      <Route path="reports" element={<FranchiseReportsPage />} />
+      <Route path="settings" element={<FranchiseSettingsPage />} />
+    </Route>
     {/* Master routes */}
     <Route
       path="/master"
