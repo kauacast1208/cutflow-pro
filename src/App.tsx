@@ -167,6 +167,7 @@ const AppRoutes = () => (
       <Route path="birthdays" element={<BirthdaysPage />} />
       <Route path="loyalty" element={<LoyaltyPage />} />
       <Route path="retention" element={<RetentionPage />} />
+      <Route path="crm" element={<CRMPage />} />
     </Route>
     {/* Master routes */}
     <Route
