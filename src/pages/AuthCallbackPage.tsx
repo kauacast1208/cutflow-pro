@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { isAuthConfigurationError, mapOAuthError } from "@/lib/authErrors";
+import { mapSessionRestoreError } from "@/lib/authErrors";
 import { Loader2, Scissors } from "lucide-react";
 
 export default function AuthCallbackPage() {
   const navigate = useNavigate();
   const [error, setError] = useState("");
+  const [debugRawError, setDebugRawError] = useState("");
 
   useEffect(() => {
     let settled = false;
@@ -14,6 +15,8 @@ export default function AuthCallbackPage() {
     let authSubscription: { unsubscribe: () => void } | null = null;
 
     const resolveRedirect = async (userId: string) => {
+      console.info("[AuthCallback] Resolving final redirect for user:", userId);
+
       const { data: roleData } = await supabase
         .from("user_roles")
         .select("role")
@@ -21,6 +24,7 @@ export default function AuthCallbackPage() {
         .maybeSingle();
 
       if (roleData?.role === "master") {
+        console.info("[AuthCallback] Final redirect decision: /master");
         navigate("/master", { replace: true });
         return;
       }
@@ -32,6 +36,7 @@ export default function AuthCallbackPage() {
         .maybeSingle();
 
       if (barbershop) {
+        console.info("[AuthCallback] Final redirect decision: /dashboard (owner)");
         navigate("/dashboard", { replace: true });
         return;
       }
@@ -44,8 +49,10 @@ export default function AuthCallbackPage() {
         .maybeSingle();
 
       if (pro?.barbershop_id) {
+        console.info("[AuthCallback] Final redirect decision: /dashboard (professional)");
         navigate("/dashboard", { replace: true });
       } else {
+        console.info("[AuthCallback] Final redirect decision: /onboarding");
         navigate("/onboarding", { replace: true });
       }
     };
@@ -67,33 +74,46 @@ export default function AuthCallbackPage() {
     const handleCallback = async () => {
       try {
         const { callbackError, code } = getCallbackParams();
-        console.info("[AuthCallback] Processing callback. Code present:", !!code, "Error:", callbackError || "none");
+        console.info("[AuthCallback] callback code received:", code ? "yes" : "no");
+        console.info("[AuthCallback] callback error received:", callbackError || "none");
 
         if (callbackError) {
-          setError(mapOAuthError(callbackError, "login"));
+          const mappedMessage = mapSessionRestoreError(callbackError);
+          console.error("[AuthCallback] Callback error (raw):", callbackError);
+          console.info("[AuthCallback] Callback mapped error:", mappedMessage);
+          setDebugRawError(callbackError);
+          setError(mappedMessage);
           setTimeout(() => navigate("/login", { replace: true }), 2500);
           return;
         }
 
         if (code) {
+          console.info("[AuthCallback] exchangeCodeForSession start");
           const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-          console.info("[AuthCallback] Code exchange result:", exchangeError ? exchangeError.message : "success");
 
           if (exchangeError) {
+            const mappedMessage = mapSessionRestoreError(exchangeError.message);
+            console.error("[AuthCallback] exchangeCodeForSession failure (raw):", exchangeError.message);
+            console.info("[AuthCallback] exchangeCodeForSession mapped error:", mappedMessage);
+
             const {
               data: { session: existingSession },
             } = await supabase.auth.getSession();
 
             if (existingSession?.user) {
+              console.info("[AuthCallback] exchange failed but session exists, continuing redirect.");
               settled = true;
               await resolveRedirect(existingSession.user.id);
               return;
             }
 
-            setError(mapOAuthError(exchangeError.message, "login"));
+            setDebugRawError(exchangeError.message);
+            setError(mappedMessage);
             setTimeout(() => navigate("/login", { replace: true }), 2000);
             return;
           }
+
+          console.info("[AuthCallback] exchangeCodeForSession success");
         }
 
         const {
@@ -101,27 +121,33 @@ export default function AuthCallbackPage() {
           error: sessionError,
         } = await supabase.auth.getSession();
 
+        console.info("[AuthCallback] getSession after callback:", session?.user ? `user=${session.user.id}` : "session=null");
+
         if (sessionError) {
-          console.error("Auth callback session error:", sessionError.message);
-          setError(
-            isAuthConfigurationError(sessionError.message)
-              ? "Erro de configuração da autenticação. Recarregue a página e tente novamente."
-              : "Erro ao autenticar. Tente novamente."
-          );
+          const mappedMessage = mapSessionRestoreError(sessionError.message);
+          console.error("[AuthCallback] getSession error (raw):", sessionError.message);
+          console.info("[AuthCallback] getSession mapped error:", mappedMessage);
+          setDebugRawError(sessionError.message);
+          setError(mappedMessage);
           setTimeout(() => navigate("/login", { replace: true }), 2000);
           return;
         }
 
         if (session?.user) {
-          console.info("[AuthCallback] Session found, resolving redirect for user:", session.user.id);
           settled = true;
           await resolveRedirect(session.user.id);
           return;
         }
 
-        console.info("[AuthCallback] No session yet, waiting for auth state change...");
+        console.info("[AuthCallback] No session yet, waiting for onAuthStateChange...");
 
-        const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+        const { data } = supabase.auth.onAuthStateChange((event, nextSession) => {
+          console.info(
+            "[AuthCallback] onAuthStateChange during callback:",
+            event,
+            nextSession?.user ? `user=${nextSession.user.id}` : "session=null"
+          );
+
           if (!nextSession?.user || settled) return;
 
           settled = true;
@@ -137,16 +163,20 @@ export default function AuthCallbackPage() {
 
           settled = true;
           authSubscription?.unsubscribe();
-          setError("Sessão não encontrada. Faça login novamente.");
+          const rawMessage = "session_not_found_after_callback";
+          const mappedMessage = mapSessionRestoreError(rawMessage);
+          console.error("[AuthCallback] Timeout waiting for session after callback.");
+          setDebugRawError(rawMessage);
+          setError(mappedMessage);
           setTimeout(() => navigate("/login", { replace: true }), 1500);
         }, 8000);
       } catch (err) {
-        const rawMessage = err instanceof Error ? err.message : undefined;
-        setError(
-          isAuthConfigurationError(rawMessage)
-            ? "Erro de configuração da autenticação. Recarregue a página e tente novamente."
-            : "Erro inesperado. Redirecionando..."
-        );
+        const rawMessage = err instanceof Error ? err.message : "unexpected_callback_error";
+        const mappedMessage = mapSessionRestoreError(rawMessage);
+        console.error("[AuthCallback] Unexpected callback error (raw):", rawMessage);
+        console.info("[AuthCallback] Unexpected callback mapped error:", mappedMessage);
+        setDebugRawError(rawMessage);
+        setError(mappedMessage);
         setTimeout(() => navigate("/login", { replace: true }), 2000);
       }
     };
@@ -166,7 +196,12 @@ export default function AuthCallbackPage() {
         <span className="text-xl font-bold">CutFlow</span>
       </div>
       {error ? (
-        <p className="text-sm text-destructive text-center">{error}</p>
+        <div className="space-y-2">
+          <p className="text-sm text-destructive text-center">{error}</p>
+          {debugRawError && (
+            <p className="text-xs text-muted-foreground text-center break-all">Detalhe técnico: {debugRawError}</p>
+          )}
+        </div>
       ) : (
         <>
           <Loader2 className="h-8 w-8 animate-spin text-primary" />

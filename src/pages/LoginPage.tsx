@@ -27,31 +27,38 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
+  const [debugRawError, setDebugRawError] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setDebugRawError("");
     setLoading(true);
 
     try {
       console.info("[Login] Attempting email/password login for:", email.trim());
+
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
 
       if (signInError) {
-        console.error("[Login] signInWithPassword error:", signInError.message, "status:", signInError.status);
-        setError(mapLoginError(signInError.message));
+        const rawMessage = signInError.message || "unknown_auth_error";
+        const mappedMessage = mapLoginError(rawMessage);
+        console.error("[Login] signInWithPassword error (raw):", rawMessage, "status:", signInError.status);
+        console.info("[Login] mapped error:", mappedMessage);
+        setDebugRawError(rawMessage);
+        setError(mappedMessage);
         setLoading(false);
         return;
       }
 
       if (data.session) {
         console.info("[Login] Session obtained, user:", data.session.user.id);
-        // Check if master user
+
         const { data: roleData, error: roleError } = await supabase
           .from("user_roles")
           .select("role")
@@ -59,25 +66,34 @@ export default function LoginPage() {
           .maybeSingle();
 
         if (roleError) {
-          console.warn("Role fetch warning after login:", roleError.message);
+          console.warn("[Login] Role fetch warning:", roleError.message);
         }
 
         toast({ title: "Bem-vindo de volta!", description: "Login realizado com sucesso." });
 
         if (roleData?.role === "master") {
-          console.info("[Login] Redirecting to /master");
+          console.info("[Login] Redirect decision: /master");
           navigate("/master", { replace: true });
         } else {
-          console.info("[Login] Redirecting to /dashboard");
+          console.info("[Login] Redirect decision: /dashboard");
           navigate("/dashboard", { replace: true });
         }
-      } else {
-        setError("Não foi possível iniciar a sessão. Tente novamente.");
-        setLoading(false);
+        return;
       }
+
+      const rawMessage = "session_not_found_after_login";
+      const mappedMessage = mapLoginError(rawMessage);
+      console.error("[Login] Session missing after successful signInWithPassword response.");
+      setDebugRawError(rawMessage);
+      setError(mappedMessage);
+      setLoading(false);
     } catch (err) {
-      console.error("Login unexpected error:", err);
-      setError(mapLoginError(err instanceof Error ? err.message : undefined));
+      const rawMessage = err instanceof Error ? err.message : "unexpected_login_error";
+      const mappedMessage = mapLoginError(rawMessage);
+      console.error("[Login] unexpected error (raw):", rawMessage);
+      console.info("[Login] mapped error:", mappedMessage);
+      setDebugRawError(rawMessage);
+      setError(mappedMessage);
       setLoading(false);
     }
   };
@@ -86,16 +102,25 @@ export default function LoginPage() {
     try {
       setGoogleLoading(true);
       setError("");
+      setDebugRawError("");
 
       const oauthErrorMessage = await startGoogleOAuthFlow(`${window.location.origin}/auth/callback`);
 
       if (oauthErrorMessage) {
-        setError(oauthErrorMessage);
+        const mappedMessage = mapOAuthError(oauthErrorMessage, "login");
+        console.error("[Login] OAuth start error (raw):", oauthErrorMessage);
+        console.info("[Login] OAuth mapped error:", mappedMessage);
+        setDebugRawError(oauthErrorMessage);
+        setError(mappedMessage);
         setGoogleLoading(false);
       }
     } catch (err) {
-      console.error(err);
-      setError(mapOAuthError(err instanceof Error ? err.message : undefined, "login"));
+      const rawMessage = err instanceof Error ? err.message : "unexpected_oauth_login_error";
+      const mappedMessage = mapOAuthError(rawMessage, "login");
+      console.error("[Login] OAuth unexpected error (raw):", rawMessage);
+      console.info("[Login] OAuth mapped error:", mappedMessage);
+      setDebugRawError(rawMessage);
+      setError(mappedMessage);
       setGoogleLoading(false);
     }
   };
@@ -166,7 +191,11 @@ export default function LoginPage() {
                     type="email"
                     placeholder="seu@email.com"
                     value={email}
-                    onChange={(e) => { setEmail(e.target.value); setError(""); }}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setError("");
+                      setDebugRawError("");
+                    }}
                     required
                     autoComplete="email"
                     className={cn(
@@ -195,7 +224,11 @@ export default function LoginPage() {
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={password}
-                    onChange={(e) => { setPassword(e.target.value); setError(""); }}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setError("");
+                      setDebugRawError("");
+                    }}
                     required
                     autoComplete="current-password"
                     className={cn(
@@ -217,6 +250,11 @@ export default function LoginPage() {
               </div>
 
               <AuthError message={error} />
+              {debugRawError && (
+                <p className="text-xs text-muted-foreground break-all" aria-live="polite">
+                  Detalhe técnico: {debugRawError}
+                </p>
+              )}
 
               <button
                 type="submit"
