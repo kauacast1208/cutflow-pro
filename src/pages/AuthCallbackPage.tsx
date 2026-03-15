@@ -41,6 +41,18 @@ export default function AuthCallbackPage() {
       }
     };
 
+    const getCallbackError = () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+
+      return (
+        searchParams.get("error_description") ||
+        hashParams.get("error_description") ||
+        searchParams.get("error") ||
+        hashParams.get("error")
+      );
+    };
+
     const handleCallback = async () => {
       try {
         // Wait for auth state to settle after OAuth redirect
