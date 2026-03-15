@@ -60,6 +60,10 @@ export function mapSignupError(rawMessage?: string | null): string {
     return "A senha deve ter pelo menos 6 caracteres.";
   }
 
+  if (rawMessage?.trim()) {
+    return `Não foi possível criar sua conta agora. Detalhe: ${rawMessage}`;
+  }
+
   return "Não foi possível criar sua conta agora. Tente novamente.";
 }
 
