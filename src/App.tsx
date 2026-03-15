@@ -52,6 +52,14 @@ import BirthdaysPage from "./pages/dashboard/BirthdaysPage";
 import LoyaltyPage from "./pages/dashboard/LoyaltyPage";
 import RetentionPage from "./pages/dashboard/RetentionPage";
 import CRMPage from "./pages/dashboard/CRMPage";
+import FranchiseLayout from "./components/franchise/FranchiseLayout";
+import FranchiseDashboard from "./pages/franchise/FranchiseDashboard";
+import FranchiseUnitsPage from "./pages/franchise/FranchiseUnitsPage";
+import FranchiseProfessionalsPage from "./pages/franchise/FranchiseProfessionalsPage";
+import FranchiseServicesPage from "./pages/franchise/FranchiseServicesPage";
+import FranchiseFinancePage from "./pages/franchise/FranchiseFinancePage";
+import FranchiseReportsPage from "./pages/franchise/FranchiseReportsPage";
+import FranchiseSettingsPage from "./pages/franchise/FranchiseSettingsPage";
 import { Loader2 } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 
