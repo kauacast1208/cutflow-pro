@@ -509,6 +509,77 @@ const mockups: Record<string, () => JSX.Element> = {
   booking: BookingMockup,
 };
 
+const activityNotifications = [
+  { icon: Calendar, title: "Novo agendamento criado", shop: "Barbearia Prime", time: "agora", iconColor: "text-emerald-400" },
+  { icon: CheckCircle2, title: "Cliente confirmou horário", shop: "Dom H Barber", time: "2 min atrás", iconColor: "text-emerald-400" },
+  { icon: Clock, title: "Horário liberado às 19:00", shop: "Elite Barber", time: "agora", iconColor: "text-blue-400" },
+  { icon: Bell, title: "Lembrete enviado no WhatsApp", shop: "Black Zone Barber", time: "3 min atrás", iconColor: "text-teal-400" },
+  { icon: Calendar, title: "Novo horário disponível", shop: "Barbearia Central", time: "1 min atrás", iconColor: "text-purple-400" },
+  { icon: Calendar, title: "Novo agendamento criado", shop: "Barber Club", time: "agora", iconColor: "text-emerald-400" },
+  { icon: CheckCircle2, title: "Cliente confirmou horário", shop: "Studio Corte", time: "4 min atrás", iconColor: "text-emerald-400" },
+];
+
+function ActivityFeed() {
+  const [visibleNotifs, setVisibleNotifs] = useState<number[]>([0, 1, 2]);
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick((prev) => prev + 1);
+    }, 3200);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const start = tick % activityNotifications.length;
+    setVisibleNotifs([0, 1, 2].map((offset) => (start + offset) % activityNotifications.length));
+  }, [tick]);
+
+  return (
+    <div className="flex flex-col gap-2.5">
+      <AnimatePresence mode="popLayout">
+        {visibleNotifs.map((idx, position) => {
+          const notif = activityNotifications[idx];
+          const Icon = notif.icon;
+          return (
+            <motion.div
+              key={`${idx}-${tick}-${position}`}
+              initial={{ opacity: 0, y: -20, x: 10, scale: 0.92 }}
+              animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.92 }}
+              transition={{ duration: 0.4, delay: position * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="group relative"
+            >
+              {/* Glow */}
+              <div className="absolute -inset-px rounded-xl bg-gradient-to-r from-purple-500/20 via-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+              
+              <div className="relative rounded-xl bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] px-3.5 py-3 flex items-start gap-3 shadow-lg shadow-black/20">
+                <div className={`mt-0.5 ${notif.iconColor}`}>
+                  <Icon className="h-4 w-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] font-medium text-white/90 leading-snug">{notif.title}</p>
+                  <p className="text-[10px] text-white/40 mt-0.5">
+                    {notif.shop} <span className="text-white/20">— {notif.time}</span>
+                  </p>
+                </div>
+                <span className="relative flex h-2 w-2 mt-1.5 shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-40" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400/60" />
+                </span>
+              </div>
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
+
+      <p className="text-[11px] text-white/30 mt-1 text-center lg:text-left">
+        <span className="text-emerald-400 font-semibold">+2.400</span> agendamentos esta semana
+      </p>
+    </div>
+  );
+}
+
 export function DemoSection() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
