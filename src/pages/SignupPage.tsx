@@ -83,6 +83,22 @@ export default function SignupPage() {
 
       // Auto-confirm on: user gets session immediately
       if (data.session) {
+        if (data.user?.id) {
+          const { error: profileError } = await supabase
+            .from("profiles")
+            .upsert(
+              {
+                user_id: data.user.id,
+                full_name: fullName.trim(),
+              },
+              { onConflict: "user_id" },
+            );
+
+          if (profileError) {
+            console.warn("Profile upsert warning after signup:", profileError.message);
+          }
+        }
+
         toast({ title: "Conta criada!", description: "Bem-vindo ao CutFlow!" });
         navigate("/onboarding");
         return;

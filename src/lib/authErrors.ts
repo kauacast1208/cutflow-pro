@@ -28,6 +28,10 @@ export function mapLoginError(rawMessage?: string | null): string {
     return "Falha de conexão. Verifique sua internet e tente novamente.";
   }
 
+  if (rawMessage?.trim()) {
+    return `Não foi possível fazer login agora. Detalhe: ${rawMessage}`;
+  }
+
   return "Não foi possível fazer login agora. Tente novamente em instantes.";
 }
 
@@ -56,6 +60,10 @@ export function mapSignupError(rawMessage?: string | null): string {
     return "A senha deve ter pelo menos 6 caracteres.";
   }
 
+  if (rawMessage?.trim()) {
+    return `Não foi possível criar sua conta agora. Detalhe: ${rawMessage}`;
+  }
+
   return "Não foi possível criar sua conta agora. Tente novamente.";
 }
 
@@ -78,6 +86,10 @@ export function mapOAuthError(rawMessage?: string | null, mode: "login" | "signu
     return "Não foi possível continuar com Google. Tente usar e-mail e senha.";
   }
 
+  if (rawMessage?.trim()) {
+    return `Não foi possível entrar com Google. Detalhe: ${rawMessage}`;
+  }
+
   return "Não foi possível entrar com Google. Tente usar e-mail e senha.";
 }
 
@@ -89,6 +101,10 @@ export function mapPasswordRecoveryRequestError(rawMessage?: string | null): str
   }
   if (hasAny(msg, ["too many requests", "rate limit", "rate_limit"])) {
     return "Você solicitou muitos links em pouco tempo. Aguarde alguns minutos.";
+  }
+
+  if (rawMessage?.trim()) {
+    return `Não foi possível enviar o link agora. Detalhe: ${rawMessage}`;
   }
 
   return "Não foi possível enviar o link agora. Tente novamente.";
@@ -105,6 +121,10 @@ export function mapResetPasswordError(rawMessage?: string | null): string {
   }
   if (msg.includes("weak password")) {
     return "Sua nova senha está fraca. Use uma senha mais forte.";
+  }
+
+  if (rawMessage?.trim()) {
+    return `Não foi possível redefinir a senha. Detalhe: ${rawMessage}`;
   }
 
   return "Não foi possível redefinir a senha. Solicite um novo link.";
