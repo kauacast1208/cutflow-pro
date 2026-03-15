@@ -8,6 +8,7 @@ import { SignupBrandingPanel } from "@/components/signup/SignupBrandingPanel";
 import { GoogleIcon } from "@/components/signup/GoogleIcon";
 import { mapLoginError, mapOAuthError } from "@/lib/authErrors";
 import { cn } from "@/lib/utils";
+import { startGoogleOAuthFlow } from "@/lib/oauth";
 
 function AuthError({ message }: { message: string }) {
   if (!message) return null;
