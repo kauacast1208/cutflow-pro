@@ -67,6 +67,7 @@ export default function AuthCallbackPage() {
     const handleCallback = async () => {
       try {
         const { callbackError, code } = getCallbackParams();
+        console.info("[AuthCallback] Processing callback. Code present:", !!code, "Error:", callbackError || "none");
 
         if (callbackError) {
           setError(mapOAuthError(callbackError, "login"));
