@@ -74,11 +74,11 @@ const testimonials = [
 export function TestimonialsSection() {
   return (
     <section className="relative overflow-hidden py-20 sm:py-28 lg:py-32">
-      {/* Premium dark background */}
-      <div className="absolute inset-0 bg-[hsl(220,20%,5%)]" />
-      <div className="absolute inset-0">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/[0.04] rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-[hsl(270,40%,20%)]/10 rounded-full blur-[100px]" />
+      {/* Background: uses semantic tokens for both themes */}
+      <div className="absolute inset-0 bg-secondary/50 dark:bg-[hsl(220,20%,5%)]" />
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/[0.03] dark:bg-primary/[0.04] rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-primary/[0.02] dark:bg-[hsl(270,40%,20%)]/10 rounded-full blur-[100px]" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -97,7 +97,7 @@ export function TestimonialsSection() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-[-0.03em] text-white mb-5"
+            className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-[-0.03em] text-foreground mb-5"
           >
             Quem usa, recomenda.
           </motion.h2>
@@ -106,7 +106,7 @@ export function TestimonialsSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-white/50 text-base sm:text-lg max-w-xl mx-auto leading-relaxed"
+            className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto leading-relaxed"
           >
             Veja como barbearias reais estão transformando seus negócios com o CutFlow.
           </motion.p>
@@ -121,7 +121,7 @@ export function TestimonialsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08, duration: 0.5 }}
-              className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm p-6 sm:p-7 hover:border-primary/20 hover:bg-white/[0.05] transition-all duration-500"
+              className="group relative rounded-2xl border border-border dark:border-white/[0.06] bg-card dark:bg-white/[0.03] backdrop-blur-sm p-6 sm:p-7 hover:border-primary/20 dark:hover:bg-white/[0.05] transition-all duration-500 shadow-card"
             >
               {/* Highlight badge */}
               <div className="absolute -top-3 right-5">
@@ -140,26 +140,26 @@ export function TestimonialsSection() {
               {/* Quote */}
               <div className="relative mb-6">
                 <Quote className="h-6 w-6 text-primary/15 absolute -top-1 -left-1" />
-                <p className="text-white/80 leading-relaxed text-[15px] pl-6">
+                <p className="text-foreground/80 dark:text-white/80 leading-relaxed text-[15px] pl-6">
                   "{t.content}"
                 </p>
               </div>
 
               {/* Author */}
-              <div className="flex items-center gap-3.5 pt-5 border-t border-white/[0.06]">
+              <div className="flex items-center gap-3.5 pt-5 border-t border-border dark:border-white/[0.06]">
                 <img
                   src={t.photo}
                   alt={t.name}
                   className="h-12 w-12 rounded-full object-cover ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm text-white">{t.name}</p>
-                  <p className="text-[12px] text-white/40">
+                  <p className="font-bold text-sm text-foreground">{t.name}</p>
+                  <p className="text-[12px] text-muted-foreground">
                     {t.role} · {t.barbershop}
                   </p>
                   <div className="flex items-center gap-1 mt-0.5">
                     <MapPin className="h-2.5 w-2.5 text-primary/60" />
-                    <p className="text-[11px] text-white/30">{t.city}</p>
+                    <p className="text-[11px] text-muted-foreground/70">{t.city}</p>
                   </div>
                 </div>
               </div>
@@ -173,7 +173,7 @@ export function TestimonialsSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.5 }}
-          className="mt-14 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-white/30 text-sm"
+          className="mt-14 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-muted-foreground text-sm"
         >
           <div className="flex items-center gap-2">
             <div className="flex -space-x-2">
@@ -182,11 +182,11 @@ export function TestimonialsSection() {
                   key={i}
                   src={src}
                   alt=""
-                  className="h-7 w-7 rounded-full object-cover ring-2 ring-[hsl(220,20%,5%)]"
+                  className="h-7 w-7 rounded-full object-cover ring-2 ring-background"
                 />
               ))}
             </div>
-            <span className="text-white/50 font-medium">+200 barbearias</span>
+            <span className="text-foreground/60 font-medium">+200 barbearias</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="flex gap-0.5">
@@ -194,7 +194,7 @@ export function TestimonialsSection() {
                 <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
               ))}
             </div>
-            <span className="text-white/50 font-medium">4.9/5 avaliação média</span>
+            <span className="text-foreground/60 font-medium">4.9/5 avaliação média</span>
           </div>
         </motion.div>
       </div>
