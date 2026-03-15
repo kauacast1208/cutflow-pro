@@ -55,6 +55,12 @@ export default function AuthCallbackPage() {
 
     const handleCallback = async () => {
       try {
+        const callbackError = getCallbackError();
+        if (callbackError) {
+          setError(mapOAuthError(callbackError, "login"));
+          setTimeout(() => navigate("/login", { replace: true }), 2500);
+          return;
+        }
         // Wait for auth state to settle after OAuth redirect
         const {
           data: { session },

@@ -148,7 +148,7 @@ export default function ResetPasswordPage() {
             </div>
             <h1 className="text-[22px] font-bold tracking-tight mb-2">Link expirado</h1>
             <p className="text-muted-foreground text-sm mb-6">
-              Este link de recuperação expirou ou já foi utilizado. Solicite um novo link.
+              {sessionErrorMessage || "Este link de recuperação expirou ou já foi utilizado. Solicite um novo link."}
             </p>
             <button
               onClick={() => navigate("/forgot-password")}

@@ -39,12 +39,13 @@ export default function ForgotPasswordPage() {
 
       if (resetError) {
         console.error("Reset password error:", resetError);
-        // Don't reveal whether email exists — always show success
+        setError(mapPasswordRecoveryRequestError(resetError.message));
+        return;
       }
 
       setSent(true);
-    } catch {
-      setError("Erro inesperado. Tente novamente.");
+    } catch (err) {
+      setError(mapPasswordRecoveryRequestError(err instanceof Error ? err.message : undefined));
     } finally {
       setLoading(false);
     }
