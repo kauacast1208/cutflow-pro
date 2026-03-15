@@ -5,7 +5,7 @@
  * DB plans table is the canonical source; this file provides fallback defaults.
  */
 
-export type PlanTier = "starter" | "pro" | "premium" | "franquias";
+export type PlanTier = "starter" | "pro" | "premium" | "franquias" | "enterprise";
 
 export type PlanFeature =
   | "agenda"
@@ -154,6 +154,39 @@ export const planConfig: Record<PlanTier, PlanConfig> = {
       services: 999,
     },
   },
+  enterprise: {
+    label: "Enterprise",
+    price: 0,
+    description: "Para operações de grande porte com necessidades personalizadas",
+    features: [
+      "agenda",
+      "clients",
+      "services",
+      "basic_reports",
+      "advanced_reports",
+      "finance",
+      "blocked_times",
+      "simple_campaigns",
+      "advanced_campaigns",
+      "basic_mailing",
+      "mailing",
+      "marketing_automation",
+      "priority_support",
+      "chat_support",
+      "integrations",
+      "crm_enabled",
+      "automations",
+      "custom_branding",
+      "multi_unit_enabled",
+    ],
+    limits: {
+      professionals: Infinity,
+      units: Infinity,
+      users: Infinity,
+      clients: Infinity,
+      services: Infinity,
+    },
+  },
 };
 
 /** Human-readable feature labels */
@@ -190,7 +223,7 @@ export const resourceLabels: Record<PlanResource, string> = {
 
 /** Get the minimum plan required for a feature */
 export function getMinPlanForFeature(feature: PlanFeature): PlanTier {
-  const tiers: PlanTier[] = ["starter", "pro", "premium", "franquias"];
+  const tiers: PlanTier[] = ["starter", "pro", "premium", "franquias", "enterprise"];
   for (const tier of tiers) {
     if (planConfig[tier].features.includes(feature)) return tier;
   }

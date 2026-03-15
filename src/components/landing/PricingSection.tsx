@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Check, Star, CheckCircle2, Shield, Zap } from "lucide-react";
+import { Check, Star, CheckCircle2, Shield, Zap, Crown, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -67,6 +67,17 @@ const fallbackPlans: PlanRow[] = [
   { id: "3", slug: "premium", label: "Business", price: 119, max_professionals: 999, features: [] },
 ];
 
+const enterpriseHighlights = [
+  "Tudo do Business incluso",
+  "Múltiplas unidades e franquias",
+  "Limites personalizados",
+  "Módulos avançados sob medida",
+  "Onboarding e implementação dedicados",
+  "Suporte prioritário com SLA",
+  "Integrações customizadas",
+  "Gerente de conta exclusivo",
+];
+
 export function PricingSection() {
   const [plans, setPlans] = useState<PlanRow[]>(fallbackPlans);
 
@@ -78,14 +89,16 @@ export function PricingSection() {
       .then(({ data }) => {
         if (data && data.length > 0) {
           setPlans(
-            data.map((p) => ({
-              id: p.id,
-              slug: p.slug,
-              label: p.label,
-              price: p.price,
-              max_professionals: p.max_professionals,
-              features: p.features || [],
-            }))
+            data
+              .filter((p) => !["enterprise", "franquias"].includes(p.slug))
+              .map((p) => ({
+                id: p.id,
+                slug: p.slug,
+                label: p.label,
+                price: p.price,
+                max_professionals: p.max_professionals,
+                features: p.features || [],
+              }))
           );
         }
       });
@@ -123,6 +136,7 @@ export function PricingSection() {
           </motion.p>
         </div>
 
+        {/* Standard plans */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 max-w-5xl mx-auto items-start">
           {plans.map((plan, i) => {
             const isPopular = plan.slug === "pro";
@@ -201,11 +215,70 @@ export function PricingSection() {
           })}
         </div>
 
+        {/* Enterprise card */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3 }}
+          className="max-w-5xl mx-auto mt-6 sm:mt-8"
+        >
+          <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.04] via-card to-accent/[0.06] p-6 sm:p-8 lg:p-10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/[0.03] rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            
+            <div className="relative flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-10">
+              <div className="flex-1 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Crown className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl sm:text-2xl font-bold">Enterprise</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      Para operações de grande porte com necessidades personalizadas
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {enterpriseHighlights.map((item) => (
+                    <div key={item} className="flex items-start gap-2.5 text-xs sm:text-sm">
+                      <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 mt-0.5 shrink-0 text-primary" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center lg:items-end gap-3 lg:min-w-[200px]">
+                <div className="text-center lg:text-right">
+                  <p className="text-2xl sm:text-3xl font-extrabold tracking-tight">Sob medida</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">Plano personalizado para sua operação</p>
+                </div>
+                <a
+                  href="https://wa.me/5511999999999?text=Olá! Tenho interesse no plano Enterprise do CutFlow."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full lg:w-auto"
+                >
+                  <Button variant="hero" className="w-full lg:w-auto rounded-xl h-12 text-[15px] gap-2 px-8">
+                    <MessageSquare className="h-4 w-4" />
+                    Falar com vendas
+                  </Button>
+                </a>
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground">
+                  Implementação e onboarding inclusos
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.4 }}
           className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 mt-8 sm:mt-10 text-xs sm:text-[13px] text-muted-foreground"
         >
           <div className="flex items-center gap-2">
