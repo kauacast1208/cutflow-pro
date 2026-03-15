@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Loader2, Mail, Lock, User, Check, Scissors, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+
 import { useToast } from "@/hooks/use-toast";
 import { SignupBrandingPanel } from "@/components/signup/SignupBrandingPanel";
 import { PasswordStrengthIndicator } from "@/components/signup/PasswordStrengthIndicator";
