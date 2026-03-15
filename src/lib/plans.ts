@@ -5,7 +5,7 @@
  * Adding a new feature? Add it to PlanFeature and the planConfig below.
  */
 
-export type PlanTier = "starter" | "pro" | "premium";
+export type PlanTier = "starter" | "pro" | "premium" | "franquias";
 
 export type PlanFeature =
   | "agenda"
