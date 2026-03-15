@@ -86,6 +86,10 @@ export function mapOAuthError(rawMessage?: string | null, mode: "login" | "signu
     return "Não foi possível continuar com Google. Tente usar e-mail e senha.";
   }
 
+  if (rawMessage?.trim()) {
+    return `Não foi possível entrar com Google. Detalhe: ${rawMessage}`;
+  }
+
   return "Não foi possível entrar com Google. Tente usar e-mail e senha.";
 }
 
