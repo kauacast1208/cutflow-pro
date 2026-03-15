@@ -63,6 +63,13 @@ export default function SignupPage() {
         return;
       }
 
+      // Existing account edge case (Supabase may return user without identities)
+      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        setError("Este e-mail já está cadastrado. Faça login ou recupere sua senha.");
+        setLoading(false);
+        return;
+      }
+
       // Email confirmation required (user exists but no session)
       if (data.user && !data.session) {
         toast({
@@ -80,11 +87,11 @@ export default function SignupPage() {
         return;
       }
 
-      // Fallback
+      setError("Não foi possível concluir seu cadastro. Tente novamente.");
       setLoading(false);
     } catch (err) {
       console.error("Signup unexpected error:", err);
-      setError("Erro inesperado. Tente novamente.");
+      setError(mapSignupError(err instanceof Error ? err.message : undefined));
       setLoading(false);
     }
   };
