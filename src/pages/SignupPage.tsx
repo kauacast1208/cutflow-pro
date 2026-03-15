@@ -95,12 +95,16 @@ export default function SignupPage() {
             );
 
           if (profileError) {
-            console.warn("Profile upsert warning after signup:", profileError.message);
+            console.error("Profile upsert error after signup:", profileError.message);
+            await supabase.auth.signOut();
+            setError("Sua conta foi criada, mas não conseguimos finalizar seu perfil agora. Faça login e tente novamente.");
+            setLoading(false);
+            return;
           }
         }
 
         toast({ title: "Conta criada!", description: "Bem-vindo ao CutFlow!" });
-        navigate("/onboarding");
+        navigate("/onboarding", { replace: true });
         return;
       }
 

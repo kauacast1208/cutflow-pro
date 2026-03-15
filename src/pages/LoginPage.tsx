@@ -50,18 +50,22 @@ export default function LoginPage() {
 
       if (data.session) {
         // Check if master user
-        const { data: roleData } = await supabase
+        const { data: roleData, error: roleError } = await supabase
           .from("user_roles")
           .select("role")
           .eq("user_id", data.session.user.id)
           .maybeSingle();
 
+        if (roleError) {
+          console.warn("Role fetch warning after login:", roleError.message);
+        }
+
         toast({ title: "Bem-vindo de volta!", description: "Login realizado com sucesso." });
 
         if (roleData?.role === "master") {
-          navigate("/master");
+          navigate("/master", { replace: true });
         } else {
-          navigate("/dashboard");
+          navigate("/dashboard", { replace: true });
         }
       } else {
         setError("Não foi possível iniciar a sessão. Tente novamente.");
