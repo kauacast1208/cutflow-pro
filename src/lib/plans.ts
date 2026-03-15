@@ -5,7 +5,7 @@
  * DB plans table is the canonical source; this file provides fallback defaults.
  */
 
-export type PlanTier = "starter" | "pro" | "premium" | "franquias";
+export type PlanTier = "starter" | "pro" | "premium" | "franquias" | "enterprise";
 
 export type PlanFeature =
   | "agenda"
