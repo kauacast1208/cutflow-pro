@@ -36,13 +36,14 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      console.info("[Login] Attempting email/password login for:", email.trim());
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
 
       if (signInError) {
-        console.error("Login error:", signInError.message, signInError.status);
+        console.error("[Login] signInWithPassword error:", signInError.message, "status:", signInError.status);
         setError(mapLoginError(signInError.message));
         setLoading(false);
         return;
