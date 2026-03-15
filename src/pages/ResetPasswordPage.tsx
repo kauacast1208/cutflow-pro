@@ -4,6 +4,7 @@ import { Eye, EyeOff, Loader2, Lock, Check, Scissors, AlertCircle, ArrowLeft } f
 import { supabase } from "@/integrations/supabase/client";
 import { PasswordStrengthIndicator } from "@/components/signup/PasswordStrengthIndicator";
 import { cn } from "@/lib/utils";
+import { mapResetPasswordError } from "@/lib/authErrors";
 
 function AuthError({ message }: { message: string }) {
   if (!message) return null;

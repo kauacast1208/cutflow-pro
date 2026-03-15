@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Loader2, Mail, ArrowLeft, Scissors, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { mapPasswordRecoveryRequestError } from "@/lib/authErrors";
 import { cn } from "@/lib/utils";
 
 function AuthError({ message }: { message: string }) {
