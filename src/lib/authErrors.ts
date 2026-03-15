@@ -103,6 +103,10 @@ export function mapPasswordRecoveryRequestError(rawMessage?: string | null): str
     return "Você solicitou muitos links em pouco tempo. Aguarde alguns minutos.";
   }
 
+  if (rawMessage?.trim()) {
+    return `Não foi possível enviar o link agora. Detalhe: ${rawMessage}`;
+  }
+
   return "Não foi possível enviar o link agora. Tente novamente.";
 }
 
