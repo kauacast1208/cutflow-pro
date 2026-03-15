@@ -8,6 +8,7 @@ import {
   type PlanResource,
   getMinPlanForFeature,
   featureLabels,
+  resourceLabels,
 } from "@/lib/plans";
 
 interface DbPlan {
@@ -16,6 +17,11 @@ interface DbPlan {
   price: number;
   features: string[];
   max_professionals: number;
+  max_units: number;
+  max_users: number;
+  max_clients: number;
+  max_services: number;
+  description: string | null;
 }
 
 interface UsePlanPermissionsReturn {
@@ -28,6 +34,7 @@ interface UsePlanPermissionsReturn {
   showUpgrade: (feature: PlanFeature) => void;
   hideUpgrade: () => void;
   getUpgradeMessage: (feature: PlanFeature) => string;
+  getLimitMessage: (resource: PlanResource) => string;
   loading: boolean;
 }
 
@@ -37,13 +44,12 @@ export function usePlanPermissions(): UsePlanPermissionsReturn {
   const [dbPlans, setDbPlans] = useState<DbPlan[]>([]);
   const [plansLoading, setPlansLoading] = useState(true);
 
-  // Fetch plans from DB once
   useEffect(() => {
     supabase
       .from("plans")
-      .select("slug, label, price, features, max_professionals")
+      .select("slug, label, price, features, max_professionals, max_units, max_users, max_clients, max_services, description")
       .then(({ data }) => {
-        if (data && data.length > 0) setDbPlans(data as DbPlan[]);
+        if (data && data.length > 0) setDbPlans(data as unknown as DbPlan[]);
         setPlansLoading(false);
       });
   }, []);
@@ -54,14 +60,19 @@ export function usePlanPermissions(): UsePlanPermissionsReturn {
     return planConfig[p] ? p : "starter";
   }, [subscription]);
 
-  // Prefer DB plan config, fall back to hardcoded
   const activePlan = useMemo(() => {
     const dbPlan = dbPlans.find((p) => p.slug === plan);
     if (dbPlan) {
       return {
         label: dbPlan.label,
         features: dbPlan.features as PlanFeature[],
-        limits: { professionals: dbPlan.max_professionals } as Record<PlanResource, number>,
+        limits: {
+          professionals: dbPlan.max_professionals,
+          units: dbPlan.max_units,
+          users: dbPlan.max_users,
+          clients: dbPlan.max_clients,
+          services: dbPlan.max_services,
+        } as Record<PlanResource, number>,
       };
     }
     return planConfig[plan];
@@ -100,12 +111,20 @@ export function usePlanPermissions(): UsePlanPermissionsReturn {
     (feature: PlanFeature) => {
       const minPlan = getMinPlanForFeature(feature);
       const label = featureLabels[feature];
-      // Use DB plan label if available
       const dbPlan = dbPlans.find((p) => p.slug === minPlan);
       const planLabel = dbPlan?.label || planConfig[minPlan].label;
       return `O recurso "${label}" está disponível a partir do plano ${planLabel}. Faça upgrade para continuar.`;
     },
     [dbPlans]
+  );
+
+  const getLimitMessage = useCallback(
+    (resource: PlanResource) => {
+      const max = activePlan.limits[resource];
+      const label = resourceLabels[resource];
+      return `Seu plano permite no máximo ${max} ${label.toLowerCase()}. Faça upgrade para aumentar o limite.`;
+    },
+    [activePlan]
   );
 
   return {
@@ -118,6 +137,7 @@ export function usePlanPermissions(): UsePlanPermissionsReturn {
     showUpgrade,
     hideUpgrade,
     getUpgradeMessage,
+    getLimitMessage,
     loading,
   };
 }
