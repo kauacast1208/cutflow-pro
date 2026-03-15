@@ -458,6 +458,17 @@ export default function PublicBookingPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Location Map */}
+                {barbershop.address && (
+                  <div className="mt-5">
+                    <LocationMap
+                      address={barbershop.address}
+                      name={barbershop.name}
+                      addressComplement={barbershop.address_complement}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
