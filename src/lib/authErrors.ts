@@ -123,5 +123,9 @@ export function mapResetPasswordError(rawMessage?: string | null): string {
     return "Sua nova senha está fraca. Use uma senha mais forte.";
   }
 
+  if (rawMessage?.trim()) {
+    return `Não foi possível redefinir a senha. Detalhe: ${rawMessage}`;
+  }
+
   return "Não foi possível redefinir a senha. Solicite um novo link.";
 }

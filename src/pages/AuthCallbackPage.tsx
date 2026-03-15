@@ -41,27 +41,40 @@ export default function AuthCallbackPage() {
       }
     };
 
-    const getCallbackError = () => {
+    const getCallbackParams = () => {
       const searchParams = new URLSearchParams(window.location.search);
       const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
 
-      return (
-        searchParams.get("error_description") ||
-        hashParams.get("error_description") ||
-        searchParams.get("error") ||
-        hashParams.get("error")
-      );
+      return {
+        callbackError:
+          searchParams.get("error_description") ||
+          hashParams.get("error_description") ||
+          searchParams.get("error") ||
+          hashParams.get("error"),
+        code: searchParams.get("code"),
+      };
     };
 
     const handleCallback = async () => {
       try {
-        const callbackError = getCallbackError();
+        const { callbackError, code } = getCallbackParams();
+
         if (callbackError) {
           setError(mapOAuthError(callbackError, "login"));
           setTimeout(() => navigate("/login", { replace: true }), 2500);
           return;
         }
-        // Wait for auth state to settle after OAuth redirect
+
+        if (code) {
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          if (exchangeError) {
+            setError(mapOAuthError(exchangeError.message, "login"));
+            setTimeout(() => navigate("/login", { replace: true }), 2000);
+            return;
+          }
+        }
+
+        // Wait for auth state to settle after OAuth/email-confirm redirect
         const {
           data: { session },
           error: sessionError,

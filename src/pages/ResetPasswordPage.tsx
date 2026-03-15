@@ -54,32 +54,55 @@ export default function ResetPasswordPage() {
     });
 
     const bootstrapRecoverySession = async () => {
-      const searchParams = new URLSearchParams(window.location.search);
-      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      try {
+        const searchParams = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
 
-      const callbackError =
-        searchParams.get("error_description") ||
-        hashParams.get("error_description") ||
-        searchParams.get("error") ||
-        hashParams.get("error");
+        const callbackError =
+          searchParams.get("error_description") ||
+          hashParams.get("error_description") ||
+          searchParams.get("error") ||
+          hashParams.get("error");
 
-      if (callbackError) {
-        markSessionError(mapResetPasswordError(callbackError));
-        return;
-      }
-
-      const code = searchParams.get("code");
-      if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) {
-          markSessionError(mapResetPasswordError(error.message));
+        if (callbackError) {
+          markSessionError(mapResetPasswordError(callbackError));
           return;
         }
-      }
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        markReady();
+        const code = searchParams.get("code");
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) {
+            markSessionError(mapResetPasswordError(error.message));
+            return;
+          }
+        } else {
+          const type = hashParams.get("type") || searchParams.get("type");
+          const accessToken = hashParams.get("access_token");
+          const refreshToken = hashParams.get("refresh_token");
+
+          if (type === "recovery" && accessToken && refreshToken) {
+            const { error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+
+            if (error) {
+              markSessionError(mapResetPasswordError(error.message));
+              return;
+            }
+          }
+        }
+
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (session) {
+          markReady();
+        }
+      } catch (error) {
+        markSessionError(mapResetPasswordError(error instanceof Error ? error.message : undefined));
       }
     };
 
