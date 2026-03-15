@@ -156,6 +156,7 @@ const AppRoutes = () => (
     <Route path="/billing/success" element={<ProtectedRoute><BillingSuccessPage /></ProtectedRoute>} />
     <Route path="/billing/cancel" element={<BillingCancelPage />} />
     <Route path="/settings/billing" element={<Navigate to="/billing" replace />} />
+    <Route path="/ambassador" element={<ProtectedRoute><AmbassadorPage /></ProtectedRoute>} />
     <Route path="/b/:slug" element={<PublicBookingPage />} />
     <Route path="/reagendar/:token" element={<ReschedulePage />} />
     <Route path="/agendar/:slug" element={<RedirectToBooking />} />
