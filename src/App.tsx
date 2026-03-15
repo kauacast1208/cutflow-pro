@@ -167,6 +167,22 @@ const AppRoutes = () => (
       <Route path="loyalty" element={<LoyaltyPage />} />
       <Route path="retention" element={<RetentionPage />} />
     </Route>
+    {/* Master routes */}
+    <Route
+      path="/master"
+      element={
+        <ProtectedRoute>
+          <MasterGuard>
+            <MasterLayout />
+          </MasterGuard>
+        </ProtectedRoute>
+      }
+    >
+      <Route index element={<MasterDashboard />} />
+      <Route path="tenants" element={<MasterTenantsPage />} />
+      <Route path="tenants/:tenantId" element={<MasterTenantDetailPage />} />
+      <Route path="users" element={<MasterUsersPage />} />
+    </Route>
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
