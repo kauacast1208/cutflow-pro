@@ -1359,7 +1359,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "owner" | "professional" | "receptionist"
+      app_role: "admin" | "owner" | "professional" | "receptionist" | "master"
       appointment_status:
         | "scheduled"
         | "confirmed"
@@ -1368,7 +1368,7 @@ export type Database = {
         | "rescheduled"
       loyalty_reward_status: "in_progress" | "earned" | "redeemed" | "expired"
       loyalty_type: "visits" | "spending" | "specific_service"
-      subscription_plan: "starter" | "pro" | "premium"
+      subscription_plan: "starter" | "pro" | "premium" | "franquias"
       subscription_status:
         | "trial"
         | "active"
@@ -1502,7 +1502,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "owner", "professional", "receptionist"],
+      app_role: ["admin", "owner", "professional", "receptionist", "master"],
       appointment_status: [
         "scheduled",
         "confirmed",
@@ -1512,7 +1512,7 @@ export const Constants = {
       ],
       loyalty_reward_status: ["in_progress", "earned", "redeemed", "expired"],
       loyalty_type: ["visits", "spending", "specific_service"],
-      subscription_plan: ["starter", "pro", "premium"],
+      subscription_plan: ["starter", "pro", "premium", "franquias"],
       subscription_status: [
         "trial",
         "active",
