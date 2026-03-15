@@ -115,24 +115,24 @@ export default function ResetPasswordPage() {
     setLoading(true);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setFormError("Sessão expirada. Solicite um novo link de recuperação.");
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase.auth.updateUser({ password });
       if (error) {
-        const msg = error.message?.toLowerCase() || "";
-        if (msg.includes("same_password") || msg.includes("different")) {
-          setFormError("A nova senha não pode ser igual à anterior.");
-        } else if (msg.includes("session") || msg.includes("not authenticated")) {
-          setFormError("Sessão expirada. Solicite um novo link de recuperação.");
-        } else {
-          setFormError("Não foi possível redefinir a senha. Solicite um novo link.");
-        }
+        setFormError(mapResetPasswordError(error.message));
         setLoading(false);
         return;
       }
 
       setSuccess(true);
       setTimeout(() => navigate("/dashboard"), 2500);
-    } catch {
-      setFormError("Erro inesperado. Tente novamente.");
+    } catch (err) {
+      setFormError(mapResetPasswordError(err instanceof Error ? err.message : undefined));
       setLoading(false);
     }
   };
