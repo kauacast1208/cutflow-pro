@@ -509,6 +509,11 @@ export default function SettingsPage() {
             <WhatsAppSettingsPanel />
           </TabsContent>
 
+          {/* INTEGRATIONS */}
+          <TabsContent value="integrations">
+            <GoogleCalendarSettings />
+          </TabsContent>
+
           {/* PREFERENCES */}
           <TabsContent value="preferences">
             <CardSection className="space-y-6">
