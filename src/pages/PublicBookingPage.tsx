@@ -16,6 +16,7 @@ import { DateTimeStep } from "@/components/booking/DateTimeStep";
 import { ClientInfoStep } from "@/components/booking/ClientInfoStep";
 import { ConfirmStep } from "@/components/booking/ConfirmStep";
 import { BookingSuccess } from "@/components/booking/BookingSuccess";
+import { LocationMap } from "@/components/booking/LocationMap";
 import { useBookingSlots } from "@/hooks/useBookingSlots";
 import { sendBookingEmail } from "@/lib/email";
 import { generateTimeSlots } from "@/lib/booking";
