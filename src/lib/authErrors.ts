@@ -4,22 +4,23 @@ function hasAny(msg: string, terms: string[]) {
   return terms.some((term) => msg.includes(term));
 }
 
-function hasAuthClientEnvConfig(): boolean {
-  const url = import.meta.env.VITE_SUPABASE_URL;
-  const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
-  return Boolean(url && key);
-}
-
+/**
+ * Detects auth configuration errors ONLY from the actual error message content.
+ * Never assumes config is broken based on env var sniffing — Vite static replacement
+ * can make runtime checks unreliable in production builds.
+ */
 export function isAuthConfigurationError(message?: string | null): boolean {
   const msg = normalize(message);
 
-  if (!hasAuthClientEnvConfig()) return true;
+  if (!msg) return false;
 
   return hasAny(msg, [
     "supabaseurl is required",
     "supabasekey is required",
     "supabase url is required",
     "supabase key is required",
+    "invalid api key",
+    "apikey is required",
   ]);
 }
 
