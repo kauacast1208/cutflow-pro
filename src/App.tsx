@@ -187,7 +187,11 @@ const AppRoutes = () => (
       <Route index element={<MasterDashboard />} />
       <Route path="tenants" element={<MasterTenantsPage />} />
       <Route path="tenants/:tenantId" element={<MasterTenantDetailPage />} />
+      <Route path="plans" element={<MasterPlansPage />} />
+      <Route path="subscriptions" element={<MasterSubscriptionsPage />} />
       <Route path="users" element={<MasterUsersPage />} />
+      <Route path="logs" element={<MasterLogsPage />} />
+      <Route path="settings" element={<MasterSettingsPage />} />
     </Route>
     <Route path="*" element={<NotFound />} />
   </Routes>
