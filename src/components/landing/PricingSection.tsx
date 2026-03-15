@@ -90,7 +90,7 @@ export function PricingSection() {
         if (data && data.length > 0) {
           setPlans(
             data
-              .filter((p) => p.slug !== "enterprise" && p.slug !== "franquias")
+              .filter((p) => !["enterprise", "franquias"].includes(p.slug))
               .map((p) => ({
                 id: p.id,
                 slug: p.slug,
