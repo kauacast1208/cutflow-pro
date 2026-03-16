@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { whatsAppClickHandler } from "@/lib/whatsappCTA";
 
 type Billing = "monthly" | "yearly";
 
