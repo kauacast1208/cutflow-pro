@@ -9,46 +9,12 @@ import {
 } from "react";
 import { useAuth } from "./useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 
 // ── Types ──────────────────────────────────────────────
 export type TenantRole = "owner" | "admin" | "professional" | "receptionist";
-
-export interface TenantProfile {
-  id: string;
-  user_id: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  phone: string | null;
-}
-
-export interface TenantBarbershop {
-  id: string;
-  name: string;
-  slug: string;
-  owner_id: string;
-  phone: string | null;
-  address: string | null;
-  address_complement: string | null;
-  description: string | null;
-  logo_url: string | null;
-  instagram: string | null;
-  whatsapp: string | null;
-  opening_time: string;
-  closing_time: string;
-  slot_interval_minutes: number;
-  buffer_minutes: number;
-  min_advance_hours: number;
-  auto_confirm: boolean;
-  allow_online_cancellation: boolean;
-  allow_online_reschedule: boolean;
-  cancellation_limit_hours: number;
-  closed_days: number[] | null;
-  referral_enabled: boolean | null;
-  referral_goal: number | null;
-  referral_reward: string | null;
-  created_at: string;
-  updated_at: string;
-}
+export type TenantProfile = Tables<"profiles">;
+export type TenantBarbershop = Tables<"barbershops">;
 
 type TenantStatus =
   | "loading"
@@ -130,54 +96,70 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
     setTenantLoading(true);
 
-    // Fetch profile, role, and barbershop in parallel
-    const [profileRes, roleRes, ownedShopRes] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select("*")
+    try {
+      const [profileRes, roleRes, ownedShopRes] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", user.id)
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from("barbershops")
+          .select("*")
+          .eq("owner_id", user.id)
+          .limit(1)
+          .maybeSingle(),
+      ]);
+
+      if (profileRes.error) throw profileRes.error;
+      if (roleRes.error) throw roleRes.error;
+      if (ownedShopRes.error) throw ownedShopRes.error;
+
+      setProfile(profileRes.data || null);
+      setRole((roleRes.data?.role as TenantRole) || "owner");
+
+      if (ownedShopRes.data) {
+        setBarbershop(ownedShopRes.data);
+        return;
+      }
+
+      const { data: pro, error: proError } = await supabase
+        .from("professionals")
+        .select("barbershop_id")
         .eq("user_id", user.id)
-        .maybeSingle(),
-      supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .maybeSingle(),
-      supabase
-        .from("barbershops")
-        .select("*")
-        .eq("owner_id", user.id)
-        .maybeSingle(),
-    ]);
-
-    setProfile((profileRes.data as TenantProfile) || null);
-    setRole((roleRes.data?.role as TenantRole) || "owner");
-
-    if (ownedShopRes.data) {
-      setBarbershop(ownedShopRes.data as TenantBarbershop);
-      setTenantLoading(false);
-      return;
-    }
-
-    // Not an owner — check if linked as professional
-    const { data: pro } = await supabase
-      .from("professionals")
-      .select("barbershop_id")
-      .eq("user_id", user.id)
-      .eq("active", true)
-      .maybeSingle();
-
-    if (pro?.barbershop_id) {
-      const { data: shop } = await supabase
-        .from("barbershops")
-        .select("*")
-        .eq("id", pro.barbershop_id)
+        .eq("active", true)
+        .limit(1)
         .maybeSingle();
-      setBarbershop((shop as TenantBarbershop) || null);
-    } else {
-      setBarbershop(null);
-    }
 
-    setTenantLoading(false);
+      if (proError) throw proError;
+
+      if (pro?.barbershop_id) {
+        const { data: shop, error: shopError } = await supabase
+          .from("barbershops")
+          .select("*")
+          .eq("id", pro.barbershop_id)
+          .limit(1)
+          .maybeSingle();
+
+        if (shopError) throw shopError;
+        setBarbershop(shop || null);
+        return;
+      }
+
+      setBarbershop(null);
+    } catch (error) {
+      console.error("[Tenant] Failed to resolve tenant context", error);
+      setBarbershop(null);
+    } finally {
+      setTenantLoading(false);
+    }
   }, [user]);
 
   // Resolve on mount and when user changes

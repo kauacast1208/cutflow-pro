@@ -13,6 +13,6 @@ export function useBarbershop() {
   } as {
     barbershop: TenantBarbershop | null;
     loading: boolean;
-    setBarbershop: (shop: any) => void;
+    setBarbershop: (shop: TenantBarbershop | null) => void;
   };
 }
