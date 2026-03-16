@@ -28,13 +28,13 @@ const chartData = [
 function MiniChart() {
   const max = Math.max(...chartData.map((d) => d.value));
   const w = 100;
-  const h = 32;
-  const padding = 2;
+  const h = 40;
+  const padding = 4;
   const stepX = (w - padding * 2) / (chartData.length - 1);
 
   const points = chartData.map((d, i) => ({
     x: padding + i * stepX,
-    y: h - padding - ((d.value / max) * (h - padding * 2)),
+    y: h - padding - ((d.value / max) * (h - padding * 2 - 4)) - 2,
   }));
 
   // Smooth curve using catmull-rom to bezier
@@ -52,13 +52,20 @@ function MiniChart() {
   }
 
   const fillD = pathD + ` L ${points[points.length - 1].x} ${h} L ${points[0].x} ${h} Z`;
+  const lastPt = points[points.length - 1];
 
   return (
     <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" preserveAspectRatio="none">
       <defs>
         <linearGradient id="miniChartGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="hsl(152,58%,45%)" stopOpacity={0.35} />
-          <stop offset="100%" stopColor="hsl(152,58%,45%)" stopOpacity={0} />
+          <stop offset="0%" stopColor="hsl(152,58%,50%)" stopOpacity={0.3} />
+          <stop offset="50%" stopColor="hsl(152,58%,45%)" stopOpacity={0.1} />
+          <stop offset="100%" stopColor="hsl(152,58%,40%)" stopOpacity={0} />
+        </linearGradient>
+        <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="hsl(152,58%,40%)" />
+          <stop offset="60%" stopColor="hsl(152,58%,55%)" />
+          <stop offset="100%" stopColor="hsl(152,68%,60%)" />
         </linearGradient>
         <filter id="chartGlow">
           <feGaussianBlur stdDeviation="1.5" result="blur" />
@@ -67,12 +74,37 @@ function MiniChart() {
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
+        <filter id="dotGlow">
+          <feGaussianBlur stdDeviation="2" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
-      <path d={fillD} fill="url(#miniChartGrad)" />
-      <path d={pathD} fill="none" stroke="hsl(152,58%,50%)" strokeWidth="1.5" strokeLinecap="round" filter="url(#chartGlow)" />
+      {/* Area fill */}
+      <path d={fillD} fill="url(#miniChartGrad)">
+        <animate attributeName="opacity" from="0" to="1" dur="0.8s" fill="freeze" />
+      </path>
+      {/* Line */}
+      <path d={pathD} fill="none" stroke="url(#lineGrad)" strokeWidth="1.5" strokeLinecap="round" filter="url(#chartGlow)">
+        <animate attributeName="stroke-dashoffset" from="200" to="0" dur="1s" fill="freeze" />
+        <animate attributeName="stroke-dasharray" from="200" to="200" dur="0.01s" fill="freeze" />
+      </path>
+      {/* Data points */}
       {points.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r="1.5" fill="hsl(152,58%,55%)" stroke="hsl(152,58%,35%)" strokeWidth="0.5" />
+        <circle key={i} cx={p.x} cy={p.y} r="1.2" fill="hsl(152,58%,55%)" stroke="hsl(152,58%,35%)" strokeWidth="0.4" opacity={0.7} />
       ))}
+      {/* Glowing pulse dot on last (current) day */}
+      <circle cx={lastPt.x} cy={lastPt.y} r="3" fill="hsl(152,68%,55%)" opacity={0.2} filter="url(#dotGlow)">
+        <animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="0.2;0.35;0.2" dur="2s" repeatCount="indefinite" />
+      </circle>
+      <circle cx={lastPt.x} cy={lastPt.y} r="2" fill="hsl(152,65%,58%)" stroke="hsl(152,58%,40%)" strokeWidth="0.5" />
+      {/* Value label on last point */}
+      <text x={lastPt.x} y={lastPt.y - 4} textAnchor="middle" fill="hsl(152,58%,65%)" fontSize="4" fontWeight="700" fontFamily="system-ui">
+        {chartData[chartData.length - 1].value}
+      </text>
     </svg>
   );
 }
@@ -186,7 +218,7 @@ export function IPhoneLockScreen() {
               <span className="text-[7px] text-white/25 uppercase tracking-wider font-medium">Semana</span>
               <span className="text-[7px] text-primary/60 font-medium">+18%</span>
             </div>
-            <div className="h-8">
+            <div className="h-10">
               <MiniChart />
             </div>
             <div className="flex justify-between mt-1">
