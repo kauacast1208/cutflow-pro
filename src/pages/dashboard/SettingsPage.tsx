@@ -90,6 +90,53 @@ export default function SettingsPage() {
     loadBlockedTimes();
   }, [barbershop]);
 
+  const loadServices = async () => {
+    if (!barbershop) return;
+    const { data, error } = await supabase
+      .from("services")
+      .select("*")
+      .eq("barbershop_id", barbershop.id)
+      .order("sort_order");
+
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    setServices(data || []);
+  };
+
+  const loadProfessionals = async () => {
+    if (!barbershop) return;
+    const { data, error } = await supabase
+      .from("professionals")
+      .select("*")
+      .eq("barbershop_id", barbershop.id);
+
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    setProfessionals(data || []);
+  };
+
+  const loadBlockedTimes = async () => {
+    if (!barbershop) return;
+    const { data, error } = await supabase
+      .from("blocked_times")
+      .select("*")
+      .eq("barbershop_id", barbershop.id)
+      .order("date");
+
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    setBlockedTimes(data || []);
+  };
+
   const saveBarbershop = async () => {
     if (!barbershop) return;
 
