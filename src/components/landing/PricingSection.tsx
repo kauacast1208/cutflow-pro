@@ -112,11 +112,11 @@ const plans: PlanDef[] = [
   {
     slug: "franquias",
     label: "Franquias",
-    monthly: 299,
-    yearly: 239,
+    monthly: null,
+    yearly: null,
     badge: "Para redes",
     tagline: "Gestão centralizada para múltiplas unidades",
-    description: "Controle total da sua rede de barbearias.",
+    description: "Solução sob medida para sua rede de barbearias.",
     icon: <Building2 className="h-5 w-5" />,
     features: [
       { text: "Tudo do Business", highlight: true },
@@ -127,11 +127,18 @@ const plans: PlanDef[] = [
       { text: "Comparativo entre unidades" },
       { text: "Gestão de franquias" },
     ],
-    cta: "Falar com vendas",
+    cta: "Falar com especialista",
     ctaStyle: "outline",
     externalWhatsApp: {
       phone: "5553999481954",
-      message: "Olá! Tenho interesse no plano Franquias do CutFlow para minha rede de barbearias.",
+      message: `Olá! Tenho interesse no plano *Franquias* do CutFlow.
+
+📍 Quantidade de unidades: 
+👥 Tamanho da equipe: 
+🏙️ Cidade/Estado: 
+📋 Principais necessidades: 
+
+Gostaria de conversar com um especialista para montar a solução ideal.`,
     },
   },
   {
@@ -157,7 +164,14 @@ const plans: PlanDef[] = [
     ctaStyle: "outline",
     externalWhatsApp: {
       phone: "5553999481954",
-      message: "Olá! Tenho interesse no plano Enterprise do CutFlow e gostaria de falar com um especialista.",
+      message: `Olá! Tenho interesse no plano *Enterprise* do CutFlow.
+
+📍 Quantidade de unidades: 
+👥 Tamanho da equipe: 
+🏙️ Cidade/Estado: 
+📋 Principais necessidades: 
+
+Gostaria de montar uma solução personalizada com um especialista.`,
     },
   },
 ];
@@ -272,7 +286,7 @@ export function PricingSection() {
 
         {/* Franchise + Enterprise — premium row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[960px] mx-auto mt-8 sm:mt-10">
-          <FranchiseCard plan={plans[3]} billing={billing} />
+          <FranchiseCard plan={plans[3]} />
           <EnterpriseCard plan={plans[4]} />
         </div>
 
@@ -411,10 +425,7 @@ function ProCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
 }
 
 /* ── Franchise card ── */
-function FranchiseCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
-  const price = billing === "monthly" ? plan.monthly : plan.yearly;
-  const savings = plan.monthly && plan.yearly ? (plan.monthly - plan.yearly) * 12 : 0;
-
+function FranchiseCard({ plan }: { plan: PlanDef }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -440,14 +451,8 @@ function FranchiseCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
           <p className="text-xs sm:text-sm text-muted-foreground mb-4">{plan.tagline}</p>
 
           <div className="mb-5">
-            <div className="flex items-baseline gap-1">
-              <span className="text-xs text-muted-foreground">R$</span>
-              <span className="text-3xl sm:text-4xl font-extrabold tracking-tight">{price}</span>
-              <span className="text-muted-foreground text-xs">/mês</span>
-            </div>
-            {billing === "yearly" && savings > 0 && (
-              <p className="text-[11px] text-primary mt-1 font-medium">Economia de R${savings}/ano</p>
-            )}
+            <span className="text-2xl sm:text-3xl font-extrabold tracking-tight">Sob medida</span>
+            <p className="text-xs text-muted-foreground mt-1.5">{plan.description}</p>
           </div>
         </div>
 
@@ -463,15 +468,17 @@ function FranchiseCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
         </div>
       </div>
 
-      <button
-        onClick={whatsAppClickHandler(plan.externalWhatsApp!.phone, plan.externalWhatsApp!.message)}
+      <a
+        href={`https://wa.me/${plan.externalWhatsApp!.phone}?text=${encodeURIComponent(plan.externalWhatsApp!.message)}`}
+        target="_blank"
+        rel="noopener noreferrer"
         className="block mt-auto w-full"
       >
         <Button variant="outline" className="w-full rounded-xl gap-2 h-11 text-sm border-primary/20 hover:bg-primary/5">
           <MessageSquare className="h-4 w-4" />
           {plan.cta}
         </Button>
-      </button>
+      </a>
     </motion.div>
   );
 }
@@ -514,15 +521,17 @@ function EnterpriseCard({ plan }: { plan: PlanDef }) {
         </div>
       </div>
 
-      <button
-        onClick={whatsAppClickHandler(plan.externalWhatsApp!.phone, plan.externalWhatsApp!.message)}
+      <a
+        href={`https://wa.me/${plan.externalWhatsApp!.phone}?text=${encodeURIComponent(plan.externalWhatsApp!.message)}`}
+        target="_blank"
+        rel="noopener noreferrer"
         className="block mt-auto w-full"
       >
         <Button variant="outline" className="w-full rounded-xl gap-2 h-11 text-sm">
           <MessageSquare className="h-4 w-4" />
           {plan.cta}
         </Button>
-      </button>
+      </a>
     </motion.div>
   );
 }
