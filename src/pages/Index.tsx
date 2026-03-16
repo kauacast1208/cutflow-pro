@@ -25,7 +25,7 @@ import WhatsAppButton from "@/components/booking/WhatsAppButton";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background atmosphere">
       <Navbar />
       {/* 1. Hero — Business outcome driven */}
       <HeroSection />
