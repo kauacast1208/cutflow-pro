@@ -112,12 +112,15 @@ export function IPhoneLockScreen() {
 
   return (
     <div className="h-full flex flex-col relative overflow-hidden select-none">
-      {/* Premium wallpaper */}
-      <div className="absolute inset-0 bg-[hsl(240,20%,2%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_20%_80%,hsl(270,50%,20%,0.4),transparent)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_80%_20%,hsl(152,55%,25%,0.25),transparent)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(280,40%,15%,0.15),transparent_70%)]" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30" />
+      {/* Cinematic wallpaper — deep purple / blue / emerald */}
+      <div className="absolute inset-0 bg-[hsl(260,30%,2%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_70%_at_15%_85%,hsl(270,60%,22%,0.55),transparent)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_85%_15%,hsl(152,55%,22%,0.3),transparent)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_40%,hsl(230,50%,18%,0.25),transparent)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,hsl(280,45%,16%,0.2),transparent_60%)]" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/40" />
+      {/* Soft edge light reflection */}
+      <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-white/[0.02] to-transparent" />
 
       {/* Status bar */}
       <div className="relative flex items-center justify-between px-7 pt-3.5 pb-1 text-white/50 text-[9px] font-medium z-10">
