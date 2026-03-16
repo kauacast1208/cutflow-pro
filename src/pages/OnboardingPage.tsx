@@ -49,7 +49,7 @@ export default function OnboardingPage() {
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<"name" | "phone" | "address" | "addressComplement", string>>>({});
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { refresh } = useTenant();
+  const { refresh, setBarbershop } = useTenant();
   const { toast } = useToast();
 
   const isSubmitDisabled = useMemo(() => loading || !barbershopName.trim(), [loading, barbershopName]);
@@ -104,9 +104,16 @@ export default function OnboardingPage() {
       }
 
       const payload = buildBarbershopInsert(parsed.data, user.id, finalSlug);
-      const { error } = await supabase.from("barbershops").insert(payload);
+      const { data: createdBarbershop, error } = await supabase
+        .from("barbershops")
+        .insert(payload)
+        .select("*")
+        .maybeSingle();
 
       if (error) throw error;
+      if (createdBarbershop) {
+        setBarbershop(createdBarbershop);
+      }
 
       await refresh();
       setSuccess(true);
