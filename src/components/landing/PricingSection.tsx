@@ -13,7 +13,6 @@ import {
   ChevronDown,
   ChevronUp,
   Lock,
-  RefreshCw,
   ShieldCheck,
   Globe,
   Headphones,
@@ -28,14 +27,17 @@ interface PlanDef {
   label: string;
   monthly: number | null;
   yearly: number | null;
+  tagline: string;
   description: string;
   features: string[];
   cta: string;
   ctaStyle: "outline" | "hero";
   popular?: boolean;
+  badge?: string;
   icon: React.ReactNode;
   link?: string;
   externalLink?: string;
+  cardClass?: string;
 }
 
 const plans: PlanDef[] = [
@@ -44,17 +46,16 @@ const plans: PlanDef[] = [
     label: "Starter",
     monthly: 49,
     yearly: 39,
-    description: "Para barbeiros autônomos que querem se organizar.",
+    tagline: "Ideal para barbeiros autônomos.",
+    description: "O essencial para organizar sua agenda e seus clientes.",
     icon: <Zap className="h-5 w-5" />,
     features: [
       "Agenda online",
       "1 profissional",
-      "Até 150 clientes",
-      "Lembretes via WhatsApp",
-      "Página de agendamento",
+      "Até 100 clientes",
       "Financeiro básico",
       "Relatórios básicos",
-      "Suporte por e-mail",
+      "Página de agendamento",
     ],
     cta: "Começar grátis",
     ctaStyle: "outline",
@@ -66,19 +67,21 @@ const plans: PlanDef[] = [
     monthly: 79,
     yearly: 63,
     popular: true,
-    description: "Para barbearias em crescimento que precisam de mais controle.",
+    badge: "Mais popular",
+    tagline: "Plano escolhido pela maioria das barbearias.",
+    description: "Controle total para barbearias em crescimento.",
     icon: <Star className="h-5 w-5" />,
     features: [
       "Tudo do Starter",
       "Até 5 profissionais",
       "CRM completo",
-      "Lembretes automáticos",
       "Google Calendar",
-      "Dashboard financeiro completo",
-      "Relatórios avançados",
-      "Métricas semanais",
+      "Financeiro avançado",
+      "Relatórios semanais",
+      "Métricas de desempenho",
+      "Histórico de clientes",
       "Upload de logo",
-      "Suporte prioritário",
+      "Lembretes automáticos",
     ],
     cta: "Começar teste grátis",
     ctaStyle: "hero",
@@ -89,17 +92,18 @@ const plans: PlanDef[] = [
     label: "Business",
     monthly: 159,
     yearly: 127,
-    description: "Para operações profissionais que precisam de escala.",
+    tagline: "Para operações profissionais.",
+    description: "Escala e automação para equipes maiores.",
     icon: <Sparkles className="h-5 w-5" />,
+    cardClass: "border-primary/25",
     features: [
       "Tudo do Pro",
       "Até 15 profissionais",
-      "Relatórios estratégicos",
       "Permissões de equipe",
       "Automações",
-      "Integrações",
       "Acesso à API",
       "Exportação de dados",
+      "Analytics avançado",
     ],
     cta: "Começar Business",
     ctaStyle: "outline",
@@ -108,17 +112,20 @@ const plans: PlanDef[] = [
   {
     slug: "franquias",
     label: "Franquias",
-    monthly: 397,
-    yearly: 317,
-    description: "Para redes com múltiplas unidades.",
+    monthly: 299,
+    yearly: 239,
+    badge: "Para redes",
+    tagline: "Gestão centralizada para múltiplas unidades.",
+    description: "Controle total da sua rede de barbearias.",
     icon: <Building2 className="h-5 w-5" />,
+    cardClass: "bg-gradient-to-br from-card via-card to-primary/[0.04] border-primary/15",
     features: [
       "Tudo do Business",
       "Múltiplas unidades",
       "Dashboard master",
-      "Comparativo entre unidades",
       "Financeiro centralizado",
       "Personalização de marca",
+      "Comparativo entre unidades",
       "Gestão de franquias",
     ],
     cta: "Falar com vendas",
@@ -128,13 +135,15 @@ const plans: PlanDef[] = [
   },
   {
     slug: "enterprise",
-    label: "Enterprise",
+    label: "Solução Enterprise",
     monthly: null,
     yearly: null,
-    description: "Para operações de grande porte com necessidades personalizadas.",
+    tagline: "Para operações que exigem performance máxima.",
+    description: "Infraestrutura dedicada e suporte white-glove.",
     icon: <Crown className="h-5 w-5" />,
+    cardClass: "bg-card/60 backdrop-blur-md border-primary/10 ring-1 ring-primary/5",
     features: [
-      "Tudo incluso",
+      "Tudo do Franquias",
       "Limites personalizados",
       "Onboarding dedicado",
       "Integrações customizadas",
@@ -142,17 +151,18 @@ const plans: PlanDef[] = [
       "Gerente de conta",
       "White label",
       "Ambiente dedicado",
+      "Consultoria estratégica",
     ],
-    cta: "Falar com vendas",
+    cta: "Falar com especialista",
     ctaStyle: "outline",
     externalLink:
-      "https://wa.me/5553999481954?text=Olá! Tenho interesse no plano Enterprise do CutFlow para minha barbearia e gostaria de conversar sobre uma solução personalizada.",
+      "https://wa.me/5553999481954?text=Olá! Tenho interesse no plano Enterprise do CutFlow e gostaria de falar com um especialista.",
   },
 ];
 
 const includedInAll = [
   { icon: <Lock className="h-4 w-4" />, label: "SSL incluso" },
-  { icon: <ShieldCheck className="h-4 w-4" />, label: "Backup diário" },
+  { icon: <ShieldCheck className="h-4 w-4" />, label: "Backups diários" },
   { icon: <Shield className="h-4 w-4" />, label: "Segurança avançada" },
   { icon: <Globe className="h-4 w-4" />, label: "Login com Google" },
   { icon: <Headphones className="h-4 w-4" />, label: "Suporte incluído" },
@@ -198,73 +208,42 @@ export function PricingSection() {
             <Zap className="h-3.5 w-3.5" />
             Preço de lançamento
           </motion.span>
-          <motion.h2
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-2xl sm:text-4xl font-extrabold tracking-[-0.025em] mb-3 sm:mb-4"
-          >
+          <motion.h2 initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-2xl sm:text-4xl font-extrabold tracking-[-0.025em] mb-3 sm:mb-4">
             Escolha o plano ideal para sua barbearia
           </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.05 }}
-            className="text-muted-foreground text-[15px] sm:text-lg max-w-lg mx-auto mb-8"
-          >
+          <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.05 }} className="text-muted-foreground text-[15px] sm:text-lg max-w-lg mx-auto mb-8">
             Comece grátis. Sem fidelidade, sem taxa escondida.
           </motion.p>
 
           {/* Billing toggle */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-card/80 backdrop-blur-sm p-1"
-          >
-            <button
-              onClick={() => setBilling("monthly")}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${billing === "monthly" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-            >
+          <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-card/80 backdrop-blur-sm p-1">
+            <button onClick={() => setBilling("monthly")} className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${billing === "monthly" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
               Mensal
             </button>
-            <button
-              onClick={() => setBilling("yearly")}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${billing === "yearly" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-            >
+            <button onClick={() => setBilling("yearly")} className={`px-5 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${billing === "yearly" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
               Anual
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-semibold">
-                -20%
-              </Badge>
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-semibold">-20%</Badge>
             </button>
           </motion.div>
         </div>
 
         {/* Top 3 plans */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 max-w-5xl mx-auto items-start">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 max-w-5xl mx-auto items-start">
           {plans.slice(0, 3).map((plan, i) => (
             <PlanCard key={plan.slug} plan={plan} billing={billing} index={i} />
           ))}
         </div>
 
         {/* Franchise + Enterprise */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 lg:gap-6 max-w-5xl mx-auto mt-5 sm:mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-5xl mx-auto mt-10">
           {plans.slice(3).map((plan, i) => (
             <PlanCard key={plan.slug} plan={plan} billing={billing} index={i + 3} wide />
           ))}
         </div>
 
         {/* Included in all */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.25 }}
-          className="max-w-3xl mx-auto mt-12 sm:mt-14 text-center"
-        >
-          <p className="text-sm font-semibold mb-4">Todos os planos incluem:</p>
+        <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.25 }} className="max-w-3xl mx-auto mt-14 sm:mt-16 text-center">
+          <p className="text-sm font-semibold mb-5">Todos os planos incluem:</p>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
             {includedInAll.map((item) => (
               <div key={item.label} className="flex items-center gap-2 text-xs sm:text-[13px] text-muted-foreground">
@@ -276,13 +255,7 @@ export function PricingSection() {
         </motion.div>
 
         {/* Trust row */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.3 }}
-          className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 mt-8 sm:mt-10 text-xs sm:text-[13px] text-muted-foreground"
-        >
+        <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 mt-8 sm:mt-10 text-xs sm:text-[13px] text-muted-foreground">
           <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-primary/60" /><span>Pagamento seguro via Stripe</span></div>
           <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary/60" /><span>7 dias grátis</span></div>
           <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary/60" /><span>Sem taxa escondida</span></div>
@@ -290,13 +263,7 @@ export function PricingSection() {
         </motion.div>
 
         {/* FAQ */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2 }}
-          className="max-w-2xl mx-auto mt-16 sm:mt-20"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="max-w-2xl mx-auto mt-16 sm:mt-20">
           <h3 className="text-xl sm:text-2xl font-bold text-center mb-6">Perguntas frequentes</h3>
           <div className="space-y-3">
             {faqs.map((f) => (
@@ -323,36 +290,46 @@ function PlanCard({ plan, billing, index, wide }: { plan: PlanDef; billing: Bill
       transition={{ delay: index * 0.06 }}
       className={`rounded-2xl border flex flex-col relative transition-all duration-300 ${
         isPopular
-          ? "border-primary/40 bg-card shadow-lg ring-2 ring-primary/20 md:scale-[1.03] z-10 p-6 sm:p-8"
-          : "border-border/50 bg-card shadow-card hover:shadow-card-hover hover:border-primary/20 p-5 sm:p-7"
-      } ${wide ? "md:flex-row md:items-start md:gap-8" : ""}`}
+          ? "border-primary/40 bg-card shadow-lg ring-2 ring-primary/20 md:scale-[1.04] z-10 p-7 sm:p-9"
+          : `border-border/50 bg-card shadow-card hover:shadow-card-hover hover:border-primary/20 p-6 sm:p-8 ${plan.cardClass || ""}`
+      } ${wide ? "md:flex-row md:items-start md:gap-8 p-8" : ""}`}
     >
+      {/* Popular badge */}
       {isPopular && (
         <>
           <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-primary/20 via-transparent to-transparent pointer-events-none" />
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-primary px-4 py-1 text-[11px] font-semibold text-primary-foreground shadow-sm whitespace-nowrap z-20">
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-primary px-4 py-1 text-[11px] font-bold uppercase tracking-wider text-primary-foreground shadow-sm whitespace-nowrap z-20">
             <Star className="h-3 w-3 fill-current" />
-            Mais popular
+            {plan.badge}
           </div>
         </>
       )}
 
+      {/* Non-popular badge */}
+      {!isPopular && plan.badge && (
+        <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-20">
+          <Badge variant="secondary" className="text-[10px] font-semibold uppercase tracking-wider px-3 py-0.5">
+            {plan.badge}
+          </Badge>
+        </div>
+      )}
+
       <div className={`relative ${wide ? "md:flex-1" : ""}`}>
-        <div className="mb-4 sm:mb-5">
+        <div className="mb-5">
           <div className="flex items-center gap-2.5 mb-2">
             <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${isPopular ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
               {plan.icon}
             </div>
             <h3 className={`font-bold ${isPopular ? "text-xl sm:text-2xl" : "text-lg sm:text-xl"}`}>{plan.label}</h3>
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{plan.description}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{plan.tagline}</p>
         </div>
 
-        <div className="mb-5 sm:mb-6">
+        <div className="mb-6">
           {isCustom ? (
             <div>
               <span className="text-3xl sm:text-4xl font-extrabold tracking-tight">Sob medida</span>
-              <p className="text-xs text-muted-foreground mt-1">Plano personalizado</p>
+              <p className="text-xs text-muted-foreground mt-1.5">{plan.description}</p>
             </div>
           ) : (
             <div>
@@ -362,13 +339,9 @@ function PlanCard({ plan, billing, index, wide }: { plan: PlanDef; billing: Bill
                 <span className="text-muted-foreground text-xs sm:text-sm">/mês</span>
               </div>
               {billing === "yearly" && savings > 0 ? (
-                <p className="text-[11px] sm:text-xs text-primary mt-1.5 font-medium">
-                  Economia de R${savings}/ano
-                </p>
+                <p className="text-[11px] sm:text-xs text-primary mt-1.5 font-medium">Economia de R${savings}/ano</p>
               ) : (
-                <p className="text-[11px] sm:text-xs text-primary mt-1.5 font-medium">
-                  7 dias grátis · Sem cobrança hoje
-                </p>
+                <p className="text-[11px] sm:text-xs text-primary mt-1.5 font-medium">7 dias grátis · Sem cobrança hoje</p>
               )}
             </div>
           )}
@@ -376,7 +349,7 @@ function PlanCard({ plan, billing, index, wide }: { plan: PlanDef; billing: Bill
       </div>
 
       <div className={`relative ${wide ? "md:flex-1" : ""} flex flex-col flex-1`}>
-        <ul className={`space-y-2.5 mb-6 sm:mb-7 flex-1 ${wide ? "sm:grid sm:grid-cols-2 sm:gap-x-6 sm:gap-y-2.5 sm:space-y-0" : ""}`}>
+        <ul className={`space-y-2.5 mb-7 flex-1 ${wide ? "sm:grid sm:grid-cols-2 sm:gap-x-6 sm:gap-y-2.5 sm:space-y-0" : ""}`}>
           {plan.features.map((f) => (
             <li key={f} className="flex items-start gap-2.5 text-xs sm:text-sm">
               <Check className={`h-3.5 w-3.5 sm:h-4 sm:w-4 mt-0.5 shrink-0 ${isPopular ? "text-primary" : "text-primary/60"}`} />
@@ -387,7 +360,7 @@ function PlanCard({ plan, billing, index, wide }: { plan: PlanDef; billing: Bill
 
         {plan.externalLink ? (
           <a href={plan.externalLink} target="_blank" rel="noopener noreferrer" className="block mt-auto">
-            <Button variant="outline" className={`w-full rounded-xl gap-2 ${isPopular ? "h-12 sm:h-13 text-[15px]" : "h-11 sm:h-12 text-sm"}`}>
+            <Button variant="outline" className={`w-full rounded-xl gap-2 h-11 sm:h-12 text-sm`}>
               <MessageSquare className="h-4 w-4" />
               {plan.cta}
             </Button>
