@@ -1,76 +1,23 @@
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import {
-  CalendarPlus,
-  CheckCircle,
-  Clock,
-  MessageSquare,
-  Calendar,
-  Users,
-  BarChart3,
-  Settings,
-  Scissors,
-  Search,
-  Bell,
-  TrendingUp,
-  Star,
-  ArrowUpRight,
-  ChevronRight,
-  LayoutDashboard,
+  CalendarPlus, CheckCircle, Clock, MessageSquare, Calendar, Users,
+  BarChart3, Settings, Scissors, Search, Bell, TrendingUp, Star,
+  ArrowUpRight, ChevronRight, LayoutDashboard,
 } from "lucide-react";
 import { IPhoneLockScreen } from "./IPhoneLockScreen";
 
+/* ─── Floating notifications ─── */
 const notifications = [
-  {
-    icon: CalendarPlus,
-    title: "Novo agendamento criado",
-    shop: "Barbearia Prime",
-    time: "agora",
-    glow: "from-primary/20 to-emerald-500/10",
-    iconColor: "text-primary",
-  },
-  {
-    icon: CheckCircle,
-    title: "Cliente confirmou horário",
-    shop: "Dom H Barber",
-    time: "2 min atrás",
-    glow: "from-emerald-500/20 to-teal-500/10",
-    iconColor: "text-emerald-500",
-  },
-  {
-    icon: Clock,
-    title: "Horário liberado às 19:00",
-    shop: "Elite Barber",
-    time: "agora",
-    glow: "from-blue-500/20 to-cyan-500/10",
-    iconColor: "text-blue-500",
-  },
-  {
-    icon: MessageSquare,
-    title: "Lembrete enviado WhatsApp",
-    shop: "Black Zone Barber",
-    time: "3 min atrás",
-    glow: "from-teal-500/20 to-emerald-500/10",
-    iconColor: "text-teal-500",
-  },
-  {
-    icon: CalendarPlus,
-    title: "Novo agendamento criado",
-    shop: "Barber Club",
-    time: "1 min atrás",
-    glow: "from-primary/20 to-emerald-500/10",
-    iconColor: "text-primary",
-  },
-  {
-    icon: CheckCircle,
-    title: "Cliente confirmou horário",
-    shop: "Barbearia Central",
-    time: "agora",
-    glow: "from-amber-500/20 to-orange-500/10",
-    iconColor: "text-amber-500",
-  },
+  { icon: CalendarPlus, title: "Novo agendamento criado", shop: "Barbearia Prime", time: "agora", iconColor: "text-primary" },
+  { icon: CheckCircle, title: "Cliente confirmou horário", shop: "Dom H Barber", time: "2 min atrás", iconColor: "text-emerald-500" },
+  { icon: Clock, title: "Horário liberado às 19:00", shop: "Elite Barber", time: "agora", iconColor: "text-blue-500" },
+  { icon: MessageSquare, title: "Lembrete enviado WhatsApp", shop: "Black Zone Barber", time: "3 min atrás", iconColor: "text-teal-500" },
+  { icon: CalendarPlus, title: "Novo agendamento criado", shop: "Barber Club", time: "1 min atrás", iconColor: "text-primary" },
+  { icon: CheckCircle, title: "Cliente confirmou horário", shop: "Barbearia Central", time: "agora", iconColor: "text-amber-500" },
 ];
 
+/* ─── Mini Dashboard (laptop screen) ─── */
 function MiniDashboard() {
   const sidebar = [
     { icon: LayoutDashboard, label: "Dashboard", active: true },
@@ -176,6 +123,83 @@ function MiniDashboard() {
   );
 }
 
+/* ─── 3D Phone with mouse tracking ─── */
+function PhoneShowcase() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [4, -4]), { stiffness: 120, damping: 20 });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-6, 6]), { stiffness: 120, damping: 20 });
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    mouseX.set((e.clientX - rect.left) / rect.width - 0.5);
+    mouseY.set((e.clientY - rect.top) / rect.height - 0.5);
+  }, [mouseX, mouseY]);
+
+  const handleMouseLeave = useCallback(() => {
+    mouseX.set(0);
+    mouseY.set(0);
+  }, [mouseX, mouseY]);
+
+  return (
+    <div
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="relative shrink-0"
+      style={{ perspective: "1200px" }}
+    >
+      {/* Ambient glow layers */}
+      <div className="absolute -inset-10 bg-[radial-gradient(ellipse_at_center,hsl(152,55%,42%,0.1),transparent_65%)] blur-3xl pointer-events-none" />
+      <div className="absolute -inset-16 bg-[radial-gradient(ellipse_at_bottom,hsl(260,40%,35%,0.07),transparent_65%)] blur-3xl pointer-events-none" />
+
+      {/* 3D phone wrapper */}
+      <motion.div
+        style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+        className="relative"
+      >
+        {/* Phone frame */}
+        <div className="relative w-[220px] sm:w-[260px] rounded-[2.2rem] overflow-hidden shadow-[0_24px_80px_-12px_rgba(0,0,0,0.55),0_8px_28px_-6px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.06)]">
+          {/* Titanium bezel gradient */}
+          <div className="absolute inset-0 rounded-[2.2rem] bg-gradient-to-b from-[hsl(220,12%,20%)] via-[hsl(220,12%,13%)] to-[hsl(220,12%,8%)]" />
+
+          {/* Side button reflections */}
+          <div className="absolute top-[80px] -right-[1px] w-[2px] h-[40px] bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-transparent rounded-full" />
+          <div className="absolute top-[60px] -left-[1px] w-[2px] h-[24px] bg-gradient-to-b from-white/[0.06] to-transparent rounded-full" />
+          <div className="absolute top-[95px] -left-[1px] w-[2px] h-[36px] bg-gradient-to-b from-white/[0.06] to-transparent rounded-full" />
+
+          {/* Inner bezel ring */}
+          <div className="absolute inset-[2px] rounded-[2rem] border border-white/[0.04]" />
+
+          {/* Screen */}
+          <div className="relative m-[6px] rounded-[1.8rem] overflow-hidden">
+            {/* Dynamic Island */}
+            <div className="absolute top-2.5 left-1/2 -translate-x-1/2 z-30">
+              <div className="w-[72px] h-[20px] bg-black rounded-full flex items-center justify-center shadow-[0_0_12px_rgba(0,0,0,0.4)]">
+                <div className="w-[6px] h-[6px] rounded-full bg-[hsl(220,15%,15%)] ring-1 ring-[hsl(220,15%,22%)]" />
+              </div>
+            </div>
+
+            {/* Screen content */}
+            <div className="aspect-[9/19.2]">
+              <IPhoneLockScreen />
+            </div>
+
+            {/* Screen glare — subtle diagonal sweep */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] via-transparent to-transparent pointer-events-none rounded-[1.8rem]" />
+          </div>
+        </div>
+
+        {/* Surface reflection */}
+        <div className="absolute -bottom-8 left-6 right-6 h-16 bg-gradient-to-b from-primary/[0.03] to-transparent blur-2xl opacity-50 pointer-events-none" />
+      </motion.div>
+    </div>
+  );
+}
+
 export function LiveDemoSection() {
   const [visibleNotifs, setVisibleNotifs] = useState([0, 1, 2]);
   const [tick, setTick] = useState(0);
@@ -192,13 +216,13 @@ export function LiveDemoSection() {
   }, [tick]);
 
   return (
-    <section className="section-padding bg-background relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-gradient-to-br from-primary/[0.04] via-transparent to-emerald-500/[0.03] rounded-full blur-3xl" />
-      </div>
+    <section className="section-padding relative overflow-hidden">
+      {/* Cinematic background */}
+      <div className="absolute inset-0 bg-background" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_40%,hsl(152,55%,42%,0.04),transparent)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_80%_20%,hsl(260,40%,35%,0.03),transparent)]" />
 
-      <div className="max-w-6xl mx-auto relative">
+      <div className="max-w-6xl mx-auto relative z-10">
         {/* Header */}
         <div className="text-center mb-10 sm:mb-14">
           <motion.div
@@ -243,7 +267,7 @@ export function LiveDemoSection() {
           <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6 lg:gap-0">
             {/* Laptop mockup */}
             <div className="flex-1 w-full lg:pr-4">
-              <div className="rounded-xl sm:rounded-2xl border-2 border-border/80 bg-card shadow-elevated overflow-hidden">
+              <div className="rounded-xl sm:rounded-2xl border-2 border-border/80 bg-card shadow-[var(--shadow-elevated)] overflow-hidden">
                 <div className="flex items-center gap-2 px-3 py-2 bg-muted/40 border-b border-border">
                   <div className="flex gap-1.5">
                     <div className="h-2.5 w-2.5 rounded-full bg-destructive/40" />
@@ -270,56 +294,9 @@ export function LiveDemoSection() {
               whileInView={{ opacity: 1, y: 0, rotateY: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative lg:-ml-16 lg:mt-8 shrink-0"
-              style={{ perspective: "1200px" }}
+              className="lg:-ml-16 lg:mt-8"
             >
-              {/* Ambient glow behind phone */}
-              <div className="absolute -inset-8 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.12),transparent_70%)] blur-2xl pointer-events-none" />
-              <div className="absolute -inset-12 bg-[radial-gradient(ellipse_at_bottom,hsl(270,40%,30%,0.08),transparent_70%)] blur-3xl pointer-events-none" />
-
-              {/* Phone container with 3D tilt */}
-              <div
-                className="relative"
-                style={{
-                  transform: "rotateY(-6deg) rotateX(2deg) rotateZ(1deg)",
-                  transformStyle: "preserve-3d",
-                }}
-              >
-                {/* Phone frame */}
-                <div className="relative w-[220px] sm:w-[260px] rounded-[2.2rem] overflow-hidden shadow-[0_20px_80px_-12px_rgba(0,0,0,0.5),0_8px_24px_-8px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)]">
-                  {/* Outer bezel */}
-                  <div className="absolute inset-0 rounded-[2.2rem] bg-gradient-to-b from-[hsl(220,15%,18%)] via-[hsl(220,15%,12%)] to-[hsl(220,15%,8%)]" />
-
-                  {/* Side button highlights */}
-                  <div className="absolute top-[80px] -right-[1px] w-[2px] h-[40px] bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-transparent rounded-full" />
-                  <div className="absolute top-[60px] -left-[1px] w-[2px] h-[24px] bg-gradient-to-b from-white/[0.06] via-white/[0.02] to-transparent rounded-full" />
-                  <div className="absolute top-[95px] -left-[1px] w-[2px] h-[36px] bg-gradient-to-b from-white/[0.06] via-white/[0.02] to-transparent rounded-full" />
-
-                  {/* Inner bezel ring */}
-                  <div className="absolute inset-[2px] rounded-[2rem] border border-white/[0.04]" />
-
-                  {/* Screen area */}
-                  <div className="relative m-[6px] rounded-[1.8rem] overflow-hidden">
-                    {/* Dynamic Island */}
-                    <div className="absolute top-2.5 left-1/2 -translate-x-1/2 z-30">
-                      <div className="w-[72px] h-[20px] bg-black rounded-full flex items-center justify-center gap-2">
-                        <div className="w-[6px] h-[6px] rounded-full bg-[hsl(220,15%,15%)] ring-1 ring-[hsl(220,15%,20%)]" />
-                      </div>
-                    </div>
-
-                    {/* Screen content */}
-                    <div className="aspect-[9/19.2]">
-                      <IPhoneLockScreen />
-                    </div>
-
-                    {/* Screen glare */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] via-transparent to-transparent pointer-events-none rounded-[1.8rem]" />
-                  </div>
-                </div>
-
-                {/* Reflection on surface */}
-                <div className="absolute -bottom-6 left-4 right-4 h-12 bg-gradient-to-b from-primary/[0.04] to-transparent blur-xl opacity-60 pointer-events-none" />
-              </div>
+              <PhoneShowcase />
             </motion.div>
           </div>
 
@@ -338,8 +315,8 @@ export function LiveDemoSection() {
                     transition={{ duration: 0.35, delay: position * 0.08 }}
                     className="relative group"
                   >
-                    <div className={`absolute -inset-px rounded-xl bg-gradient-to-r ${notif.glow} opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm`} />
-                    <div className="relative rounded-xl bg-card/80 backdrop-blur-xl border border-border/50 px-3.5 py-3 flex items-start gap-3 shadow-card">
+                    <div className="absolute -inset-px rounded-xl bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+                    <div className="relative rounded-xl bg-card/80 backdrop-blur-xl border border-border/50 px-3.5 py-3 flex items-start gap-3 shadow-[var(--shadow-card)]">
                       <div className={`mt-0.5 ${notif.iconColor}`}>
                         <Icon className="h-4 w-4" />
                       </div>
