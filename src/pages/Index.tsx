@@ -49,7 +49,8 @@ const Index = () => {
       <TrustAuthoritySection />
       <AmbassadorSection />
       <AboutSection />
-      {/* 9. Pricing */}
+      {/* 9. ROI + Pricing */}
+      <ROIValueSection />
       <div id="pricing"><PricingSection /></div>
       <ROISection />
       {/* 10. FAQ + Final CTA */}
