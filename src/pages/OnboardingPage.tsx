@@ -94,12 +94,12 @@ export default function OnboardingPage() {
           supabase.from("profiles").insert({
             user_id: user.id,
             full_name: user.user_metadata?.full_name || user.email?.split("@")[0] || null,
-          })
+          }).select().single()
         );
       }
       if (!roleCheck.data) {
         ensureOps.push(
-          supabase.from("user_roles").insert({ user_id: user.id, role: "owner" as const })
+          supabase.from("user_roles").insert({ user_id: user.id, role: "owner" as const }).select().single()
         );
       }
       if (ensureOps.length > 0) await Promise.all(ensureOps);
