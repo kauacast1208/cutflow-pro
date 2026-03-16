@@ -248,7 +248,7 @@ export function PricingSection() {
               }`}
             >
               Anual
-              <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px] px-1.5 py-0">
+              <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px] px-1.5 py-0">
                 -20%
               </Badge>
             </button>
