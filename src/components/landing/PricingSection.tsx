@@ -158,8 +158,10 @@ const plans: PlanDef[] = [
     ],
     cta: "Falar com especialista",
     ctaStyle: "outline",
-    externalLink:
-      "https://wa.me/5553999481954?text=Olá! Tenho interesse no plano Enterprise do CutFlow e gostaria de falar com um especialista.",
+    externalWhatsApp: {
+      phone: "5553999481954",
+      message: "Olá! Tenho interesse no plano Enterprise do CutFlow e gostaria de falar com um especialista.",
+    },
   },
 ];
 
