@@ -47,11 +47,13 @@ export function BookingSuccess({
   };
 
   const whatsappNumber = barbershop.whatsapp || barbershop.phone;
-  const whatsappUrl = whatsappNumber
-    ? `https://wa.me/${whatsappNumber.replace(/\D/g, "")}?text=${encodeURIComponent(
-        `Ola! Acabei de agendar ${service.name} para ${format(selectedDate, "dd/MM")} as ${selectedTime} com ${professional.name}. Obrigado!`
-      )}`
-    : null;
+  const whatsappMessage = `Ola! Acabei de agendar ${service.name} para ${format(selectedDate, "dd/MM")} as ${selectedTime} com ${professional.name}. Obrigado!`;
+
+  const handleWhatsApp = () => {
+    if (whatsappNumber) {
+      openWhatsApp(whatsappNumber, whatsappMessage);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
