@@ -56,8 +56,8 @@ export function SolutionSection() {
             viewport={{ once: true }}
             className="text-2xl sm:text-4xl lg:text-[2.75rem] font-extrabold tracking-[-0.02em] mb-3 sm:mb-4"
           >
-            Como o CutFlow{" "}
-            <span className="text-primary">resolve isso.</span>
+            O CutFlow{" "}
+            <span className="text-primary">resolve tudo isso.</span>
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
