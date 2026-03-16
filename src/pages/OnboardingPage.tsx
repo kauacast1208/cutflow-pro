@@ -88,21 +88,15 @@ export default function OnboardingPage() {
         supabase.from("user_roles").select("id").eq("user_id", user.id).maybeSingle(),
       ]);
 
-      const ensureOps: Promise<any>[] = [];
       if (!profileCheck.data) {
-        ensureOps.push(
-          supabase.from("profiles").insert({
-            user_id: user.id,
-            full_name: user.user_metadata?.full_name || user.email?.split("@")[0] || null,
-          }).select().single()
-        );
+        await supabase.from("profiles").insert({
+          user_id: user.id,
+          full_name: user.user_metadata?.full_name || user.email?.split("@")[0] || null,
+        });
       }
       if (!roleCheck.data) {
-        ensureOps.push(
-          supabase.from("user_roles").insert({ user_id: user.id, role: "owner" as const }).select().single()
-        );
+        await supabase.from("user_roles").insert({ user_id: user.id, role: "owner" as const });
       }
-      if (ensureOps.length > 0) await Promise.all(ensureOps);
 
       let finalSlug = slugify(parsed.data.name);
       if (!finalSlug) {
