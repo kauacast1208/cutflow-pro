@@ -19,22 +19,22 @@ export function FinalCTASection() {
         <div className="relative">
           <div className="inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-1.5 text-xs sm:text-sm font-medium text-primary-foreground/80 mb-5 sm:mb-6">
             <Sparkles className="h-3.5 w-3.5" />
-            Não espere mais
+            Controle total da sua barbearia
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-primary-foreground mb-3 sm:mb-4 tracking-[-0.025em] leading-tight">
-            Quanto mais você espera,{" "}
+            Sua barbearia merece uma{" "}
             <br className="hidden sm:block" />
-            mais clientes você perde.
+            ferramenta profissional.
           </h2>
           <p className="text-primary-foreground/65 text-sm sm:text-base mb-7 sm:mb-8 max-w-md mx-auto leading-relaxed">
-            5 minutos para criar sua conta. 7 dias grátis. Zero risco.
+            5 minutos para criar sua conta. 7 dias grátis. 1 cliente recuperado paga o sistema.
           </p>
           <Link to="/signup" className="block w-full sm:w-auto sm:inline-block">
             <Button
               size="lg"
               className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-bold text-[15px] px-8 sm:px-10 h-14 shadow-lg rounded-xl w-full sm:w-auto"
             >
-              Começar teste grátis
+              Começar teste grátis — 7 dias
               <ArrowRight className="ml-2 h-4.5 w-4.5" />
             </Button>
           </Link>
