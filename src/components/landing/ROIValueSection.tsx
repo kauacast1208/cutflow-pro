@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import {
-  CalendarCheck, UserCheck, DollarSign, BarChart3, ArrowRight,
+  CalendarCheck, UserCheck, DollarSign, BarChart3, ArrowRight, Shield,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,28 +11,24 @@ const pillars = [
     stat: "1 cliente recuperado",
     headline: "já cobre o plano mensal",
     desc: "Com o ticket médio de R$60, basta recuperar um único cliente perdido por no-show para pagar todo o investimento no CutFlow.",
-    accent: "primary" as const,
   },
   {
     icon: UserCheck,
     stat: "37% menos faltas",
     headline: "com lembretes automáticos",
     desc: "Confirmações via WhatsApp e notificações inteligentes reduzem drasticamente os horários vazios na sua agenda.",
-    accent: "primary" as const,
   },
   {
     icon: DollarSign,
     stat: "Receita previsível",
     headline: "com controle real do fluxo",
     desc: "Visão financeira por profissional, serviço e período. Você sabe exatamente quanto entra — e de onde vem.",
-    accent: "primary" as const,
   },
   {
     icon: BarChart3,
     stat: "3h economizadas",
     headline: "por semana em gestão",
     desc: "Agenda, clientes e financeiro centralizados. Sem planilhas, sem cadernos, sem retrabalho manual.",
-    accent: "primary" as const,
   },
 ];
 
@@ -67,13 +63,13 @@ export function ROIValueSection() {
           </p>
 
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-foreground tracking-[-0.025em] leading-tight mb-4">
-            O CutFlow não é um custo.
+            CutFlow não é um custo.
             <br />
             <span className="text-primary">É o investimento que se paga sozinho.</span>
           </h2>
 
           <p className="text-muted-foreground text-sm sm:text-base leading-relaxed max-w-lg mx-auto">
-            Cada cliente recuperado, cada falta evitada e cada hora economizada retornam diretamente para o seu faturamento.
+            Cada cliente recuperado, cada falta evitada e cada hora economizada retornam diretamente para o seu faturamento. Barbearias em crescimento já entenderam isso.
           </p>
         </motion.div>
 
@@ -91,23 +87,41 @@ export function ROIValueSection() {
               variants={itemVariants}
               className="group relative rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm p-6 sm:p-7 transition-all duration-300 hover:border-primary/25 hover:bg-card/80"
             >
-              {/* Icon */}
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary mb-4 transition-colors group-hover:bg-primary/15">
                 <p.icon className="h-5 w-5" />
               </div>
-
-              {/* Stat + headline */}
               <div className="mb-2">
                 <span className="text-lg sm:text-xl font-extrabold text-foreground">{p.stat}</span>
                 <span className="text-lg sm:text-xl font-extrabold text-muted-foreground/60 ml-1.5">{p.headline}</span>
               </div>
-
-              {/* Description */}
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {p.desc}
-              </p>
+              <p className="text-sm text-muted-foreground leading-relaxed">{p.desc}</p>
             </motion.div>
           ))}
+        </motion.div>
+
+        {/* Positioning trigger strip */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="rounded-2xl border border-border/50 bg-card/30 backdrop-blur-sm p-5 sm:p-6 mb-10"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 text-center">
+            {[
+              { icon: Shield, title: "Controle total", desc: "Agenda, financeiro e CRM centralizados" },
+              { icon: DollarSign, title: "ROI comprovado", desc: "1 cliente recuperado paga o sistema" },
+              { icon: BarChart3, title: "Crescimento real", desc: "Dados que guiam decisões de negócio" },
+            ].map((item) => (
+              <div key={item.title} className="flex flex-col items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <item.icon className="h-4 w-4 text-primary" />
+                </div>
+                <p className="text-sm font-bold text-foreground">{item.title}</p>
+                <p className="text-xs text-muted-foreground">{item.desc}</p>
+              </div>
+            ))}
+          </div>
         </motion.div>
 
         {/* Bottom CTA strip */}

@@ -17,6 +17,7 @@ import { TrustAuthoritySection } from "@/components/landing/TrustAuthoritySectio
 import { PricingSection } from "@/components/landing/PricingSection";
 import { ROISection } from "@/components/landing/ROISection";
 import { ROIValueSection } from "@/components/landing/ROIValueSection";
+import { NoShowCostSection } from "@/components/landing/NoShowCostSection";
 import { FAQSection } from "@/components/landing/FAQSection";
 import { FinalCTASection } from "@/components/landing/FinalCTASection";
 import { Footer } from "@/components/landing/Footer";
@@ -26,7 +27,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      {/* 1. Hero — Pain driven */}
+      {/* 1. Hero — Business outcome driven */}
       <HeroSection />
       {/* 2. Problem — Financial impact */}
       <PainPointsSection />
@@ -49,7 +50,8 @@ const Index = () => {
       <TrustAuthoritySection />
       <AmbassadorSection />
       <AboutSection />
-      {/* 9. ROI + Pricing */}
+      {/* 9. No-show cost breakdown + ROI + Pricing */}
+      <NoShowCostSection />
       <ROIValueSection />
       <div id="pricing"><PricingSection /></div>
       <ROISection />
