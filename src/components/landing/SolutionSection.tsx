@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Calendar, CheckCircle2, Users, BarChart3, MessageSquare, ArrowRight } from "lucide-react";
+import { Calendar, CheckCircle2, Users, BarChart3, MessageSquare, Globe, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
@@ -11,7 +11,7 @@ const solutions = [
   },
   {
     icon: CheckCircle2,
-    title: "Confirmação automática",
+    title: "Confirmações automáticas",
     description: "Lembretes por WhatsApp reduzem faltas em até 40% sem esforço.",
   },
   {
@@ -21,13 +21,18 @@ const solutions = [
   },
   {
     icon: BarChart3,
-    title: "Financeiro",
+    title: "Financeiro simples",
     description: "Receita, ticket médio e desempenho por profissional em tempo real.",
   },
   {
     icon: MessageSquare,
     title: "WhatsApp integrado",
     description: "Confirmações, lembretes e comunicação automática direto no WhatsApp.",
+  },
+  {
+    icon: Globe,
+    title: "Agendamento online",
+    description: "Página profissional para seus clientes agendarem 24h, sem precisar ligar.",
   },
 ];
 
@@ -51,8 +56,8 @@ export function SolutionSection() {
             viewport={{ once: true }}
             className="text-2xl sm:text-4xl lg:text-[2.75rem] font-extrabold tracking-[-0.02em] mb-3 sm:mb-4"
           >
-            O CutFlow resolve isso{" "}
-            <span className="text-primary">automaticamente.</span>
+            Como o CutFlow{" "}
+            <span className="text-primary">resolve isso.</span>
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -73,9 +78,7 @@ export function SolutionSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.06 }}
-              className={`group card-premium p-5 sm:p-6 card-lift ${
-                i === 4 ? "sm:col-span-2 lg:col-span-1" : ""
-              }`}
+              className="group card-premium p-5 sm:p-6 card-lift"
             >
               <div className="mb-4 flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-primary/[0.06] group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
                 <s.icon className="h-5 w-5 text-primary group-hover:text-primary-foreground transition-colors" />

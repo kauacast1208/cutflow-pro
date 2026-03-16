@@ -1,27 +1,26 @@
 import { motion } from "framer-motion";
-import { UserX, CalendarX, MessageCircleWarning, DollarSign } from "lucide-react";
-import { ArrowRight } from "lucide-react";
+import { UserX, CalendarX, MessageCircleWarning, DollarSign, ArrowRight } from "lucide-react";
 
 const problems = [
   {
     icon: UserX,
-    title: "Cliente não aparece",
-    description: "Faltas sem aviso geram cadeira vazia e prejuízo direto no seu dia.",
+    title: "Falta de confirmação",
+    description: "Clientes não aparecem porque ninguém lembrou. Cadeira vazia e prejuízo no seu dia.",
   },
   {
     icon: CalendarX,
-    title: "Agenda confusa",
+    title: "Agenda desorganizada",
     description: "Horários duplicados, conflitos e clientes esperando sem necessidade.",
   },
   {
     icon: MessageCircleWarning,
-    title: "WhatsApp bagunçado",
-    description: "Mensagens perdidas, horários esquecidos e clientes sem resposta.",
+    title: "WhatsApp confuso",
+    description: "Mensagens perdidas no meio de grupos e conversas pessoais. Clientes sem resposta.",
   },
   {
     icon: DollarSign,
-    title: "Faturamento perdido",
-    description: "Sem controle de quanto entra, quanto sai e qual profissional rende mais.",
+    title: "Cliente não retorna",
+    description: "Sem follow-up, sem dados, sem fidelização. Cada cliente perdido é dinheiro que não volta.",
   },
 ];
 
@@ -44,7 +43,7 @@ export function PainPointsSection() {
             viewport={{ once: true }}
             className="text-2xl sm:text-4xl lg:text-[2.75rem] font-extrabold tracking-[-0.02em] mb-4 sm:mb-5"
           >
-            Você já passou por isso?
+            Você está perdendo dinheiro sem perceber
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -53,7 +52,7 @@ export function PainPointsSection() {
             transition={{ delay: 0.1 }}
             className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto leading-relaxed"
           >
-            Se você ainda organiza tudo pelo WhatsApp ou caderninho, está perdendo tempo e dinheiro.
+            Se você ainda organiza tudo pelo WhatsApp ou caderninho, está perdendo tempo e dinheiro todo dia.
           </motion.p>
         </div>
 
@@ -65,9 +64,9 @@ export function PainPointsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.06 }}
-              className="rounded-2xl border border-destructive/10 bg-destructive/[0.03] p-5 sm:p-6 hover:border-destructive/25 hover:bg-destructive/[0.05] transition-all duration-300 card-lift"
+              className="group rounded-2xl border border-destructive/10 bg-destructive/[0.03] p-5 sm:p-6 hover:border-destructive/25 hover:bg-destructive/[0.05] transition-all duration-300 card-lift"
             >
-              <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-destructive/8 mb-4">
+              <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-destructive/8 mb-4 group-hover:bg-destructive/12 transition-colors">
                 <p.icon className="h-5 w-5 sm:h-6 sm:w-6 text-destructive" />
               </div>
               <h3 className="font-bold text-sm sm:text-base mb-1.5">{p.title}</h3>

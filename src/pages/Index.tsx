@@ -7,12 +7,15 @@ import { FeaturesSection } from "@/components/landing/FeaturesSection";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { WhatsAppFeatureSection } from "@/components/landing/WhatsAppFeatureSection";
 import { DemoSection } from "@/components/landing/DemoSection";
-import { SocialProofSection } from "@/components/landing/SocialProofSection";
+import { GoogleCalendarSection } from "@/components/landing/GoogleCalendarSection";
+import { BrandingSection } from "@/components/landing/BrandingSection";
+import { ResultsSection } from "@/components/landing/ResultsSection";
 import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
+import { AmbassadorSection } from "@/components/landing/AmbassadorSection";
 import { AboutSection } from "@/components/landing/AboutSection";
 import { PricingSection } from "@/components/landing/PricingSection";
 import { FAQSection } from "@/components/landing/FAQSection";
-import { CTASection } from "@/components/landing/CTASection";
+import { FinalCTASection } from "@/components/landing/FinalCTASection";
 import { Footer } from "@/components/landing/Footer";
 import WhatsAppButton from "@/components/booking/WhatsAppButton";
 
@@ -28,12 +31,15 @@ const Index = () => {
       <HowItWorksSection />
       <WhatsAppFeatureSection />
       <DemoSection />
-      <SocialProofSection />
+      <GoogleCalendarSection />
+      <BrandingSection />
+      <ResultsSection />
       <TestimonialsSection />
+      <AmbassadorSection />
       <AboutSection />
       <div id="pricing"><PricingSection /></div>
       <div id="faq"><FAQSection /></div>
-      <CTASection />
+      <FinalCTASection />
       <Footer />
       <WhatsAppButton />
     </div>
