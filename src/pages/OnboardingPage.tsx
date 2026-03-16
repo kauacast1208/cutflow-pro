@@ -61,6 +61,7 @@ export default function OnboardingPage() {
     if (!user) return;
 
     setFormError(null);
+    setTechnicalError(null);
     setFieldErrors({});
 
     const parsed = onboardingBarbershopSchema.safeParse({
