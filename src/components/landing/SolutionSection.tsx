@@ -12,7 +12,7 @@ const solutions = [
   {
     icon: CheckCircle2,
     title: "Confirmações automáticas",
-    description: "Lembretes por WhatsApp reduzem faltas em até 40% sem esforço.",
+    description: "Lembretes automáticos pelo WhatsApp. Menos faltas, mais cadeiras ocupadas.",
   },
   {
     icon: Users,
