@@ -46,6 +46,7 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [technicalError, setTechnicalError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<"name" | "phone" | "address" | "addressComplement", string>>>({});
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -60,6 +61,7 @@ export default function OnboardingPage() {
     if (!user) return;
 
     setFormError(null);
+    setTechnicalError(null);
     setFieldErrors({});
 
     const parsed = onboardingBarbershopSchema.safeParse({
@@ -122,8 +124,11 @@ export default function OnboardingPage() {
         navigate("/dashboard");
       }, 2500);
     } catch (error) {
+      const rawMessage = error instanceof Error ? error.message : String(error);
       const message = getBarbershopErrorMessage(error, "Não foi possível criar sua barbearia agora.");
       setFormError(message);
+      setTechnicalError(rawMessage && rawMessage !== message ? rawMessage : null);
+      console.error("[Onboarding] Failed to create first barbershop", { userId: user.id, error });
       toast({ title: "Erro ao criar barbearia", description: message, variant: "destructive" });
     } finally {
       setLoading(false);
@@ -295,9 +300,16 @@ export default function OnboardingPage() {
                       exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                        <span>{formError}</span>
+                      <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                        <div className="flex items-start gap-3">
+                          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                          <span>{formError}</span>
+                        </div>
+                        {technicalError ? (
+                          <p className="mt-2 text-xs text-destructive/80 break-all">
+                            Detalhe técnico: {technicalError}
+                          </p>
+                        ) : null}
                       </div>
                     </motion.div>
                   )}

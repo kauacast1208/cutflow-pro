@@ -14,7 +14,7 @@ import { ptBR } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 
 export default function SubscriptionManager() {
-  const { subscription, loading, isActive, isTrialExpired, daysRemaining } = useSubscription();
+  const { subscription, loading, isActive, isTrialExpired, daysRemaining, refreshSubscription, syncError } = useSubscription();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [syncing, setSyncing] = useState(false);
@@ -23,17 +23,22 @@ export default function SubscriptionManager() {
   const syncSubscription = useCallback(async () => {
     setSyncing(true);
     try {
-      const { data, error } = await supabase.functions.invoke("check-subscription");
-      if (error) throw error;
-      if (data?.subscribed) {
-        toast({ title: "Assinatura sincronizada!", description: `Plano: ${data.plan}` });
-      }
-    } catch {
-      // silent
+      await refreshSubscription();
+      toast({
+        title: "Assinatura sincronizada!",
+        description: subscription?.plan ? `Plano: ${subscription.plan}` : "Status atualizado.",
+      });
+    } catch (err: any) {
+      console.error("[SubscriptionManager] Sync failed", err);
+      toast({
+        title: "Erro ao sincronizar assinatura",
+        description: err?.message || syncError || "Não foi possível verificar sua assinatura agora.",
+        variant: "destructive",
+      });
     } finally {
       setSyncing(false);
     }
-  }, [toast]);
+  }, [refreshSubscription, subscription?.plan, syncError, toast]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
