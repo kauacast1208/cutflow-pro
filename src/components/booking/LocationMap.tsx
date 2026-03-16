@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 interface LocationMapProps {
   address: string;
   name: string;
-  addressComplement?: string;
+  addressComplement?: string | null;
 }
 
 export function LocationMap({ address, name, addressComplement }: LocationMapProps) {

@@ -33,6 +33,7 @@ export default function AuthCallbackPage() {
         .from("barbershops")
         .select("id")
         .eq("owner_id", userId)
+        .limit(1)
         .maybeSingle();
 
       if (barbershop) {
