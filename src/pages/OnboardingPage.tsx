@@ -124,8 +124,11 @@ export default function OnboardingPage() {
         navigate("/dashboard");
       }, 2500);
     } catch (error) {
+      const rawMessage = error instanceof Error ? error.message : String(error);
       const message = getBarbershopErrorMessage(error, "Não foi possível criar sua barbearia agora.");
       setFormError(message);
+      setTechnicalError(rawMessage && rawMessage !== message ? rawMessage : null);
+      console.error("[Onboarding] Failed to create first barbershop", { userId: user.id, error });
       toast({ title: "Erro ao criar barbearia", description: message, variant: "destructive" });
     } finally {
       setLoading(false);
