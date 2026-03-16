@@ -16,6 +16,8 @@ import {
   type TenantRole,
 } from "@/lib/tenant";
 
+export type { TenantBarbershop, TenantProfile, TenantRole } from "@/lib/tenant";
+
 type TenantStatus = "loading" | "unauthenticated" | "no_barbershop" | "ready";
 
 interface TenantContextType {
