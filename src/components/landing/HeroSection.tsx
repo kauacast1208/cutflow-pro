@@ -46,7 +46,7 @@ export function HeroSection() {
             transition={{ duration: 0.5, delay: 0.14 }}
             className="text-[15px] sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-5 sm:mb-6 leading-relaxed px-2 sm:px-0"
           >
-            Confirmações automáticas, agenda inteligente, CRM e controle financeiro para barbearias que querem crescer sem bagunça.
+            Agenda, lembretes automáticos, CRM e financeiro — tudo que você precisa para parar de perder dinheiro e começar a crescer de verdade.
           </motion.p>
 
           {/* Pain bullets */}
