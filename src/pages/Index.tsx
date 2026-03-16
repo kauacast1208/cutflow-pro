@@ -13,6 +13,7 @@ import { ResultsSection } from "@/components/landing/ResultsSection";
 import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 import { AmbassadorSection } from "@/components/landing/AmbassadorSection";
 import { AboutSection } from "@/components/landing/AboutSection";
+import { TrustAuthoritySection } from "@/components/landing/TrustAuthoritySection";
 import { PricingSection } from "@/components/landing/PricingSection";
 import { ROISection } from "@/components/landing/ROISection";
 import { FAQSection } from "@/components/landing/FAQSection";
