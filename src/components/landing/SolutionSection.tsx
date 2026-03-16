@@ -32,7 +32,7 @@ const solutions = [
   {
     icon: Globe,
     title: "Agendamento online",
-    description: "Página profissional para seus clientes agendarem 24h, sem precisar ligar.",
+    description: "Seu cliente agenda sozinho, 24h por dia, sem ligar. Você só atende.",
   },
 ];
 
