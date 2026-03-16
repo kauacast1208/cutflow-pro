@@ -12,6 +12,7 @@ import SignupPage from "./pages/SignupPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import OnboardingPage from "./pages/OnboardingPage";
+import { OnboardingErrorBoundary } from "./components/OnboardingErrorBoundary";
 import DemoPage from "./pages/DemoPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
 import CheckoutPage from "./pages/CheckoutPage";
