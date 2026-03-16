@@ -1,32 +1,27 @@
 import { motion } from "framer-motion";
-import { MessageSquare, Clock, DollarSign, AlarmClock, MessageCircleWarning } from "lucide-react";
+import { UserX, CalendarX, MessageCircleWarning, DollarSign } from "lucide-react";
 import { ArrowRight } from "lucide-react";
 
 const problems = [
   {
-    icon: MessageSquare,
-    title: "Agenda perdida no WhatsApp",
-    description: "Mensagens se perdem, horários confusos e clientes ficam sem resposta.",
+    icon: UserX,
+    title: "Cliente não aparece",
+    description: "Faltas sem aviso geram cadeira vazia e prejuízo direto no seu dia.",
   },
   {
-    icon: AlarmClock,
-    title: "Clientes esquecendo horários",
-    description: "Sem lembretes automáticos, faltas constantes geram prejuízo direto.",
-  },
-  {
-    icon: Clock,
-    title: "Horários vazios na cadeira",
-    description: "Cada horário vazio é dinheiro que você está deixando na mesa.",
-  },
-  {
-    icon: DollarSign,
-    title: "Sem controle do faturamento",
-    description: "Sem dados claros de receita, ticket médio e desempenho por profissional.",
+    icon: CalendarX,
+    title: "Agenda confusa",
+    description: "Horários duplicados, conflitos e clientes esperando sem necessidade.",
   },
   {
     icon: MessageCircleWarning,
-    title: "Tempo perdido organizando",
-    description: "Horas gastas respondendo mensagens ao invés de atender clientes.",
+    title: "WhatsApp bagunçado",
+    description: "Mensagens perdidas, horários esquecidos e clientes sem resposta.",
+  },
+  {
+    icon: DollarSign,
+    title: "Faturamento perdido",
+    description: "Sem controle de quanto entra, quanto sai e qual profissional rende mais.",
   },
 ];
 
