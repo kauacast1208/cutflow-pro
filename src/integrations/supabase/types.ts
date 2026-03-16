@@ -1473,6 +1473,13 @@ export type Database = {
       }
     }
     Functions: {
+      ensure_current_user_setup: {
+        Args: { _full_name?: string }
+        Returns: {
+          profile_id: string
+          user_role: Database["public"]["Enums"]["app_role"]
+        }[]
+      }
       get_booked_slots: {
         Args: {
           _barbershop_id: string

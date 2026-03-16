@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { buildBarbershopInsert, getBarbershopErrorMessage, onboardingBarbershopSchema } from "@/lib/barbershop";
 import { formatPhone } from "@/lib/format";
+import { ensureCurrentUserSetup, isNoRowsError } from "@/lib/tenant";
 
 function slugify(text: string) {
   return text
@@ -82,21 +83,7 @@ export default function OnboardingPage() {
     setLoading(true);
 
     try {
-      // Ensure profile and user_role exist (handles users created before triggers existed)
-      const [profileCheck, roleCheck] = await Promise.all([
-        supabase.from("profiles").select("id").eq("user_id", user.id).maybeSingle(),
-        supabase.from("user_roles").select("id").eq("user_id", user.id).maybeSingle(),
-      ]);
-
-      if (!profileCheck.data) {
-        await supabase.from("profiles").insert({
-          user_id: user.id,
-          full_name: user.user_metadata?.full_name || user.email?.split("@")[0] || null,
-        });
-      }
-      if (!roleCheck.data) {
-        await supabase.from("user_roles").insert({ user_id: user.id, role: "owner" as const });
-      }
+      await ensureCurrentUserSetup(user.user_metadata?.full_name || user.email?.split("@")[0] || null);
 
       let finalSlug = slugify(parsed.data.name);
       if (!finalSlug) {
@@ -110,7 +97,7 @@ export default function OnboardingPage() {
         .limit(1)
         .maybeSingle();
 
-      if (existingError) throw existingError;
+      if (existingError && !isNoRowsError(existingError)) throw existingError;
 
       if (existing) {
         finalSlug = `${finalSlug}-${Math.random().toString(36).slice(2, 5)}`;
