@@ -72,7 +72,7 @@ export default function SettingsPage() {
     setName(barbershop.name || "");
     setPhone(barbershop.phone || "");
     setAddress(barbershop.address || "");
-    setAddressComplement((barbershop as any).address_complement || "");
+    setAddressComplement(barbershop.address_complement || "");
     setInstagram(barbershop.instagram || "");
     setWhatsapp(barbershop.whatsapp || "");
     setDescription(barbershop.description || "");
@@ -90,39 +90,61 @@ export default function SettingsPage() {
     loadBlockedTimes();
   }, [barbershop]);
 
-  const loadServices = async () => {
-    if (!barbershop) return;
-    const { data } = await supabase.from("services").select("*").eq("barbershop_id", barbershop.id).order("sort_order");
-    setServices(data || []);
-  };
-  const loadProfessionals = async () => {
-    if (!barbershop) return;
-    const { data } = await supabase.from("professionals").select("*").eq("barbershop_id", barbershop.id);
-    setProfessionals(data || []);
-  };
-  const loadBlockedTimes = async () => {
-    if (!barbershop) return;
-    const { data } = await supabase.from("blocked_times").select("*").eq("barbershop_id", barbershop.id).order("date");
-    setBlockedTimes(data || []);
-  };
-
   const saveBarbershop = async () => {
     if (!barbershop) return;
+
+    const parsed = barbershopSettingsSchema.safeParse({
+      name,
+      phone,
+      address,
+      addressComplement,
+      instagram,
+      whatsapp,
+      description,
+      openingTime,
+      closingTime,
+      slotInterval,
+      bufferMinutes,
+      minAdvance,
+      allowCancel,
+      allowReschedule,
+      cancelLimit,
+      autoConfirm,
+    });
+
+    if (!parsed.success) {
+      toast({
+        title: "Dados inválidos",
+        description: parsed.error.issues[0]?.message || "Revise os campos antes de salvar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSaving(true);
-    const { data, error } = await supabase.from("barbershops").update({
-      name, phone, address, address_complement: addressComplement || null, instagram, whatsapp, description,
-      opening_time: openingTime, closing_time: closingTime,
-      slot_interval_minutes: slotInterval, buffer_minutes: bufferMinutes,
-      min_advance_hours: minAdvance, allow_online_cancellation: allowCancel,
-      allow_online_reschedule: allowReschedule, cancellation_limit_hours: cancelLimit,
-      auto_confirm: autoConfirm,
-    }).eq("id", barbershop.id).select().single();
-    setSaving(false);
-    if (error) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
-    } else {
+    try {
+      const payload = buildBarbershopUpdate(parsed.data);
+      const { data, error } = await supabase
+        .from("barbershops")
+        .update(payload)
+        .eq("id", barbershop.id)
+        .select()
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) throw new Error("Barbearia não encontrada para atualização.");
+
       setBarbershop(data);
       toast({ title: "Salvo!", description: "Configurações atualizadas." });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: getBarbershopErrorMessage(error, "Não foi possível salvar as configurações."),
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
