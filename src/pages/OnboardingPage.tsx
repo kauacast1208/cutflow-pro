@@ -153,6 +153,7 @@ export default function OnboardingPage() {
     }
     clearError();
     setLoading(true);
+    console.info("[Onboarding] Step 3 START — creating client", { barbershopId: createdBarbershopId, name: clientName });
     try {
       const { error } = await supabase.from("clients").insert({
         barbershop_id: createdBarbershopId,
@@ -160,8 +161,10 @@ export default function OnboardingPage() {
         phone: clientPhone.trim() || null,
       });
       if (error) throw error;
+      console.info("[Onboarding] Step 3 DONE — client created");
       setCurrentStep(4);
     } catch (error) {
+      console.error("[Onboarding] Step 3 FAILED", error);
       setFormError("Não foi possível cadastrar o cliente. Tente novamente.");
     } finally {
       setLoading(false);
