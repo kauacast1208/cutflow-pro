@@ -19,8 +19,8 @@ const problems = [
   },
   {
     icon: DollarSign,
-    title: "Cliente não retorna",
-    description: "Sem follow-up, sem dados, sem fidelização. Cada cliente perdido é dinheiro que não volta.",
+    title: "Dinheiro escorrendo pelo ralo",
+    description: "Sem dados, sem follow-up, sem fidelização. Você trabalha muito e fatura pouco.",
   },
 ];
 
