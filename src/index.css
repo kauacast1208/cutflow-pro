@@ -256,13 +256,14 @@
 
   /* Card lift on hover */
   .card-lift {
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
   }
   .card-lift:hover {
-    transform: translateY(-3px);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover);
   }
 
-  /* Button glow pulse */
+  /* Button glow pulse — subtle emerald only */
   .btn-glow {
     position: relative;
     overflow: visible;
@@ -272,13 +273,23 @@
     position: absolute;
     inset: -2px;
     border-radius: inherit;
-    background: hsl(var(--primary) / 0.25);
-    filter: blur(12px);
+    background: hsl(var(--primary) / 0.2);
+    filter: blur(14px);
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.35s ease;
     z-index: -1;
   }
   .btn-glow:hover::after {
     opacity: 1;
+  }
+
+  /* Premium section divider */
+  .section-divider {
+    @apply relative;
+  }
+  .section-divider::after {
+    content: '';
+    @apply absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-px;
+    background: linear-gradient(90deg, transparent, hsl(var(--border)), transparent);
   }
 }
