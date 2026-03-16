@@ -141,11 +141,12 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 sm:p-6 relative">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 sm:p-6 relative atmosphere">
       {/* Background effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-30%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-primary/[0.04] blur-[150px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-accent/[0.03] blur-[120px]" />
+        <div className="absolute top-[-30%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-primary/[0.03] blur-[150px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-accent/[0.04] blur-[120px]" />
+        <div className="absolute top-[10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-[hsl(265_45%_55%/0.03)] blur-[100px]" />
       </div>
 
       <AnimatePresence mode="wait">
