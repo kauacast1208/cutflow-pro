@@ -618,7 +618,7 @@ export function DemoSection() {
               <Sidebar activeTab={activeTab} />
               <div className="flex-1 flex flex-col min-w-0">
                 <TopBar />
-                <div className="flex-1 bg-background dark:bg-[hsl(240,16%,7%)] overflow-hidden overflow-y-auto">
+                <div className="flex-1 bg-background dark:bg-[hsl(240,20%,4%)] overflow-hidden overflow-y-auto">
                   <AnimatePresence mode="wait">
                     <motion.div key={activeTab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2 }}>
                       <ActiveMockup />
