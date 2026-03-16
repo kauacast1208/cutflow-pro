@@ -57,10 +57,10 @@ export function HeroSection() {
             className="flex flex-wrap items-center justify-center gap-2 mb-7 sm:mb-8 text-[12px] sm:text-[13px]"
           >
             {[
-              "Clientes esquecem horário",
-              "WhatsApp vira bagunça",
-              "Faltas fazem você perder dinheiro",
-              "Agenda manual gera erros",
+              "Clientes faltam sem avisar",
+              "WhatsApp vira um caos",
+              "Você perde R$ 500+/mês com faltas",
+              "Zero controle do financeiro",
             ].map((pain) => (
               <span key={pain} className="inline-flex items-center gap-1.5 rounded-full border border-destructive/15 bg-destructive/[0.04] px-3 py-1 text-muted-foreground">
                 <span className="h-1.5 w-1.5 rounded-full bg-destructive/60 shrink-0" />
