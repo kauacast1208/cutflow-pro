@@ -10,6 +10,7 @@ import { GoogleIcon } from "@/components/signup/GoogleIcon";
 import { mapOAuthError, mapSignupError } from "@/lib/authErrors";
 import { cn } from "@/lib/utils";
 import { startGoogleOAuthFlow } from "@/lib/oauth";
+import { ensureCurrentUserSetup } from "@/lib/tenant";
 
 function AuthError({ message }: { message: string }) {
   if (!message) return null;

@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { buildBarbershopInsert, getBarbershopErrorMessage, onboardingBarbershopSchema } from "@/lib/barbershop";
 import { formatPhone } from "@/lib/format";
+import { ensureCurrentUserSetup, isNoRowsError } from "@/lib/tenant";
 
 function slugify(text: string) {
   return text
