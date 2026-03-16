@@ -6,6 +6,7 @@ import { ptBR } from "date-fns/locale";
 import { formatCurrency, getInitials } from "@/lib/format";
 import { buildGoogleCalendarUrl } from "@/lib/calendar";
 import { motion } from "framer-motion";
+import { openWhatsApp } from "@/lib/whatsappCTA";
 
 interface BookingSuccessProps {
   barbershop: any;
