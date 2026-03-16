@@ -118,11 +118,11 @@ export default function AmbassadorPage() {
                 <ArrowLeft className="h-4 w-4" /> Voltar ao painel
               </Button>
             </Link>
-            <a href="https://wa.me/5511999999999?text=Olá! Tenho interesse no programa de embaixadores do CutFlow." target="_blank" rel="noopener noreferrer">
+            <button onClick={(e) => { e.preventDefault(); window.open("https://wa.me/5553999481954?text=" + encodeURIComponent("Olá! Tenho interesse no programa de embaixadores do CutFlow."), "_blank", "noopener,noreferrer"); }}>
               <Button className="gap-2">
                 <Sparkles className="h-4 w-4" /> Quero ser embaixador
               </Button>
-            </a>
+            </button>
           </div>
         </div>
       </div>

@@ -6,6 +6,7 @@ import { ptBR } from "date-fns/locale";
 import { formatCurrency, getInitials } from "@/lib/format";
 import { buildGoogleCalendarUrl } from "@/lib/calendar";
 import { motion } from "framer-motion";
+import { openWhatsApp } from "@/lib/whatsappCTA";
 
 interface BookingSuccessProps {
   barbershop: any;
@@ -46,11 +47,13 @@ export function BookingSuccess({
   };
 
   const whatsappNumber = barbershop.whatsapp || barbershop.phone;
-  const whatsappUrl = whatsappNumber
-    ? `https://wa.me/${whatsappNumber.replace(/\D/g, "")}?text=${encodeURIComponent(
-        `Ola! Acabei de agendar ${service.name} para ${format(selectedDate, "dd/MM")} as ${selectedTime} com ${professional.name}. Obrigado!`
-      )}`
-    : null;
+  const whatsappMessage = `Ola! Acabei de agendar ${service.name} para ${format(selectedDate, "dd/MM")} as ${selectedTime} com ${professional.name}. Obrigado!`;
+
+  const handleWhatsApp = () => {
+    if (whatsappNumber) {
+      openWhatsApp(whatsappNumber, whatsappMessage);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -133,13 +136,14 @@ export function BookingSuccess({
 
             {/* Action buttons */}
             <div className="space-y-2.5 mb-5">
-              {whatsappUrl && (
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="block">
-                  <Button className="w-full rounded-xl h-12 font-semibold bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700">
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    Falar no WhatsApp
-                  </Button>
-                </a>
+              {whatsappNumber && (
+                <Button
+                  className="w-full rounded-xl h-12 font-semibold bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700"
+                  onClick={handleWhatsApp}
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  Falar no WhatsApp
+                </Button>
               )}
 
               <Button variant="outline" className="w-full rounded-xl h-12 font-semibold" onClick={handleAddToCalendar}>
