@@ -1,17 +1,32 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowRight, Play, Shield, CreditCard, TrendingUp, Users, Zap,
+  ArrowRight, Play, Shield, CreditCard, TrendingUp, Zap,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+
+const trustBadges = [
+  { icon: TrendingUp, label: "Barbearias em crescimento usam CutFlow" },
+  { icon: Shield, label: "Dados protegidos" },
+  { icon: CreditCard, label: "Sem cartão para testar" },
+];
+
+const valueBullets = [
+  "1 cliente recuperado paga o sistema",
+  "37% menos no-shows",
+  "3h economizadas por semana",
+  "Controle financeiro completo",
+];
 
 export function HeroSection() {
   return (
     <section className="relative overflow-hidden bg-background hero-atmosphere">
-      {/* Background */}
-      <div className="absolute inset-0 glow-bg" />
-      <div className="absolute inset-0 bg-[linear-gradient(hsl(var(--border)/0.05)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--border)/0.05)_1px,transparent_1px)] bg-[size:72px_72px]" />
+      {/* Background grid */}
+      <div className="absolute inset-0 bg-[linear-gradient(hsl(var(--border)/0.04)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--border)/0.04)_1px,transparent_1px)] bg-[size:72px_72px]" />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
+
+      {/* Subtle top glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[radial-gradient(ellipse_at_center,hsl(152_55%_42%/0.06),transparent_70%)] pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-28 pb-16 sm:pt-36 sm:pb-20 lg:pt-44 lg:pb-24">
         <div className="max-w-3xl mx-auto text-center">
@@ -56,13 +71,11 @@ export function HeroSection() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="flex flex-wrap items-center justify-center gap-2 mb-7 sm:mb-8 text-[12px] sm:text-[13px]"
           >
-            {[
-              "1 cliente recuperado paga o sistema",
-              "37% menos no-shows",
-              "3h economizadas por semana",
-              "Controle financeiro completo",
-            ].map((point) => (
-              <span key={point} className="inline-flex items-center gap-1.5 rounded-full border border-primary/15 bg-primary/[0.04] px-3 py-1 text-muted-foreground">
+            {valueBullets.map((point) => (
+              <span
+                key={point}
+                className="inline-flex items-center gap-1.5 rounded-full border border-primary/15 bg-primary/[0.04] px-3 py-1 text-muted-foreground transition-colors hover:bg-primary/[0.08] hover:text-foreground"
+              >
                 <span className="h-1.5 w-1.5 rounded-full bg-primary/60 shrink-0" />
                 {point}
               </span>
@@ -97,11 +110,7 @@ export function HeroSection() {
             transition={{ duration: 0.5, delay: 0.36 }}
             className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-5 text-xs sm:text-[13px] text-muted-foreground"
           >
-            {[
-              { icon: TrendingUp, label: "Barbearias em crescimento usam CutFlow" },
-              { icon: Shield, label: "Dados protegidos" },
-              { icon: CreditCard, label: "Sem cartão para testar" },
-            ].map((badge) => (
+            {trustBadges.map((badge) => (
               <div key={badge.label} className="flex items-center gap-1.5">
                 <badge.icon className="h-3.5 w-3.5 text-primary/60" />
                 <span>{badge.label}</span>
