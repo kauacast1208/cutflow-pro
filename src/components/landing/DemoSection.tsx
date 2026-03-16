@@ -384,6 +384,93 @@ const mockups: Record<string, () => JSX.Element> = {
   finance: FinanceMockup,
 };
 
+/* ─── Interactive 3D Phone ─── */
+function InteractivePhone() {
+  const phoneRef = useRef<HTMLDivElement>(null);
+  const [rotation, setRotation] = useState({ x: 2, y: -4 });
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!phoneRef.current) return;
+    const rect = phoneRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const rotateY = ((e.clientX - centerX) / (rect.width / 2)) * 8;
+    const rotateX = ((centerY - e.clientY) / (rect.height / 2)) * 5;
+    setRotation({ x: rotateX, y: rotateY });
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setRotation({ x: 2, y: -4 });
+  }, []);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 60, rotateX: 8 }}
+      whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+      className="flex justify-center"
+      style={{ perspective: "1200px" }}
+      ref={phoneRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      <motion.div
+        className="relative"
+        animate={{
+          rotateX: rotation.x,
+          rotateY: rotation.y,
+          rotateZ: 0.5,
+        }}
+        transition={{ type: "spring", stiffness: 120, damping: 20, mass: 0.5 }}
+        style={{ transformStyle: "preserve-3d" }}
+      >
+        {/* Ambient glow behind phone */}
+        <div className="absolute -inset-12 bg-[radial-gradient(ellipse_at_center,hsl(152,55%,30%,0.12),transparent_65%)] blur-3xl pointer-events-none" />
+        <div className="absolute -inset-16 bg-[radial-gradient(ellipse_at_bottom,hsl(270,40%,25%,0.08),transparent_65%)] blur-3xl pointer-events-none" />
+
+        {/* Phone frame — titanium orange inspired */}
+        <div className="relative w-[270px] sm:w-[300px] rounded-[2.5rem] overflow-hidden shadow-[0_30px_100px_-15px_rgba(0,0,0,0.7),0_10px_30px_-10px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.06)]">
+          {/* Outer titanium bezel with warm metallic gradient */}
+          <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-b from-[hsl(25,15%,22%)] via-[hsl(25,12%,14%)] to-[hsl(25,10%,9%)]" />
+          
+          {/* Metallic highlight streak */}
+          <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-white/[0.04] via-transparent to-transparent" />
+
+          {/* Side button highlights */}
+          <div className="absolute top-[85px] -right-[1px] w-[2px] h-[45px] bg-gradient-to-b from-[hsl(25,20%,40%,0.3)] via-[hsl(25,15%,25%,0.1)] to-transparent rounded-full" />
+          <div className="absolute top-[65px] -left-[1px] w-[2px] h-[26px] bg-gradient-to-b from-[hsl(25,20%,40%,0.2)] via-transparent to-transparent rounded-full" />
+          <div className="absolute top-[100px] -left-[1px] w-[2px] h-[40px] bg-gradient-to-b from-[hsl(25,20%,40%,0.2)] via-transparent to-transparent rounded-full" />
+
+          {/* Inner bezel ring */}
+          <div className="absolute inset-[2.5px] rounded-[2.2rem] border border-white/[0.04]" />
+
+          {/* Screen area */}
+          <div className="relative m-[7px] rounded-[2rem] overflow-hidden">
+            {/* Dynamic Island */}
+            <div className="absolute top-2.5 left-1/2 -translate-x-1/2 z-30">
+              <div className="w-[80px] h-[22px] bg-black rounded-full flex items-center justify-center gap-2 shadow-[0_0_8px_2px_rgba(0,0,0,0.3)]">
+                <div className="w-[7px] h-[7px] rounded-full bg-[hsl(240,12%,12%)] ring-1 ring-[hsl(240,12%,18%)]" />
+              </div>
+            </div>
+
+            {/* Screen content */}
+            <div className="aspect-[9/19.5]">
+              <IPhoneLockScreen />
+            </div>
+
+            {/* Screen glare overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] via-transparent to-transparent pointer-events-none rounded-[2rem]" />
+          </div>
+        </div>
+
+        {/* Surface reflection */}
+        <div className="absolute -bottom-8 left-6 right-6 h-16 bg-gradient-to-b from-primary/[0.04] to-transparent blur-2xl opacity-50 pointer-events-none" />
+      </motion.div>
+    </motion.div>
+  );
+}
+
 /* ─── Main Section ─── */
 export function DemoSection() {
   const [activeTab, setActiveTab] = useState("dashboard");
