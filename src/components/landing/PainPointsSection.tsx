@@ -4,8 +4,8 @@ import { UserX, CalendarX, MessageCircleWarning, DollarSign, ArrowRight } from "
 const problems = [
   {
     icon: UserX,
-    title: "Falta de confirmação",
-    description: "Clientes não aparecem porque ninguém lembrou. Cadeira vazia e prejuízo no seu dia.",
+    title: "Clientes não aparecem",
+    description: "Sem lembrete, ninguém confirma. Cadeira vazia = dinheiro jogado fora todo santo dia.",
   },
   {
     icon: CalendarX,
