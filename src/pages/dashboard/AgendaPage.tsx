@@ -844,14 +844,17 @@ export default function AgendaPage() {
 
               {/* WhatsApp */}
               {selectedAppt.client_phone && (
-                <a
-                  href={buildWhatsAppUrl({ clientName: selectedAppt.client_name, clientPhone: selectedAppt.client_phone, barbershopName: barbershop?.name || "", serviceName: selectedAppt.services?.name || "", date: selectedAppt.date, startTime: selectedAppt.start_time?.slice(0, 5), endTime: selectedAppt.end_time?.slice(0, 5), price: Number(selectedAppt.price || 0), professionalName: selectedAppt.professionals?.name, type: "confirmed" }) || "#"}
-                  target="_blank" rel="noopener noreferrer"
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full gap-2 rounded-xl border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10"
+                  onClick={() => {
+                    const url = buildWhatsAppUrl({ clientName: selectedAppt.client_name, clientPhone: selectedAppt.client_phone, barbershopName: barbershop?.name || "", serviceName: selectedAppt.services?.name || "", date: selectedAppt.date, startTime: selectedAppt.start_time?.slice(0, 5), endTime: selectedAppt.end_time?.slice(0, 5), price: Number(selectedAppt.price || 0), professionalName: selectedAppt.professionals?.name, type: "confirmed" });
+                    if (url) window.open(url, "_blank", "noopener,noreferrer");
+                  }}
                 >
-                  <Button size="sm" variant="outline" className="w-full gap-2 rounded-xl border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10">
-                    <MessageCircle className="h-4 w-4" /> Enviar WhatsApp
-                  </Button>
-                </a>
+                  <MessageCircle className="h-4 w-4" /> Enviar WhatsApp
+                </Button>
               )}
 
               {/* Cancel */}
