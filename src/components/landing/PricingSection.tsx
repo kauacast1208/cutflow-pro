@@ -112,11 +112,11 @@ const plans: PlanDef[] = [
   {
     slug: "franquias",
     label: "Franquias",
-    monthly: 299,
-    yearly: 239,
+    monthly: null,
+    yearly: null,
     badge: "Para redes",
     tagline: "Gestão centralizada para múltiplas unidades",
-    description: "Controle total da sua rede de barbearias.",
+    description: "Solução sob medida para sua rede de barbearias.",
     icon: <Building2 className="h-5 w-5" />,
     features: [
       { text: "Tudo do Business", highlight: true },
@@ -127,11 +127,18 @@ const plans: PlanDef[] = [
       { text: "Comparativo entre unidades" },
       { text: "Gestão de franquias" },
     ],
-    cta: "Falar com vendas",
+    cta: "Falar com especialista",
     ctaStyle: "outline",
     externalWhatsApp: {
       phone: "5553999481954",
-      message: "Olá! Tenho interesse no plano Franquias do CutFlow para minha rede de barbearias.",
+      message: `Olá! Tenho interesse no plano *Franquias* do CutFlow.
+
+📍 Quantidade de unidades: 
+👥 Tamanho da equipe: 
+🏙️ Cidade/Estado: 
+📋 Principais necessidades: 
+
+Gostaria de conversar com um especialista para montar a solução ideal.`,
     },
   },
   {
@@ -157,7 +164,14 @@ const plans: PlanDef[] = [
     ctaStyle: "outline",
     externalWhatsApp: {
       phone: "5553999481954",
-      message: "Olá! Tenho interesse no plano Enterprise do CutFlow e gostaria de falar com um especialista.",
+      message: `Olá! Tenho interesse no plano *Enterprise* do CutFlow.
+
+📍 Quantidade de unidades: 
+👥 Tamanho da equipe: 
+🏙️ Cidade/Estado: 
+📋 Principais necessidades: 
+
+Gostaria de montar uma solução personalizada com um especialista.`,
     },
   },
 ];
