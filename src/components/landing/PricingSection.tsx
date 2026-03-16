@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Globe,
   Headphones,
+  ArrowRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +31,7 @@ interface PlanDef {
   yearly: number | null;
   tagline: string;
   description: string;
-  features: string[];
+  features: { text: string; highlight?: boolean }[];
   cta: string;
   ctaStyle: "outline" | "hero";
   popular?: boolean;
@@ -38,7 +39,6 @@ interface PlanDef {
   icon: React.ReactNode;
   link?: string;
   externalWhatsApp?: { phone: string; message: string };
-  cardClass?: string;
 }
 
 const plans: PlanDef[] = [
@@ -47,16 +47,16 @@ const plans: PlanDef[] = [
     label: "Starter",
     monthly: 49,
     yearly: 39,
-    tagline: "Ideal para barbeiros autônomos.",
-    description: "O essencial para organizar sua agenda e seus clientes.",
-    icon: <Zap className="h-5 w-5" />,
+    tagline: "Para barbeiros autônomos",
+    description: "O essencial para organizar sua agenda.",
+    icon: <Zap className="h-4 w-4" />,
     features: [
-      "Agenda online",
-      "1 profissional",
-      "Até 100 clientes",
-      "Financeiro básico",
-      "Relatórios básicos",
-      "Página de agendamento",
+      { text: "Agenda online" },
+      { text: "1 profissional" },
+      { text: "Até 100 clientes" },
+      { text: "Financeiro básico" },
+      { text: "Relatórios básicos" },
+      { text: "Página de agendamento" },
     ],
     cta: "Começar grátis",
     ctaStyle: "outline",
@@ -69,20 +69,20 @@ const plans: PlanDef[] = [
     yearly: 63,
     popular: true,
     badge: "Mais popular",
-    tagline: "Plano escolhido pela maioria das barbearias.",
+    tagline: "O plano escolhido por 73% das barbearias",
     description: "Controle total para barbearias em crescimento.",
     icon: <Star className="h-5 w-5" />,
     features: [
-      "Tudo do Starter",
-      "Até 5 profissionais",
-      "CRM completo",
-      "Google Calendar",
-      "Financeiro avançado",
-      "Relatórios semanais",
-      "Métricas de desempenho",
-      "Histórico de clientes",
-      "Upload de logo",
-      "Lembretes automáticos",
+      { text: "Tudo do Starter", highlight: true },
+      { text: "Até 5 profissionais" },
+      { text: "CRM completo" },
+      { text: "Google Calendar" },
+      { text: "Financeiro avançado" },
+      { text: "Relatórios semanais" },
+      { text: "Métricas de desempenho" },
+      { text: "Histórico de clientes" },
+      { text: "Upload de logo" },
+      { text: "Lembretes automáticos" },
     ],
     cta: "Começar teste grátis",
     ctaStyle: "hero",
@@ -93,18 +93,17 @@ const plans: PlanDef[] = [
     label: "Business",
     monthly: 159,
     yearly: 127,
-    tagline: "Para operações profissionais.",
+    tagline: "Para operações profissionais",
     description: "Escala e automação para equipes maiores.",
-    icon: <Sparkles className="h-5 w-5" />,
-    cardClass: "border-primary/25",
+    icon: <Sparkles className="h-4 w-4" />,
     features: [
-      "Tudo do Pro",
-      "Até 15 profissionais",
-      "Permissões de equipe",
-      "Automações",
-      "Acesso à API",
-      "Exportação de dados",
-      "Analytics avançado",
+      { text: "Tudo do Pro", highlight: true },
+      { text: "Até 15 profissionais" },
+      { text: "Permissões de equipe" },
+      { text: "Automações" },
+      { text: "Acesso à API" },
+      { text: "Exportação de dados" },
+      { text: "Analytics avançado" },
     ],
     cta: "Começar Business",
     ctaStyle: "outline",
@@ -116,18 +115,17 @@ const plans: PlanDef[] = [
     monthly: 299,
     yearly: 239,
     badge: "Para redes",
-    tagline: "Gestão centralizada para múltiplas unidades.",
+    tagline: "Gestão centralizada para múltiplas unidades",
     description: "Controle total da sua rede de barbearias.",
     icon: <Building2 className="h-5 w-5" />,
-    cardClass: "bg-gradient-to-br from-card via-card to-primary/[0.04] border-primary/15",
     features: [
-      "Tudo do Business",
-      "Múltiplas unidades",
-      "Dashboard master",
-      "Financeiro centralizado",
-      "Personalização de marca",
-      "Comparativo entre unidades",
-      "Gestão de franquias",
+      { text: "Tudo do Business", highlight: true },
+      { text: "Múltiplas unidades" },
+      { text: "Dashboard master" },
+      { text: "Financeiro centralizado" },
+      { text: "Personalização de marca" },
+      { text: "Comparativo entre unidades" },
+      { text: "Gestão de franquias" },
     ],
     cta: "Falar com vendas",
     ctaStyle: "outline",
@@ -138,23 +136,22 @@ const plans: PlanDef[] = [
   },
   {
     slug: "enterprise",
-    label: "Solução Enterprise",
+    label: "Enterprise",
     monthly: null,
     yearly: null,
-    tagline: "Para operações que exigem performance máxima.",
+    tagline: "Para operações que exigem performance máxima",
     description: "Infraestrutura dedicada e suporte white-glove.",
     icon: <Crown className="h-5 w-5" />,
-    cardClass: "bg-card/60 backdrop-blur-md border-primary/10 ring-1 ring-primary/5",
     features: [
-      "Tudo do Franquias",
-      "Limites personalizados",
-      "Onboarding dedicado",
-      "Integrações customizadas",
-      "Suporte com SLA",
-      "Gerente de conta",
-      "White label",
-      "Ambiente dedicado",
-      "Consultoria estratégica",
+      { text: "Tudo do Franquias", highlight: true },
+      { text: "Limites personalizados" },
+      { text: "Onboarding dedicado" },
+      { text: "Integrações customizadas" },
+      { text: "Suporte com SLA" },
+      { text: "Gerente de conta" },
+      { text: "White label" },
+      { text: "Ambiente dedicado" },
+      { text: "Consultoria estratégica" },
     ],
     cta: "Falar com especialista",
     ctaStyle: "outline",
@@ -203,7 +200,7 @@ export function PricingSection() {
     <section id="pricing" className="section-padding bg-secondary/30">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-10 sm:mb-14">
+        <div className="text-center mb-12 sm:mb-16">
           <motion.span
             initial={{ opacity: 0, y: 8 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -232,18 +229,51 @@ export function PricingSection() {
           </motion.div>
         </div>
 
-        {/* Top 3 plans */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 max-w-5xl mx-auto items-start">
-          {plans.slice(0, 3).map((plan, i) => (
-            <PlanCard key={plan.slug} plan={plan} billing={billing} index={i} />
-          ))}
+        {/* Top 3 plans — Starter · Pro · Business */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-0 max-w-[960px] mx-auto items-stretch">
+          {/* Starter — compact, understated */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="rounded-2xl md:rounded-r-none border border-border/40 bg-card/60 p-6 sm:p-7 flex flex-col relative"
+          >
+            <StarterCard plan={plans[0]} billing={billing} />
+          </motion.div>
+
+          {/* Pro — dominant, elevated */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.06 }}
+            className="rounded-2xl border-2 border-primary/40 bg-card shadow-xl ring-1 ring-primary/10 p-7 sm:p-9 flex flex-col relative z-10 md:-mx-px md:scale-y-[1.03]"
+          >
+            {/* Popular badge */}
+            <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-primary/15 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-primary px-5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-primary-foreground shadow-md whitespace-nowrap z-20">
+              <Star className="h-3 w-3 fill-current" />
+              {plans[1].badge}
+            </div>
+            <ProCard plan={plans[1]} billing={billing} />
+          </motion.div>
+
+          {/* Business — solid, professional */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.12 }}
+            className="rounded-2xl md:rounded-l-none border border-border/40 bg-card/60 p-6 sm:p-7 flex flex-col relative"
+          >
+            <StarterCard plan={plans[2]} billing={billing} />
+          </motion.div>
         </div>
 
-        {/* Franchise + Enterprise */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-5xl mx-auto mt-10">
-          {plans.slice(3).map((plan, i) => (
-            <PlanCard key={plan.slug} plan={plan} billing={billing} index={i + 3} wide />
-          ))}
+        {/* Franchise + Enterprise — premium row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[960px] mx-auto mt-8 sm:mt-10">
+          <FranchiseCard plan={plans[3]} billing={billing} />
+          <EnterpriseCard plan={plans[4]} />
         </div>
 
         {/* Included in all */}
@@ -271,9 +301,7 @@ export function PricingSection() {
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="max-w-2xl mx-auto mt-16 sm:mt-20">
           <h3 className="text-xl sm:text-2xl font-bold text-center mb-6">Perguntas frequentes</h3>
           <div className="space-y-3">
-            {faqs.map((f) => (
-              <FAQItem key={f.q} q={f.q} a={f.a} />
-            ))}
+            {faqs.map((f) => <FAQItem key={f.q} q={f.q} a={f.a} />)}
           </div>
         </motion.div>
       </div>
@@ -281,10 +309,110 @@ export function PricingSection() {
   );
 }
 
-function PlanCard({ plan, billing, index, wide }: { plan: PlanDef; billing: Billing; index: number; wide?: boolean }) {
-  const isPopular = plan.popular;
+/* ── Starter / Business card (compact) ── */
+function StarterCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
   const price = billing === "monthly" ? plan.monthly : plan.yearly;
-  const isCustom = price === null;
+  const savings = plan.monthly && plan.yearly ? (plan.monthly - plan.yearly) * 12 : 0;
+
+  return (
+    <div className="relative flex flex-col flex-1">
+      <div className="mb-5">
+        <div className="flex items-center gap-2 mb-1.5">
+          <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
+            {plan.icon}
+          </div>
+          <h3 className="text-lg font-bold">{plan.label}</h3>
+        </div>
+        <p className="text-xs text-muted-foreground">{plan.tagline}</p>
+      </div>
+
+      <div className="mb-5">
+        <div className="flex items-baseline gap-1">
+          <span className="text-xs text-muted-foreground">R$</span>
+          <span className="text-3xl font-extrabold tracking-tight">{price}</span>
+          <span className="text-muted-foreground text-xs">/mês</span>
+        </div>
+        {billing === "yearly" && savings > 0 ? (
+          <p className="text-[11px] text-primary mt-1 font-medium">Economia de R${savings}/ano</p>
+        ) : (
+          <p className="text-[11px] text-primary mt-1 font-medium">7 dias grátis</p>
+        )}
+      </div>
+
+      <ul className="space-y-2 mb-6 flex-1">
+        {plan.features.map((f) => (
+          <li key={f.text} className="flex items-start gap-2 text-xs sm:text-[13px]">
+            <Check className="h-3.5 w-3.5 mt-0.5 shrink-0 text-primary/50" />
+            <span className={f.highlight ? "font-medium text-primary/80" : ""}>{f.text}</span>
+          </li>
+        ))}
+      </ul>
+
+      <Link to={plan.link || "/checkout"} className="block mt-auto">
+        <Button variant="outline" className="w-full rounded-xl h-10 text-sm">
+          {plan.cta}
+        </Button>
+      </Link>
+      <p className="text-center text-[10px] text-muted-foreground mt-2.5">Cancele quando quiser</p>
+    </div>
+  );
+}
+
+/* ── Pro card (hero, dominant) ── */
+function ProCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
+  const price = billing === "monthly" ? plan.monthly : plan.yearly;
+  const savings = plan.monthly && plan.yearly ? (plan.monthly - plan.yearly) * 12 : 0;
+
+  return (
+    <div className="relative flex flex-col flex-1">
+      <div className="mb-6">
+        <div className="flex items-center gap-2.5 mb-2">
+          <div className="h-10 w-10 rounded-xl bg-primary/15 flex items-center justify-center text-primary">
+            {plan.icon}
+          </div>
+          <div>
+            <h3 className="text-xl sm:text-2xl font-bold">{plan.label}</h3>
+          </div>
+        </div>
+        <p className="text-sm text-muted-foreground leading-relaxed">{plan.tagline}</p>
+      </div>
+
+      <div className="mb-7">
+        <div className="flex items-baseline gap-1">
+          <span className="text-sm text-muted-foreground">R$</span>
+          <span className="text-5xl sm:text-[3.5rem] font-extrabold tracking-tight">{price}</span>
+          <span className="text-muted-foreground text-sm">/mês</span>
+        </div>
+        {billing === "yearly" && savings > 0 ? (
+          <p className="text-xs text-primary mt-2 font-semibold">Economia de R${savings}/ano</p>
+        ) : (
+          <p className="text-xs text-primary mt-2 font-semibold">7 dias grátis · Sem cobrança hoje</p>
+        )}
+      </div>
+
+      <ul className="space-y-2.5 mb-8 flex-1">
+        {plan.features.map((f) => (
+          <li key={f.text} className="flex items-start gap-2.5 text-sm">
+            <Check className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
+            <span className={f.highlight ? "font-semibold text-primary" : ""}>{f.text}</span>
+          </li>
+        ))}
+      </ul>
+
+      <Link to={plan.link || "/checkout"} className="block mt-auto">
+        <Button variant="hero" className="w-full rounded-xl h-13 text-[15px] btn-glow shadow-lg">
+          {plan.cta}
+          <ArrowRight className="h-4 w-4 ml-1" />
+        </Button>
+      </Link>
+      <p className="text-center text-[11px] text-muted-foreground mt-3">Sem cartão · Cancele quando quiser</p>
+    </div>
+  );
+}
+
+/* ── Franchise card ── */
+function FranchiseCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
+  const price = billing === "monthly" ? plan.monthly : plan.yearly;
   const savings = plan.monthly && plan.yearly ? (plan.monthly - plan.yearly) * 12 : 0;
 
   return (
@@ -292,102 +420,109 @@ function PlanCard({ plan, billing, index, wide }: { plan: PlanDef; billing: Bill
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay: index * 0.06 }}
-      className={`rounded-2xl border flex flex-col relative transition-all duration-300 ${
-        isPopular
-          ? "border-primary/40 bg-card shadow-lg ring-2 ring-primary/20 md:scale-[1.04] z-10 p-7 sm:p-9"
-          : `border-border/50 bg-card shadow-card hover:shadow-card-hover hover:border-primary/20 p-6 sm:p-8 ${plan.cardClass || ""}`
-      } ${wide ? "md:flex-row md:items-start md:gap-8 p-8" : ""}`}
+      transition={{ delay: 0.15 }}
+      className="rounded-2xl border border-primary/15 bg-gradient-to-br from-card via-card to-primary/[0.04] p-7 sm:p-8 flex flex-col relative"
     >
-      {/* Popular badge */}
-      {isPopular && (
-        <>
-          <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-primary/20 via-transparent to-transparent pointer-events-none" />
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-primary px-4 py-1 text-[11px] font-bold uppercase tracking-wider text-primary-foreground shadow-sm whitespace-nowrap z-20">
-            <Star className="h-3 w-3 fill-current" />
-            {plan.badge}
-          </div>
-        </>
-      )}
+      <div className="absolute -top-2.5 left-6 z-20">
+        <Badge variant="secondary" className="text-[10px] font-semibold uppercase tracking-wider px-3 py-0.5">
+          {plan.badge}
+        </Badge>
+      </div>
 
-      {/* Non-popular badge */}
-      {!isPopular && plan.badge && (
-        <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-20">
-          <Badge variant="secondary" className="text-[10px] font-semibold uppercase tracking-wider px-3 py-0.5">
-            {plan.badge}
-          </Badge>
-        </div>
-      )}
-
-      <div className={`relative ${wide ? "md:flex-1" : ""}`}>
-        <div className="mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:gap-8">
+        <div className="sm:flex-1">
           <div className="flex items-center gap-2.5 mb-2">
-            <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${isPopular ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
+            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
               {plan.icon}
             </div>
-            <h3 className={`font-bold ${isPopular ? "text-xl sm:text-2xl" : "text-lg sm:text-xl"}`}>{plan.label}</h3>
+            <h3 className="text-lg sm:text-xl font-bold">{plan.label}</h3>
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{plan.tagline}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground mb-4">{plan.tagline}</p>
+
+          <div className="mb-5">
+            <div className="flex items-baseline gap-1">
+              <span className="text-xs text-muted-foreground">R$</span>
+              <span className="text-3xl sm:text-4xl font-extrabold tracking-tight">{price}</span>
+              <span className="text-muted-foreground text-xs">/mês</span>
+            </div>
+            {billing === "yearly" && savings > 0 && (
+              <p className="text-[11px] text-primary mt-1 font-medium">Economia de R${savings}/ano</p>
+            )}
+          </div>
         </div>
 
-        <div className="mb-6">
-          {isCustom ? (
-            <div>
-              <span className="text-3xl sm:text-4xl font-extrabold tracking-tight">Sob medida</span>
-              <p className="text-xs text-muted-foreground mt-1.5">{plan.description}</p>
-            </div>
-          ) : (
-            <div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-xs sm:text-sm text-muted-foreground">R$</span>
-                <span className={`font-extrabold tracking-tight ${isPopular ? "text-4xl sm:text-5xl" : "text-3xl sm:text-4xl"}`}>{price}</span>
-                <span className="text-muted-foreground text-xs sm:text-sm">/mês</span>
-              </div>
-              {billing === "yearly" && savings > 0 ? (
-                <p className="text-[11px] sm:text-xs text-primary mt-1.5 font-medium">Economia de R${savings}/ano</p>
-              ) : (
-                <p className="text-[11px] sm:text-xs text-primary mt-1.5 font-medium">7 dias grátis · Sem cobrança hoje</p>
-              )}
-            </div>
-          )}
+        <div className="sm:flex-1">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mb-6">
+            {plan.features.map((f) => (
+              <li key={f.text} className="flex items-start gap-2 text-xs sm:text-[13px]">
+                <Check className="h-3.5 w-3.5 mt-0.5 shrink-0 text-primary/60" />
+                <span className={f.highlight ? "font-medium text-primary/80" : ""}>{f.text}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 
-      <div className={`relative ${wide ? "md:flex-1" : ""} flex flex-col flex-1`}>
-        <ul className={`space-y-2.5 mb-7 flex-1 ${wide ? "sm:grid sm:grid-cols-2 sm:gap-x-6 sm:gap-y-2.5 sm:space-y-0" : ""}`}>
-          {plan.features.map((f) => (
-            <li key={f} className="flex items-start gap-2.5 text-xs sm:text-sm">
-              <Check className={`h-3.5 w-3.5 sm:h-4 sm:w-4 mt-0.5 shrink-0 ${isPopular ? "text-primary" : "text-primary/60"}`} />
-              <span>{f}</span>
-            </li>
-          ))}
-        </ul>
+      <button
+        onClick={whatsAppClickHandler(plan.externalWhatsApp!.phone, plan.externalWhatsApp!.message)}
+        className="block mt-auto w-full"
+      >
+        <Button variant="outline" className="w-full rounded-xl gap-2 h-11 text-sm border-primary/20 hover:bg-primary/5">
+          <MessageSquare className="h-4 w-4" />
+          {plan.cta}
+        </Button>
+      </button>
+    </motion.div>
+  );
+}
 
-        {plan.externalWhatsApp ? (
-          <button
-            onClick={whatsAppClickHandler(plan.externalWhatsApp.phone, plan.externalWhatsApp.message)}
-            className="block mt-auto w-full"
-          >
-            <Button variant="outline" className="w-full rounded-xl gap-2 h-11 sm:h-12 text-sm" asChild={false}>
-              <MessageSquare className="h-4 w-4" />
-              {plan.cta}
-            </Button>
-          </button>
-        ) : (
-          <Link to={plan.link || "/checkout"} className="block mt-auto">
-            <Button
-              variant={plan.ctaStyle === "hero" ? "hero" : "outline"}
-              className={`w-full rounded-xl ${isPopular ? "h-12 sm:h-13 text-[15px] btn-glow" : "h-11 sm:h-12 text-sm"}`}
-            >
-              {plan.cta}
-            </Button>
-          </Link>
-        )}
+/* ── Enterprise card ── */
+function EnterpriseCard({ plan }: { plan: PlanDef }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: 0.2 }}
+      className="rounded-2xl border border-border/30 bg-card/50 backdrop-blur-sm ring-1 ring-primary/5 p-7 sm:p-8 flex flex-col relative"
+    >
+      <div className="flex flex-col sm:flex-row sm:items-start sm:gap-8">
+        <div className="sm:flex-1">
+          <div className="flex items-center gap-2.5 mb-2">
+            <div className="h-9 w-9 rounded-lg bg-primary/8 flex items-center justify-center text-primary/70">
+              {plan.icon}
+            </div>
+            <h3 className="text-lg sm:text-xl font-bold">{plan.label}</h3>
+          </div>
+          <p className="text-xs sm:text-sm text-muted-foreground mb-4">{plan.tagline}</p>
 
-        <p className="text-center text-[10px] sm:text-[11px] text-muted-foreground mt-3">
-          Cancele quando quiser · Sem fidelidade
-        </p>
+          <div className="mb-5">
+            <span className="text-2xl sm:text-3xl font-extrabold tracking-tight">Sob medida</span>
+            <p className="text-xs text-muted-foreground mt-1.5">{plan.description}</p>
+          </div>
+        </div>
+
+        <div className="sm:flex-1">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mb-6">
+            {plan.features.map((f) => (
+              <li key={f.text} className="flex items-start gap-2 text-xs sm:text-[13px]">
+                <Check className="h-3.5 w-3.5 mt-0.5 shrink-0 text-primary/50" />
+                <span className={f.highlight ? "font-medium text-primary/70" : "text-muted-foreground"}>{f.text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
+
+      <button
+        onClick={whatsAppClickHandler(plan.externalWhatsApp!.phone, plan.externalWhatsApp!.message)}
+        className="block mt-auto w-full"
+      >
+        <Button variant="outline" className="w-full rounded-xl gap-2 h-11 text-sm">
+          <MessageSquare className="h-4 w-4" />
+          {plan.cta}
+        </Button>
+      </button>
     </motion.div>
   );
 }
