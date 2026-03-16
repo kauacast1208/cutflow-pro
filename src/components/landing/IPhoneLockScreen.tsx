@@ -218,7 +218,7 @@ export function IPhoneLockScreen() {
               <span className="text-[7px] text-white/25 uppercase tracking-wider font-medium">Semana</span>
               <span className="text-[7px] text-primary/60 font-medium">+18%</span>
             </div>
-            <div className="h-8">
+            <div className="h-10">
               <MiniChart />
             </div>
             <div className="flex justify-between mt-1">
