@@ -82,6 +82,22 @@ export default function OnboardingPage() {
     setLoading(true);
 
     try {
+      // Ensure profile and user_role exist (handles users created before triggers existed)
+      const [profileCheck, roleCheck] = await Promise.all([
+        supabase.from("profiles").select("id").eq("user_id", user.id).maybeSingle(),
+        supabase.from("user_roles").select("id").eq("user_id", user.id).maybeSingle(),
+      ]);
+
+      if (!profileCheck.data) {
+        await supabase.from("profiles").insert({
+          user_id: user.id,
+          full_name: user.user_metadata?.full_name || user.email?.split("@")[0] || null,
+        });
+      }
+      if (!roleCheck.data) {
+        await supabase.from("user_roles").insert({ user_id: user.id, role: "owner" as const });
+      }
+
       let finalSlug = slugify(parsed.data.name);
       if (!finalSlug) {
         finalSlug = `barbearia-${Math.random().toString(36).slice(2, 7)}`;
