@@ -16,6 +16,7 @@ import { AboutSection } from "@/components/landing/AboutSection";
 import { TrustAuthoritySection } from "@/components/landing/TrustAuthoritySection";
 import { PricingSection } from "@/components/landing/PricingSection";
 import { ROISection } from "@/components/landing/ROISection";
+import { ROIValueSection } from "@/components/landing/ROIValueSection";
 import { FAQSection } from "@/components/landing/FAQSection";
 import { FinalCTASection } from "@/components/landing/FinalCTASection";
 import { Footer } from "@/components/landing/Footer";
