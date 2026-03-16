@@ -32,39 +32,48 @@ export default function OnboardingPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    const trimmedName = barbershopName.trim();
+    if (!user || !trimmedName) return;
     setLoading(true);
 
-    let slug = slugify(barbershopName);
+    try {
+      let slug = slugify(trimmedName);
+      if (!slug) {
+        slug = "barbearia-" + Math.random().toString(36).slice(2, 7);
+      }
 
-    const { data: existing } = await supabase
-      .from("barbershops")
-      .select("id")
-      .eq("slug", slug)
-      .maybeSingle();
+      const { data: existing } = await supabase
+        .from("barbershops")
+        .select("id")
+        .eq("slug", slug)
+        .maybeSingle();
 
-    if (existing) {
-      slug = slug + "-" + Math.random().toString(36).slice(2, 5);
-    }
+      if (existing) {
+        slug = slug + "-" + Math.random().toString(36).slice(2, 5);
+      }
 
-    const { error } = await supabase.from("barbershops").insert({
-      owner_id: user.id,
-      name: barbershopName,
-      slug,
-      phone,
-      address,
-      address_complement: addressComplement || null,
-    });
+      const { error } = await supabase.from("barbershops").insert({
+        owner_id: user.id,
+        name: trimmedName,
+        slug,
+        phone: phone.trim() || null,
+        address: address.trim() || null,
+        address_complement: addressComplement.trim() || null,
+      });
 
-    if (error) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      if (error) {
+        toast({ title: "Erro ao criar barbearia", description: error.message, variant: "destructive" });
+        return;
+      }
+
+      await refresh();
+      toast({ title: "Barbearia criada!", description: "Sua barbearia está pronta para uso." });
+      navigate("/dashboard");
+    } catch (err) {
+      toast({ title: "Erro inesperado", description: "Tente novamente em instantes.", variant: "destructive" });
+    } finally {
       setLoading(false);
-      return;
     }
-
-    await refresh();
-    toast({ title: "Barbearia criada!", description: "Sua barbearia está pronta para uso." });
-    navigate("/dashboard");
   };
 
   return (
