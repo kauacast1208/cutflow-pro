@@ -274,8 +274,9 @@ function CRMMockup() {
   );
 }
 
-/* ─── Reports ─── */
+/* ─── Reports with smooth chart ─── */
 function ReportsMockup() {
+  const chartPath = "M 0 50 C 20 45, 30 25, 50 30 S 80 10, 100 15 S 130 5, 150 8 S 180 20, 200 14 S 225 10, 240 12";
   return (
     <div className="p-4 space-y-3">
       <p className="text-[11px] font-semibold text-foreground">Relatórios — Março 2026</p>
@@ -283,7 +284,7 @@ function ReportsMockup() {
         {[
           { label: "Faturamento", value: "R$ 18.5k", change: "+12%" },
           { label: "Ticket médio", value: "R$ 65", change: "+R$ 5" },
-          { label: "Retorno", value: "78%", change: "-2%" },
+          { label: "Retorno", value: "78%", change: "+3%" },
         ].map((m) => (
           <div key={m.label} className="rounded-xl border border-border/50 dark:border-white/[0.06] bg-card dark:bg-white/[0.03] p-2.5">
             <p className="text-[8px] text-muted-foreground mb-0.5">{m.label}</p>
@@ -293,20 +294,28 @@ function ReportsMockup() {
         ))}
       </div>
       <div className="rounded-xl border border-border/50 dark:border-white/[0.06] bg-card dark:bg-white/[0.03] p-3">
-        <p className="text-[10px] font-semibold text-foreground mb-2.5">Faturamento semanal</p>
-        <div className="flex items-end gap-2 h-20">
-          {[40, 65, 50, 80, 70, 95, 75].map((h, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1">
-              <motion.div
-                initial={{ height: 0 }}
-                whileInView={{ height: `${h}%` }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.06, duration: 0.4 }}
-                className={`w-full rounded ${i === 5 ? "bg-primary" : "bg-primary/40"}`}
-              />
-              <span className="text-[8px] text-muted-foreground">{["S", "T", "Q", "Q", "S", "S", "D"][i]}</span>
-            </div>
-          ))}
+        <p className="text-[10px] font-semibold text-foreground mb-2">Faturamento semanal</p>
+        <div className="relative h-[70px]">
+          <svg viewBox="0 0 240 55" className="w-full h-full" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="reportGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.15" />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            {[14, 28, 42].map((y) => (
+              <line key={y} x1="0" y1={y} x2="240" y2={y} stroke="hsl(var(--border))" strokeWidth="0.3" strokeOpacity="0.3" />
+            ))}
+            <path d={`${chartPath} L 240 55 L 0 55 Z`} fill="url(#reportGrad)" />
+            <path d={chartPath} fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeLinecap="round" />
+            <circle cx="240" cy="12" r="2" fill="hsl(var(--primary))" />
+            <circle cx="240" cy="12" r="4.5" fill="hsl(var(--primary))" opacity="0.12" />
+          </svg>
+          <div className="absolute bottom-0 left-0 right-0 flex justify-between px-1">
+            {["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((d) => (
+              <span key={d} className="text-[7px] text-muted-foreground/50">{d}</span>
+            ))}
+          </div>
         </div>
       </div>
     </div>
