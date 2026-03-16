@@ -14,12 +14,12 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { format, subDays, startOfWeek, addDays, parseISO, differenceInDays, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
 import { WelcomeModal } from "@/components/dashboard/WelcomeModal";
-import { ProfessionalRanking } from "@/components/dashboard/ProfessionalRanking";
 import { useNavigate } from "react-router-dom";
 import WeeklySchedule from "@/components/admin/WeeklySchedule";
 import { motion } from "framer-motion";
@@ -42,15 +42,15 @@ const periodOptions = [
 ] as const;
 
 const statusLabels: Record<string, { label: string; className: string }> = {
-  scheduled: { label: "Agendado", className: "bg-amber-500/10 text-amber-600" },
+  scheduled: { label: "Agendado", className: "bg-amber-500/10 text-amber-600 dark:text-amber-400" },
   confirmed: { label: "Confirmado", className: "bg-primary/10 text-primary" },
-  completed: { label: "Concluido", className: "bg-muted text-muted-foreground" },
+  completed: { label: "Concluído", className: "bg-muted text-muted-foreground" },
 };
 
 const fadeUp = (i: number) => ({
-  initial: { opacity: 0, y: 14 },
+  initial: { opacity: 0, y: 16 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.35, delay: i * 0.06 },
+  transition: { duration: 0.4, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
 });
 
 const tooltipStyle = {
@@ -59,7 +59,46 @@ const tooltipStyle = {
   borderRadius: "12px",
   fontSize: 12,
   color: "hsl(var(--foreground))",
+  boxShadow: "0 8px 32px -4px rgba(0,0,0,0.3)",
 };
+
+/* ── Section Card wrapper ── */
+function SectionCard({ children, className = "", ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={`rounded-2xl border border-border/60 bg-card p-5 sm:p-6 shadow-sm transition-all duration-300 hover:border-border/80 ${className}`}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
+
+function SectionTitle({ icon: Icon, children, action }: { icon: React.ElementType; children: React.ReactNode; action?: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between mb-5">
+      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
+          <Icon className="h-3.5 w-3.5 text-primary" />
+        </div>
+        {children}
+      </h3>
+      {action}
+    </div>
+  );
+}
+
+function EmptyState({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description?: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-10 text-center">
+      <div className="h-12 w-12 rounded-xl bg-muted/50 flex items-center justify-center mb-3">
+        <Icon className="h-5 w-5 text-muted-foreground/40" />
+      </div>
+      <p className="text-sm font-medium text-muted-foreground">{title}</p>
+      {description && <p className="text-xs text-muted-foreground/60 mt-1 max-w-[200px]">{description}</p>}
+    </div>
+  );
+}
 
 export default function DashboardHome() {
   const { barbershop } = useBarbershop();
@@ -69,6 +108,7 @@ export default function DashboardHome() {
   const navigate = useNavigate();
 
   const [period, setPeriod] = useState<number>(30);
+  const [loading, setLoading] = useState(true);
   const [todayAppts, setTodayAppts] = useState<any[]>([]);
   const [periodAppts, setPeriodAppts] = useState<any[]>([]);
   const [prevPeriodAppts, setPrevPeriodAppts] = useState<any[]>([]);
@@ -89,6 +129,7 @@ export default function DashboardHome() {
 
   useEffect(() => {
     if (!barbershop) return;
+    setLoading(true);
     const today = format(new Date(), "yyyy-MM-dd");
     const periodStart = format(subDays(new Date(), period), "yyyy-MM-dd");
     const prevPeriodStart = format(subDays(new Date(), period * 2), "yyyy-MM-dd");
@@ -127,6 +168,7 @@ export default function DashboardHome() {
       setMonthAppts(monthRes.data || []);
       setPrevMonthAppts(prevMonthRes.data || []);
       setPendingCount((apptRes.data || []).filter(a => a.status === "scheduled").length);
+      setLoading(false);
     });
   }, [barbershop, period]);
 
@@ -152,7 +194,6 @@ export default function DashboardHome() {
   const ticket = completed.length > 0 ? revenue / completed.length : 0;
   const todayRevenue = todayAppts.reduce((s, a) => s + Number(a.price || 0), 0);
 
-  // Returning vs new clients (clients with 2+ appointments in period = returning)
   const { returningClients, newClients } = useMemo(() => {
     const clientAppts: Record<string, number> = {};
     completed.forEach(a => {
@@ -168,21 +209,14 @@ export default function DashboardHome() {
     return { returningClients: returning, newClients: newC };
   }, [completed]);
 
-  // Next appointment
-  const nextAppt = useMemo(() => {
-    const now = format(new Date(), "HH:mm");
-    return todayAppts.find(a => a.start_time?.slice(0, 5) >= now && a.status !== "completed") || null;
-  }, [todayAppts]);
-
   const upcomingToday = useMemo(() => {
     const now = format(new Date(), "HH:mm");
     return todayAppts.filter(a => a.start_time?.slice(0, 5) >= now && a.status !== "completed").slice(0, 5);
   }, [todayAppts]);
 
-  // ── Revenue chart (daily over period) ──
   const revenueChartData = useMemo(() => {
     const map: Record<string, { date: string; revenue: number; count: number }> = {};
-    const days = Math.min(period, 30); // show max 30 data points
+    const days = Math.min(period, 30);
     for (let i = days - 1; i >= 0; i--) {
       const d = format(subDays(new Date(), i), "yyyy-MM-dd");
       map[d] = { date: format(subDays(new Date(), i), "dd/MM"), revenue: 0, count: 0 };
@@ -196,7 +230,6 @@ export default function DashboardHome() {
     return Object.values(map);
   }, [completed, period]);
 
-  // ── Day-of-week chart ──
   const weekdayChartData = useMemo(() => {
     const days = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"];
     const totals = [0, 0, 0, 0, 0, 0, 0];
@@ -214,7 +247,6 @@ export default function DashboardHome() {
     }));
   }, [completed, period]);
 
-  // ── Top services pie ──
   const servicePieData = useMemo(() => {
     const counts: Record<string, number> = {};
     completed.forEach(a => {
@@ -227,7 +259,6 @@ export default function DashboardHome() {
       .map(([name, value]) => ({ name, value }));
   }, [completed]);
 
-  // ── Top professionals bar ──
   const proPerfData = useMemo(() => {
     const map: Record<string, { name: string; revenue: number; count: number }> = {};
     completed.forEach(a => {
@@ -239,7 +270,6 @@ export default function DashboardHome() {
     return Object.values(map).sort((a, b) => b.revenue - a.revenue).slice(0, 6);
   }, [completed]);
 
-  // ── Inactive clients ──
   const inactiveClients = useMemo(() => {
     if (!clients.length || !periodAppts.length) return { d30: 0, d60: 0, d90: 0 };
     const lastVisit: Record<string, string> = {};
@@ -263,9 +293,8 @@ export default function DashboardHome() {
     return { d30, d60, d90 };
   }, [clients, periodAppts, prevPeriodAppts]);
 
-  // ── Idle hours analysis ──
   const idleHours = useMemo(() => {
-    const dayNames = ["Domingo", "Segunda", "Terca", "Quarta", "Quinta", "Sexta", "Sabado"];
+    const dayNames = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
     const grid: Record<string, number> = {};
     for (let d = 0; d < 7; d++) {
       for (let h = 8; h <= 20; h++) {
@@ -289,39 +318,25 @@ export default function DashboardHome() {
     return entries.slice(0, 3).filter(e => e.avg < 1);
   }, [completed, period]);
 
-  // ── Smart Insights ──
   const insights = useMemo(() => {
     const items: { text: string; icon: React.ElementType; color: string }[] = [];
-
-    // Busiest hour
     const hourCounts: Record<string, number> = {};
     completed.forEach(a => {
       const h = a.start_time?.slice(0, 2) + "h";
       if (h) hourCounts[h] = (hourCounts[h] || 0) + 1;
     });
     const topHour = Object.entries(hourCounts).sort((a, b) => b[1] - a[1])[0];
-    if (topHour) items.push({ text: `Seu horario mais movimentado e ${topHour[0]}`, icon: Clock, color: "text-primary" });
-
-    // Top service
-    if (servicePieData[0]) items.push({ text: `Servico mais vendido: ${servicePieData[0].name} (${servicePieData[0].value}x)`, icon: Target, color: "text-primary" });
-
-    // Cancellation count
-    if (cancelled.length > 0) items.push({ text: `${cancelled.length} cancelamento${cancelled.length > 1 ? "s" : ""} nos ultimos ${period} dias`, icon: AlertTriangle, color: "text-destructive" });
-
-    // Inactive clients
+    if (topHour) items.push({ text: `Seu horário mais movimentado é ${topHour[0]}`, icon: Clock, color: "text-primary" });
+    if (servicePieData[0]) items.push({ text: `Serviço mais vendido: ${servicePieData[0].name} (${servicePieData[0].value}x)`, icon: Target, color: "text-primary" });
+    if (cancelled.length > 0) items.push({ text: `${cancelled.length} cancelamento${cancelled.length > 1 ? "s" : ""} nos últimos ${period} dias`, icon: AlertTriangle, color: "text-destructive" });
     const totalInactive = inactiveClients.d30 + inactiveClients.d60 + inactiveClients.d90;
-    if (totalInactive > 0) items.push({ text: `${totalInactive} cliente${totalInactive > 1 ? "s" : ""} inativos ha mais de 30 dias`, icon: UserX, color: "text-amber-600" });
-
-    // Idle hours
+    if (totalInactive > 0) items.push({ text: `${totalInactive} cliente${totalInactive > 1 ? "s" : ""} inativo${totalInactive > 1 ? "s" : ""} há mais de 30 dias`, icon: UserX, color: "text-amber-600 dark:text-amber-400" });
     if (idleHours.length > 0) {
       const h = idleHours[0];
-      items.push({ text: `${h.dayName} ${h.hour}h tem poucos agendamentos`, icon: BarChart3, color: "text-muted-foreground" });
+      items.push({ text: `${h.dayName} às ${h.hour}h tem poucos agendamentos`, icon: BarChart3, color: "text-muted-foreground" });
     }
-
-    // Today availability
     const todayOpenSlots = 10 - todayAppts.length;
-    if (todayOpenSlots > 3) items.push({ text: `Ainda existem ~${todayOpenSlots} horarios disponiveis hoje`, icon: Calendar, color: "text-primary" });
-
+    if (todayOpenSlots > 3) items.push({ text: `Ainda existem ~${todayOpenSlots} horários disponíveis hoje`, icon: Calendar, color: "text-primary" });
     return items.slice(0, 5);
   }, [completed, cancelled, servicePieData, inactiveClients, idleHours, todayAppts, period]);
 
@@ -339,40 +354,49 @@ export default function DashboardHome() {
   }, [weekAppts]);
 
   const PeriodFilter = () => (
-    <div className="flex items-center gap-1 rounded-xl bg-muted/50 p-1">
+    <div className="flex items-center gap-0.5 rounded-xl border border-border/60 bg-muted/30 p-1">
       {periodOptions.map(opt => (
         <button key={opt.value} onClick={() => setPeriod(opt.value)}
-          className={`px-4 py-2 text-sm sm:text-xs font-medium rounded-lg transition-all duration-200 ${
-            period === opt.value ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+          className={`px-3.5 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 ${
+            period === opt.value
+              ? "bg-card text-foreground shadow-sm border border-border/60"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >{opt.label}</button>
       ))}
     </div>
   );
 
-  const MetricCard = ({ label, value, change, changePositive, icon: Icon, sub, idx }: {
-    label: string; value: string; change?: string | null; changePositive?: boolean; icon: React.ElementType; sub?: string; idx: number;
+  /* ── KPI Card ── */
+  const MetricCard = ({ label, value, change, changePositive, icon: Icon, sub, idx, accent }: {
+    label: string; value: string; change?: string | null; changePositive?: boolean; icon: React.ElementType; sub?: string; idx: number; accent?: string;
   }) => (
     <motion.div {...fadeUp(idx)}
-      className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card p-5 sm:p-5 shadow-card hover:shadow-card-hover transition-all duration-300"
+      className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card p-5 transition-all duration-300 hover:border-border/80 hover:shadow-md"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-accent/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-      <div className="relative flex items-start justify-between">
-        <div className="space-y-1.5 min-w-0 flex-1">
-          <p className="text-sm sm:text-[13px] font-medium text-muted-foreground truncate">{label}</p>
-          <p className="text-xl sm:text-2xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            {value}
+      {/* Subtle top accent line */}
+      <div className={`absolute top-0 left-0 right-0 h-[2px] ${accent || "bg-primary/40"} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+
+      <div className="relative flex items-start justify-between gap-3">
+        <div className="space-y-2 min-w-0 flex-1">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">{label}</p>
+          <p className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-foreground leading-none" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            {loading ? <Skeleton className="h-7 w-24" /> : value}
           </p>
-          {change && (
-            <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${changePositive ? "text-primary" : "text-destructive"}`}>
-              {changePositive ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-              {change} vs periodo anterior
-            </span>
-          )}
-          {sub && <p className="text-xs text-muted-foreground truncate">{sub}</p>}
+          <div className="flex items-center gap-2 flex-wrap">
+            {change && (
+              <span className={`inline-flex items-center gap-0.5 text-[11px] font-semibold px-1.5 py-0.5 rounded-md ${
+                changePositive ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"
+              }`}>
+                {changePositive ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                {change}
+              </span>
+            )}
+            {sub && <p className="text-[11px] text-muted-foreground/60">{sub}</p>}
+          </div>
         </div>
-        <div className="h-10 w-10 rounded-xl bg-accent/60 flex items-center justify-center shrink-0 ml-2">
-          <Icon className="h-5 w-5 text-accent-foreground" />
+        <div className="h-10 w-10 rounded-xl bg-primary/8 flex items-center justify-center shrink-0">
+          <Icon className="h-[18px] w-[18px] text-primary/70" />
         </div>
       </div>
     </motion.div>
@@ -381,7 +405,8 @@ export default function DashboardHome() {
   return (
     <div className="space-y-6 pb-24 sm:pb-6">
       <WelcomeModal />
-      {/* Trial Banner - urgent (≤3 days) */}
+
+      {/* Trial Banner - urgent */}
       {isTrial && daysRemaining !== null && daysRemaining <= 3 && (
         <motion.div {...fadeUp(0)} className="flex items-center gap-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-4">
           <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
@@ -389,359 +414,413 @@ export default function DashboardHome() {
             <p className="text-sm font-medium text-foreground">
               {daysRemaining === 0 ? "Seu teste gratuito expira hoje!" : `Seu teste gratuito expira em ${daysRemaining} dia${daysRemaining > 1 ? "s" : ""}.`}
             </p>
-            <p className="text-xs text-muted-foreground">Escolha um plano para continuar usando o CutFlow.</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Escolha um plano para continuar usando o CutFlow.</p>
           </div>
-          <Button size="sm" variant="default" onClick={() => navigate("/billing")}>Ver planos</Button>
+          <Button size="sm" variant="default" onClick={() => navigate("/billing")} className="rounded-xl shrink-0">Ver planos</Button>
         </motion.div>
       )}
 
       <OnboardingChecklist />
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* ── Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
-            <h2 className="text-2xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <h2 className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               {greeting}, {userName}
             </h2>
             {isTrial && daysRemaining !== null && daysRemaining > 3 && (
-              <Badge variant="secondary" className="bg-primary/8 text-primary border-primary/15 text-[11px] font-medium px-2.5 py-0.5 gap-1">
+              <Badge variant="secondary" className="bg-primary/8 text-primary border-primary/15 text-[10px] font-semibold px-2 py-0.5 gap-1 rounded-lg">
                 <Clock className="h-3 w-3" />
-                Trial: {daysRemaining} dia{daysRemaining !== 1 ? "s" : ""} restante{daysRemaining !== 1 ? "s" : ""}
+                Trial: {daysRemaining}d
               </Badge>
             )}
           </div>
-          <p className="text-sm text-muted-foreground mt-1">{format(new Date(), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</p>
+          <p className="text-sm text-muted-foreground/70 mt-1">{format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <PeriodFilter />
-          <Button variant="outline" size="sm" onClick={copyLink} className="hidden sm:flex rounded-xl">
-            <Copy className="h-3.5 w-3.5 mr-1" /> Copiar link
+          <Button variant="outline" size="sm" onClick={copyLink} className="hidden sm:flex rounded-xl text-xs h-8 border-border/60">
+            <Copy className="h-3 w-3 mr-1.5" /> Copiar link
           </Button>
-          <Button size="sm" onClick={() => navigate("/dashboard/agenda")} className="rounded-xl">
-            <Plus className="h-3.5 w-3.5 mr-1" /> Novo agendamento
+          <Button size="sm" onClick={() => navigate("/dashboard/agenda")} className="rounded-xl text-xs h-8">
+            <Plus className="h-3 w-3 mr-1.5" /> Novo agendamento
           </Button>
         </div>
       </div>
 
       {/* Pending alert */}
       {pendingCount > 0 && (
-        <motion.div {...fadeUp(1)} className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-3">
-          <Bell className="h-4 w-4 text-amber-600 shrink-0" />
+        <motion.div {...fadeUp(1)} className="flex items-center gap-3 rounded-xl border border-amber-500/15 bg-amber-500/5 px-4 py-3">
+          <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
+            <Bell className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          </div>
           <p className="text-sm text-foreground flex-1">
-            <span className="font-medium">{pendingCount} agendamento{pendingCount > 1 ? "s" : ""}</span> aguardando confirmacao hoje.
+            <span className="font-semibold">{pendingCount} agendamento{pendingCount > 1 ? "s" : ""}</span>{" "}
+            <span className="text-muted-foreground">aguardando confirmação</span>
           </p>
-          <Button size="sm" variant="outline" className="rounded-lg text-xs" onClick={() => navigate("/dashboard/agenda")}>Ver agenda</Button>
+          <Button size="sm" variant="outline" className="rounded-lg text-xs h-8 border-border/60" onClick={() => navigate("/dashboard/agenda")}>Ver agenda</Button>
         </motion.div>
       )}
 
-      {/* ── BUSINESS KPI CARDS ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* ── KPI CARDS ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <MetricCard
-          idx={0}
-          label="Atendimentos hoje"
+          idx={0} label="Atendimentos hoje" icon={Calendar}
           value={String(todayAppts.length)}
           sub={`R$ ${todayRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 0 })} faturado`}
-          icon={Calendar}
         />
         <MetricCard
-          idx={1}
-          label="Atendimentos no mês"
+          idx={1} label="Atendimentos no mês" icon={BarChart3}
           value={String(monthAppts.filter(a => a.status !== "cancelled").length)}
           sub={`${monthAppts.filter(a => a.status === "cancelled").length} cancelamento${monthAppts.filter(a => a.status === "cancelled").length !== 1 ? "s" : ""}`}
-          icon={BarChart3}
         />
         <MetricCard
-          idx={2}
-          label="Faturamento mensal"
+          idx={2} label="Faturamento mensal" icon={DollarSign}
           value={`R$ ${monthRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`}
           change={monthRevenueChange ? `${Number(monthRevenueChange) >= 0 ? "+" : ""}${monthRevenueChange}%` : null}
           changePositive={monthRevenueChange ? Number(monthRevenueChange) >= 0 : true}
-          icon={DollarSign}
         />
         <MetricCard
-          idx={3}
-          label="Novos clientes"
+          idx={3} label="Novos clientes" icon={Users}
           value={String(newClients)}
-          sub="no período selecionado"
-          icon={Users}
+          sub="no período"
         />
         <MetricCard
-          idx={4}
-          label="Clientes recorrentes"
+          idx={4} label="Clientes recorrentes" icon={Heart}
           value={String(returningClients)}
-          sub="2+ visitas no período"
-          icon={Heart}
+          sub="2+ visitas"
+          accent="bg-rose-400/40"
         />
         <MetricCard
-          idx={5}
-          label="Ticket médio"
+          idx={5} label="Ticket médio" icon={TrendingUp}
           value={`R$ ${ticket.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
-          sub="valor médio por atendimento"
-          icon={TrendingUp}
+          sub="por atendimento"
         />
       </div>
 
-
       {/* ── TODAY SUMMARY + UPCOMING ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <motion.div {...fadeUp(4)} className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
-          <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            <ArrowUpRight className="h-4 w-4 text-primary" /> Próximos atendimentos
-          </h3>
-          {upcomingToday.length === 0 ? (
-            <div className="text-center py-6 text-muted-foreground">
-              <Calendar className="h-8 w-8 mx-auto mb-2 opacity-20" />
-              <p className="text-sm">Nenhum atendimento pendente hoje</p>
-            </div>
-          ) : (
-            <div className="space-y-1.5">
-              {upcomingToday.map((a, i) => (
-                <div key={a.id} onClick={() => navigate("/dashboard/agenda")}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors cursor-pointer ${i === 0 ? "bg-primary/5 border border-primary/15" : "hover:bg-accent/50"}`}
-                >
-                  <span className="text-sm font-mono font-bold text-primary shrink-0 w-12">{a.start_time?.slice(0, 5)}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate text-foreground">{a.client_name}</p>
-                    <p className="text-[11px] text-muted-foreground truncate">{a.services?.name}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </motion.div>
-
-        <motion.div {...fadeUp(5)} className="lg:col-span-2 rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-semibold text-foreground flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              <Clock className="h-4 w-4 text-primary" /> Agenda de hoje
-            </h3>
-            <span className="text-xs font-medium text-primary">{upcomingToday.length} restantes</span>
-          </div>
-          {todayAppts.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Calendar className="h-10 w-10 mx-auto mb-3 opacity-20" />
-              <p className="text-sm font-medium">Nenhum agendamento hoje</p>
-            </div>
-          ) : (
-            <div className="space-y-2 max-h-[300px] overflow-y-auto">
-              {todayAppts.map(a => {
-                const st = statusLabels[a.status] || statusLabels.scheduled;
-                return (
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <motion.div {...fadeUp(4)}>
+          <SectionCard>
+            <SectionTitle icon={ArrowUpRight}>Próximos</SectionTitle>
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map(i => <Skeleton key={i} className="h-14 w-full rounded-xl" />)}
+              </div>
+            ) : upcomingToday.length === 0 ? (
+              <EmptyState icon={Calendar} title="Nenhum atendimento pendente" description="Seus próximos agendamentos aparecerão aqui" />
+            ) : (
+              <div className="space-y-2">
+                {upcomingToday.map((a, i) => (
                   <div key={a.id} onClick={() => navigate("/dashboard/agenda")}
-                    className="flex items-center gap-3 p-3 rounded-xl border border-border/50 hover:border-primary/20 transition-colors cursor-pointer"
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer ${
+                      i === 0
+                        ? "bg-primary/5 border border-primary/15 shadow-sm"
+                        : "hover:bg-accent/40 border border-transparent"
+                    }`}
                   >
-                    <span className="text-sm font-mono font-bold text-primary shrink-0 w-12">{a.start_time?.slice(0, 5)}</span>
+                    <span className="text-sm font-mono font-bold text-primary shrink-0 w-12 tabular-nums">{a.start_time?.slice(0, 5)}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate text-foreground">{a.client_name}</p>
-                      <p className="text-xs text-muted-foreground">{a.services?.name} · {a.professionals?.name}</p>
+                      <p className="text-[11px] text-muted-foreground/60 truncate">{a.services?.name}</p>
                     </div>
-                    <Badge variant="secondary" className={`text-[10px] rounded-full border-0 ${st.className}`}>{st.label}</Badge>
+                    {i === 0 && (
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-md shrink-0">
+                        Próximo
+                      </span>
+                    )}
                   </div>
-                );
-              })}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </SectionCard>
+        </motion.div>
+
+        <motion.div {...fadeUp(5)} className="lg:col-span-2">
+          <SectionCard>
+            <SectionTitle icon={Clock} action={
+              <span className="text-[11px] font-semibold text-primary tabular-nums">{upcomingToday.length} restantes</span>
+            }>
+              Agenda de hoje
+            </SectionTitle>
+            {loading ? (
+              <div className="space-y-2">
+                {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-14 w-full rounded-xl" />)}
+              </div>
+            ) : todayAppts.length === 0 ? (
+              <EmptyState icon={Calendar} title="Nenhum agendamento hoje" description="Novos agendamentos aparecerão automaticamente aqui" />
+            ) : (
+              <div className="space-y-2 max-h-[320px] overflow-y-auto">
+                {todayAppts.map(a => {
+                  const st = statusLabels[a.status] || statusLabels.scheduled;
+                  return (
+                    <div key={a.id} onClick={() => navigate("/dashboard/agenda")}
+                      className="flex items-center gap-3 p-3 rounded-xl border border-border/40 hover:border-primary/20 hover:bg-accent/30 transition-all cursor-pointer group"
+                    >
+                      <span className="text-sm font-mono font-bold text-primary shrink-0 w-12 tabular-nums">{a.start_time?.slice(0, 5)}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate text-foreground">{a.client_name}</p>
+                        <p className="text-xs text-muted-foreground/60 truncate">{a.services?.name} · {a.professionals?.name}</p>
+                      </div>
+                      <Badge variant="secondary" className={`text-[10px] rounded-full border-0 font-semibold ${st.className}`}>{st.label}</Badge>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </SectionCard>
         </motion.div>
       </div>
 
       {/* ── REVENUE AREA CHART ── */}
-      <motion.div {...fadeUp(6)} className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm sm:text-base font-semibold text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            Faturamento diario
-          </h3>
-          <span className="text-xs text-muted-foreground">Ultimos {Math.min(period, 30)} dias</span>
-        </div>
-        <div className="h-48 sm:h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={revenueChartData} margin={{ left: -10, right: 5, top: 5, bottom: 0 }}>
-              <defs>
-                <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" interval="preserveStartEnd" />
-              <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={40} />
-              <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`R$ ${v}`, "Receita"]} />
-              <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#revGrad)" strokeWidth={2} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+      <motion.div {...fadeUp(6)}>
+        <SectionCard>
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2">
+              <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                <DollarSign className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <h3 className="text-sm font-semibold text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                Faturamento diário
+              </h3>
+            </div>
+            <span className="text-[11px] text-muted-foreground/60 font-medium">Últimos {Math.min(period, 30)} dias</span>
+          </div>
+          {loading ? (
+            <Skeleton className="h-48 sm:h-64 w-full rounded-xl" />
+          ) : (
+            <div className="h-48 sm:h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={revenueChartData} margin={{ left: -10, right: 5, top: 5, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" vertical={false} />
+                  <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground) / 0.3)" interval="preserveStartEnd" tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground) / 0.3)" width={40} tickLine={false} axisLine={false} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`R$ ${v}`, "Receita"]} />
+                  <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#revGrad)" strokeWidth={2} dot={false} activeDot={{ r: 4, strokeWidth: 2, fill: "hsl(var(--card))", stroke: "hsl(var(--primary))" }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </SectionCard>
       </motion.div>
 
       {/* ── INSIGHTS + INACTIVE CLIENTS ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Smart Insights */}
-        <motion.div {...fadeUp(7)} className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
-          <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            <Lightbulb className="h-4 w-4 text-primary" /> Insights do negocio
-          </h3>
-          {insights.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4">Sem insights disponiveis. Agende mais atendimentos para gerar analises.</p>
-          ) : (
-            <div className="space-y-3">
-              {insights.map((ins, i) => {
-                const IIcon = ins.icon;
-                return (
-                  <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-border/50">
-                    <IIcon className={`h-4 w-4 mt-0.5 shrink-0 ${ins.color}`} />
-                    <p className="text-sm text-foreground">{ins.text}</p>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <motion.div {...fadeUp(7)}>
+          <SectionCard className="h-full">
+            <SectionTitle icon={Lightbulb}>Insights do negócio</SectionTitle>
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full rounded-xl" />)}
+              </div>
+            ) : insights.length === 0 ? (
+              <EmptyState icon={Lightbulb} title="Sem insights disponíveis" description="Agende mais atendimentos para gerar análises" />
+            ) : (
+              <div className="space-y-2">
+                {insights.map((ins, i) => {
+                  const IIcon = ins.icon;
+                  return (
+                    <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-border/40 hover:border-border/60 transition-colors">
+                      <div className="h-7 w-7 rounded-lg bg-muted/60 flex items-center justify-center shrink-0 mt-0.5">
+                        <IIcon className={`h-3.5 w-3.5 ${ins.color}`} />
+                      </div>
+                      <p className="text-sm text-foreground leading-relaxed">{ins.text}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </SectionCard>
         </motion.div>
 
-        {/* Inactive Clients */}
-        <motion.div {...fadeUp(8)} className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
-          <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            <UserX className="h-4 w-4 text-amber-600" /> Clientes inativos
-          </h3>
-          <div className="space-y-3">
-            {[
-              { label: "Inativos ha 30+ dias", value: inactiveClients.d30, color: "bg-amber-500/10 text-amber-600" },
-              { label: "Inativos ha 60+ dias", value: inactiveClients.d60, color: "bg-destructive/10 text-destructive" },
-              { label: "Inativos ha 90+ dias (perdidos)", value: inactiveClients.d90, color: "bg-destructive/15 text-destructive" },
-            ].map(item => (
-              <div key={item.label} className="flex items-center justify-between p-3 rounded-xl border border-border/50">
-                <span className="text-sm text-muted-foreground">{item.label}</span>
-                <Badge variant="secondary" className={`text-xs rounded-full border-0 ${item.color}`}>{item.value}</Badge>
-              </div>
-            ))}
-          </div>
-          <div className="flex gap-2 mt-4">
-            <Button size="sm" variant="outline" className="rounded-xl text-xs flex-1" onClick={() => navigate("/dashboard/retention")}>
-              <Heart className="h-3.5 w-3.5 mr-1" /> Ver retencao
-            </Button>
-            <Button size="sm" className="rounded-xl text-xs flex-1" onClick={() => navigate("/dashboard/automations")}>
-              <Bell className="h-3.5 w-3.5 mr-1" /> Campanha de retorno
-            </Button>
-          </div>
+        <motion.div {...fadeUp(8)}>
+          <SectionCard className="h-full">
+            <SectionTitle icon={UserX} action={
+              <span className="text-[11px] font-semibold text-muted-foreground/50">
+                {inactiveClients.d30 + inactiveClients.d60 + inactiveClients.d90} total
+              </span>
+            }>
+              Clientes inativos
+            </SectionTitle>
+            <div className="space-y-2">
+              {[
+                { label: "Inativos há 30+ dias", value: inactiveClients.d30, severity: "bg-amber-500/10 text-amber-600 dark:text-amber-400" },
+                { label: "Inativos há 60+ dias", value: inactiveClients.d60, severity: "bg-destructive/10 text-destructive" },
+                { label: "Inativos há 90+ dias", value: inactiveClients.d90, severity: "bg-destructive/15 text-destructive" },
+              ].map(item => (
+                <div key={item.label} className="flex items-center justify-between p-3 rounded-xl border border-border/40">
+                  <span className="text-sm text-muted-foreground">{item.label}</span>
+                  <Badge variant="secondary" className={`text-[11px] font-bold rounded-lg border-0 min-w-[28px] justify-center ${item.severity}`}>{item.value}</Badge>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2 mt-4">
+              <Button size="sm" variant="outline" className="rounded-xl text-xs flex-1 h-9 border-border/60" onClick={() => navigate("/dashboard/retention")}>
+                <Heart className="h-3 w-3 mr-1.5" /> Retenção
+              </Button>
+              <Button size="sm" className="rounded-xl text-xs flex-1 h-9" onClick={() => navigate("/dashboard/automations")}>
+                <Bell className="h-3 w-3 mr-1.5" /> Campanha
+              </Button>
+            </div>
+          </SectionCard>
         </motion.div>
       </div>
 
       {/* ── IDLE HOURS ── */}
       {idleHours.length > 0 && (
-        <motion.div {...fadeUp(9)} className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
-          <h3 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" /> Horarios ociosos
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {idleHours.map((h, i) => (
-              <div key={i} className="p-4 rounded-xl border border-border/50 bg-muted/30">
-                <p className="text-sm font-medium text-foreground">{h.dayName} as {h.hour}h</p>
-                <p className="text-xs text-muted-foreground mt-1">Media de {h.avg.toFixed(1)} agendamentos/semana</p>
-                <p className="text-xs text-primary mt-2 font-medium">Sugestao: Criar promocao para este horario</p>
-              </div>
-            ))}
-          </div>
+        <motion.div {...fadeUp(9)}>
+          <SectionCard>
+            <SectionTitle icon={BarChart3}>Horários ociosos</SectionTitle>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {idleHours.map((h, i) => (
+                <div key={i} className="p-4 rounded-xl border border-border/40 bg-muted/20">
+                  <p className="text-sm font-semibold text-foreground">{h.dayName} às {h.hour}h</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">Média de {h.avg.toFixed(1)} agendamentos/semana</p>
+                  <p className="text-xs text-primary mt-2.5 font-medium flex items-center gap-1">
+                    <Zap className="h-3 w-3" /> Criar promoção para este horário
+                  </p>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
         </motion.div>
       )}
 
-      {/* ── CHARTS: Services Pie + Day of Week Bar + Pro Performance ── */}
+      {/* ── CHARTS: Services + Day of Week ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        {/* Services Pie */}
-        <motion.div {...fadeUp(10)} className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
-          <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            Servicos mais vendidos
-          </h3>
-          {servicePieData.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">Sem dados</p>
-          ) : (
-            <div className="h-[240px] sm:h-[280px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={servicePieData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={3} dataKey="value" nameKey="name"
-                    label={({ name, percent }) => window.innerWidth > 640 ? `${name} (${(percent * 100).toFixed(0)}%)` : `${(percent * 100).toFixed(0)}%`}
-                    labelLine={window.innerWidth > 640}
-                  >
-                    {servicePieData.map((_, idx) => <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />)}
-                  </Pie>
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v} agendamentos`, "Qtd"]} />
-                  <Legend wrapperStyle={{ fontSize: 11 }} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          )}
+        <motion.div {...fadeUp(10)}>
+          <SectionCard>
+            <SectionTitle icon={Target}>Serviços mais vendidos</SectionTitle>
+            {loading ? (
+              <Skeleton className="h-[240px] w-full rounded-xl" />
+            ) : servicePieData.length === 0 ? (
+              <EmptyState icon={Target} title="Sem dados de serviços" description="Cadastre serviços e agende atendimentos" />
+            ) : (
+              <div className="h-[240px] sm:h-[280px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={servicePieData} cx="50%" cy="50%" innerRadius={45} outerRadius={75} paddingAngle={3} dataKey="value" nameKey="name"
+                      label={({ name, percent }) => window.innerWidth > 640 ? `${name} (${(percent * 100).toFixed(0)}%)` : `${(percent * 100).toFixed(0)}%`}
+                      labelLine={window.innerWidth > 640}
+                    >
+                      {servicePieData.map((_, idx) => <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v} agendamentos`, "Qtd"]} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </SectionCard>
         </motion.div>
 
-        {/* Day of week */}
-        <motion.div {...fadeUp(11)} className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
-          <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            Faturamento por dia da semana
-          </h3>
-          <div className="h-[240px] sm:h-[280px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weekdayChartData} margin={{ left: -10, right: 5, top: 5, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={35} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [name === "revenue" ? `R$ ${v}` : v, name === "revenue" ? "Receita" : "Atendimentos"]} />
-                <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+        <motion.div {...fadeUp(11)}>
+          <SectionCard>
+            <SectionTitle icon={BarChart3}>Faturamento por dia da semana</SectionTitle>
+            {loading ? (
+              <Skeleton className="h-[240px] w-full rounded-xl" />
+            ) : (
+              <div className="h-[240px] sm:h-[280px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={weekdayChartData} margin={{ left: -10, right: 5, top: 5, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" vertical={false} />
+                    <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground) / 0.3)" tickLine={false} axisLine={false} />
+                    <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground) / 0.3)" width={35} tickLine={false} axisLine={false} />
+                    <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [name === "revenue" ? `R$ ${v}` : v, name === "revenue" ? "Receita" : "Atendimentos"]} />
+                    <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </SectionCard>
         </motion.div>
       </div>
 
       {/* Professional Performance */}
       {proPerfData.length > 0 && (
-        <motion.div {...fadeUp(12)} className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm sm:text-base font-semibold text-foreground flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              <Trophy className="h-4 w-4 text-primary" /> Profissionais com mais atendimentos
-            </h3>
-            <span className="text-xs text-muted-foreground">Ultimos {period} dias</span>
-          </div>
-          <div className="h-[200px] sm:h-[220px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={proPerfData} layout="vertical" margin={{ left: 0, right: 10, top: 5, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" width={80} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [name === "revenue" ? `R$ ${v}` : v, name === "revenue" ? "Receita" : "Atendimentos"]} />
-                <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 6, 6, 0]} name="Atendimentos" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+        <motion.div {...fadeUp(12)}>
+          <SectionCard>
+            <SectionTitle icon={Trophy} action={
+              <span className="text-[11px] text-muted-foreground/50 font-medium">Últimos {period} dias</span>
+            }>
+              Ranking de profissionais
+            </SectionTitle>
+            <div className="h-[200px] sm:h-[220px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={proPerfData} layout="vertical" margin={{ left: 0, right: 10, top: 5, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" horizontal={false} />
+                  <XAxis type="number" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground) / 0.3)" tickLine={false} axisLine={false} />
+                  <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground) / 0.3)" width={80} tickLine={false} axisLine={false} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [name === "revenue" ? `R$ ${v}` : v, name === "revenue" ? "Receita" : "Atendimentos"]} />
+                  <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 6, 6, 0]} name="Atendimentos" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </SectionCard>
         </motion.div>
       )}
 
       <WeeklySchedule appointments={weeklyAppointments} onSlotClick={() => navigate("/dashboard/agenda")} />
 
       {/* Retention + Loyalty shortcuts */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="rounded-2xl border border-border bg-card p-5 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate("/dashboard/retention")}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <motion.div {...fadeUp(13)}
+          className="rounded-2xl border border-border/60 bg-card p-5 hover:border-border/80 hover:shadow-md transition-all duration-300 cursor-pointer group"
+          onClick={() => navigate("/dashboard/retention")}
+        >
           <div className="flex items-center gap-3 mb-3">
-            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center"><Heart className="h-4 w-4 text-primary" /></div>
-            <h3 className="text-sm font-semibold text-foreground">Retencao Inteligente</h3>
+            <div className="h-9 w-9 rounded-xl bg-primary/8 flex items-center justify-center group-hover:bg-primary/12 transition-colors">
+              <Heart className="h-4 w-4 text-primary" />
+            </div>
+            <h3 className="text-sm font-semibold text-foreground">Retenção Inteligente</h3>
           </div>
-          <p className="text-xs text-muted-foreground">Analise preditiva de retorno de clientes baseada no historico de visitas</p>
-          <p className="text-xs text-primary mt-2 font-medium">Ver analise →</p>
-        </div>
-        <div className="rounded-2xl border border-border bg-card p-5 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate("/dashboard/loyalty")}>
+          <p className="text-xs text-muted-foreground/70 leading-relaxed">Análise preditiva de retorno de clientes baseada no histórico de visitas</p>
+          <p className="text-xs text-primary mt-3 font-semibold flex items-center gap-1 group-hover:gap-1.5 transition-all">
+            Ver análise <ArrowUpRight className="h-3 w-3" />
+          </p>
+        </motion.div>
+        <motion.div {...fadeUp(14)}
+          className="rounded-2xl border border-border/60 bg-card p-5 hover:border-border/80 hover:shadow-md transition-all duration-300 cursor-pointer group"
+          onClick={() => navigate("/dashboard/loyalty")}
+        >
           <div className="flex items-center gap-3 mb-3">
-            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center"><Trophy className="h-4 w-4 text-primary" /></div>
+            <div className="h-9 w-9 rounded-xl bg-primary/8 flex items-center justify-center group-hover:bg-primary/12 transition-colors">
+              <Trophy className="h-4 w-4 text-primary" />
+            </div>
             <h3 className="text-sm font-semibold text-foreground">Programa de Fidelidade</h3>
           </div>
-          <p className="text-xs text-muted-foreground">Recompense clientes fieis e incentive o retorno frequente</p>
-          <p className="text-xs text-primary mt-2 font-medium">Gerenciar →</p>
-        </div>
+          <p className="text-xs text-muted-foreground/70 leading-relaxed">Recompense clientes fiéis e incentive o retorno frequente</p>
+          <p className="text-xs text-primary mt-3 font-semibold flex items-center gap-1 group-hover:gap-1.5 transition-all">
+            Gerenciar <ArrowUpRight className="h-3 w-3" />
+          </p>
+        </motion.div>
       </div>
 
       {/* Quick actions */}
-      <motion.div {...fadeUp(13)} className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-card hover:shadow-card-hover transition-all duration-300">
-        <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Acoes rapidas</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Button variant="outline" className="h-auto py-5 sm:py-4 flex-col gap-2 rounded-xl text-sm" onClick={() => navigate("/dashboard/agenda")}><Calendar className="h-5 w-5 text-primary" /><span className="text-xs">Ver agenda</span></Button>
-          <Button variant="outline" className="h-auto py-5 sm:py-4 flex-col gap-2 rounded-xl text-sm" onClick={() => navigate("/dashboard/clients")}><Users className="h-5 w-5 text-muted-foreground" /><span className="text-xs">Clientes</span></Button>
-          <Button variant="outline" className="h-auto py-5 sm:py-4 flex-col gap-2 rounded-xl text-sm" onClick={() => navigate("/dashboard/finance")}><DollarSign className="h-5 w-5 text-primary" /><span className="text-xs">Financeiro</span></Button>
-          <Button variant="outline" className="h-auto py-5 sm:py-4 flex-col gap-2 rounded-xl text-sm" onClick={copyLink}><ExternalLink className="h-5 w-5 text-muted-foreground" /><span className="text-xs">Copiar link</span></Button>
-        </div>
+      <motion.div {...fadeUp(15)}>
+        <SectionCard>
+          <SectionTitle icon={Zap}>Ações rápidas</SectionTitle>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: "Ver agenda", icon: Calendar, color: "text-primary", action: () => navigate("/dashboard/agenda") },
+              { label: "Clientes", icon: Users, color: "text-muted-foreground", action: () => navigate("/dashboard/clients") },
+              { label: "Financeiro", icon: DollarSign, color: "text-primary", action: () => navigate("/dashboard/finance") },
+              { label: "Copiar link", icon: ExternalLink, color: "text-muted-foreground", action: copyLink },
+            ].map(item => (
+              <Button key={item.label} variant="outline" className="h-auto py-4 flex-col gap-2 rounded-xl text-xs border-border/50 hover:border-primary/20 hover:bg-primary/5 transition-all" onClick={item.action}>
+                <item.icon className={`h-5 w-5 ${item.color}`} />
+                <span className="font-medium">{item.label}</span>
+              </Button>
+            ))}
+          </div>
+        </SectionCard>
       </motion.div>
     </div>
   );
