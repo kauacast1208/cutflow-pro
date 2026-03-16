@@ -313,59 +313,108 @@ function ReportsMockup() {
   );
 }
 
-/* ─── Finance ─── */
+/* ─── Finance with premium Stripe-style chart ─── */
 function FinanceMockup() {
+  // SVG chart path for smooth curve
+  const revenuePath = "M 0 55 C 15 50, 25 30, 40 35 S 65 15, 80 20 S 105 5, 120 10 S 145 25, 160 18 S 185 8, 200 12 S 225 20, 240 15";
+  const appointmentsPath = "M 0 45 C 15 42, 25 38, 40 40 S 65 30, 80 28 S 105 22, 120 25 S 145 32, 160 28 S 185 18, 200 22 S 225 28, 240 24";
+  const days = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+
   return (
     <div className="p-4 space-y-3">
-      <p className="text-[11px] font-semibold text-foreground">Financeiro — Março 2026</p>
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-        {[
-          { label: "Receita", value: "R$ 18.5k", icon: TrendingUp, accent: "text-emerald-500 bg-emerald-500/10" },
-          { label: "Ticket médio", value: "R$ 65", icon: DollarSign, accent: "text-primary bg-primary/10" },
-          { label: "Serviços realizados", value: "284", icon: Scissors, accent: "text-blue-500 bg-blue-500/10" },
-        ].map((m) => (
-          <div key={m.label} className="rounded-xl border border-border/50 dark:border-white/[0.06] bg-card dark:bg-white/[0.03] p-2.5">
-            <div className={`h-6 w-6 rounded-lg flex items-center justify-center mb-1.5 ${m.accent}`}>
-              <m.icon className="h-3 w-3" />
-            </div>
-            <p className="text-sm font-bold text-foreground">{m.value}</p>
-            <p className="text-[8px] text-muted-foreground">{m.label}</p>
-          </div>
-        ))}
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] font-semibold text-foreground">Financeiro — Semana atual</p>
+        <span className="text-[9px] text-muted-foreground bg-muted dark:bg-white/[0.04] px-2 py-0.5 rounded-full border border-border/40 dark:border-white/[0.06]">Semanal</span>
       </div>
-      <div className="rounded-xl border border-border/50 dark:border-white/[0.06] bg-card dark:bg-white/[0.03] p-3">
-        <p className="text-[10px] font-semibold text-foreground mb-2.5">Receita por profissional</p>
-        <div className="space-y-2">
-          {[
-            { name: "Carlos", value: "R$ 7.2k", pct: 39 },
-            { name: "Rafael", value: "R$ 5.8k", pct: 31 },
-            { name: "André", value: "R$ 5.5k", pct: 30 },
-          ].map((p) => (
-            <div key={p.name}>
-              <div className="flex justify-between text-[9px] mb-1">
-                <span className="font-medium text-foreground">{p.name}</span>
-                <span className="text-muted-foreground">{p.value} ({p.pct}%)</span>
-              </div>
-              <div className="h-1.5 rounded-full bg-muted dark:bg-white/[0.06] overflow-hidden">
-                <div className="h-full rounded-full bg-primary" style={{ width: `${p.pct * 2.5}%` }} />
-              </div>
-            </div>
-          ))}
+
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="rounded-xl border border-border/50 dark:border-white/[0.06] bg-card dark:bg-white/[0.03] p-2.5">
+          <p className="text-[8px] text-muted-foreground mb-0.5">Receita semanal</p>
+          <p className="text-base font-extrabold text-foreground">R$ 4.820</p>
+          <span className="text-[8px] font-medium text-primary">+12% vs semana anterior</span>
+        </div>
+        <div className="rounded-xl border border-border/50 dark:border-white/[0.06] bg-card dark:bg-white/[0.03] p-2.5">
+          <p className="text-[8px] text-muted-foreground mb-0.5">Atendimentos</p>
+          <p className="text-base font-extrabold text-foreground">87</p>
+          <span className="text-[8px] font-medium text-primary">+8 vs semana anterior</span>
         </div>
       </div>
+
+      {/* Stripe-style smooth curve chart */}
       <div className="rounded-xl border border-border/50 dark:border-white/[0.06] bg-card dark:bg-white/[0.03] p-3">
-        <p className="text-[10px] font-semibold text-foreground mb-2">Top serviços</p>
-        <div className="space-y-1.5">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[10px] font-semibold text-foreground">Receita & Atendimentos</p>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              <div className="h-1.5 w-4 rounded-full bg-primary" />
+              <span className="text-[8px] text-muted-foreground">Receita</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="h-1.5 w-4 rounded-full bg-purple-500/60" />
+              <span className="text-[8px] text-muted-foreground">Atend.</span>
+            </div>
+          </div>
+        </div>
+        <div className="relative h-[70px]">
+          <svg viewBox="0 0 240 60" className="w-full h-full" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+              </linearGradient>
+              <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.6" />
+                <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="1" />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.8" />
+              </linearGradient>
+            </defs>
+            {/* Grid lines */}
+            {[15, 30, 45].map((y) => (
+              <line key={y} x1="0" y1={y} x2="240" y2={y} stroke="hsl(var(--border))" strokeWidth="0.3" strokeOpacity="0.3" />
+            ))}
+            {/* Revenue area fill */}
+            <path d={`${revenuePath} L 240 60 L 0 60 Z`} fill="url(#revenueGrad)" />
+            {/* Revenue line */}
+            <path d={revenuePath} fill="none" stroke="url(#lineGrad)" strokeWidth="1.5" strokeLinecap="round" />
+            {/* Appointments line */}
+            <path d={appointmentsPath} fill="none" stroke="hsl(270, 50%, 60%)" strokeWidth="1" strokeLinecap="round" strokeOpacity="0.5" strokeDasharray="3 2" />
+            {/* Glow dot on latest point */}
+            <circle cx="240" cy="15" r="2.5" fill="hsl(var(--primary))" />
+            <circle cx="240" cy="15" r="5" fill="hsl(var(--primary))" opacity="0.15" />
+          </svg>
+          {/* Day labels */}
+          <div className="absolute bottom-0 left-0 right-0 flex justify-between px-1">
+            {days.map((d) => (
+              <span key={d} className="text-[7px] text-muted-foreground/50">{d}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Professional ranking with real numbers */}
+      <div className="rounded-xl border border-border/50 dark:border-white/[0.06] bg-card dark:bg-white/[0.03] p-3">
+        <p className="text-[10px] font-semibold text-foreground mb-2">Ranking — Profissionais</p>
+        <div className="space-y-2">
           {[
-            { name: "Corte + Barba", count: 98, revenue: "R$ 6.3k" },
-            { name: "Corte Masculino", count: 112, revenue: "R$ 5.0k" },
-            { name: "Barba", count: 74, revenue: "R$ 2.2k" },
-          ].map((s) => (
-            <div key={s.name} className="flex items-center justify-between p-1.5 rounded-lg bg-muted/30 dark:bg-white/[0.02]">
-              <span className="text-[9px] font-medium text-foreground">{s.name}</span>
-              <div className="flex items-center gap-3">
-                <span className="text-[8px] text-muted-foreground">{s.count}x</span>
-                <span className="text-[9px] font-semibold text-primary">{s.revenue}</span>
+            { name: "Carlos", appointments: 72, revenue: "R$ 7.2k", pct: 39 },
+            { name: "Rafael", appointments: 58, revenue: "R$ 5.8k", pct: 31 },
+            { name: "André", appointments: 55, revenue: "R$ 5.5k", pct: 30 },
+          ].map((p, i) => (
+            <div key={p.name} className="flex items-center gap-2">
+              <span className="text-[8px] font-bold text-muted-foreground w-3">{i + 1}º</span>
+              <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center text-[7px] font-bold text-primary shrink-0">{p.name[0]}</div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-0.5">
+                  <span className="text-[9px] font-medium text-foreground">{p.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[7px] px-1.5 py-0.5 rounded-full bg-muted dark:bg-white/[0.04] text-muted-foreground border border-border/30 dark:border-white/[0.06]">{p.appointments} atend.</span>
+                    <span className="text-[9px] font-semibold text-primary">{p.revenue}</span>
+                  </div>
+                </div>
+                <div className="h-1 rounded-full bg-muted dark:bg-white/[0.06] overflow-hidden">
+                  <div className="h-full rounded-full bg-primary" style={{ width: `${p.pct * 2.5}%` }} />
+                </div>
               </div>
             </div>
           ))}
