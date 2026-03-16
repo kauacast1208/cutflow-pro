@@ -17,7 +17,7 @@ const solutions = [
   {
     icon: Users,
     title: "CRM de clientes",
-    description: "Histórico completo, aniversários e dados para fidelizar seus clientes.",
+    description: "Histórico, aniversários e perfil completo. Cliente fidelizado volta sozinho.",
   },
   {
     icon: BarChart3,
