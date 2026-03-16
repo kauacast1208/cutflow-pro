@@ -104,9 +104,16 @@ export default function OnboardingPage() {
       }
 
       const payload = buildBarbershopInsert(parsed.data, user.id, finalSlug);
-      const { error } = await supabase.from("barbershops").insert(payload);
+      const { data: createdBarbershop, error } = await supabase
+        .from("barbershops")
+        .insert(payload)
+        .select("*")
+        .maybeSingle();
 
       if (error) throw error;
+      if (createdBarbershop) {
+        setBarbershop(createdBarbershop);
+      }
 
       await refresh();
       setSuccess(true);
