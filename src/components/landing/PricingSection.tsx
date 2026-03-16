@@ -286,7 +286,7 @@ export function PricingSection() {
 
         {/* Franchise + Enterprise — premium row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[960px] mx-auto mt-8 sm:mt-10">
-          <FranchiseCard plan={plans[3]} billing={billing} />
+          <FranchiseCard plan={plans[3]} />
           <EnterpriseCard plan={plans[4]} />
         </div>
 
