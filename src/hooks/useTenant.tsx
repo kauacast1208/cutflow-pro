@@ -9,46 +9,12 @@ import {
 } from "react";
 import { useAuth } from "./useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 
 // ── Types ──────────────────────────────────────────────
 export type TenantRole = "owner" | "admin" | "professional" | "receptionist";
-
-export interface TenantProfile {
-  id: string;
-  user_id: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  phone: string | null;
-}
-
-export interface TenantBarbershop {
-  id: string;
-  name: string;
-  slug: string;
-  owner_id: string;
-  phone: string | null;
-  address: string | null;
-  address_complement: string | null;
-  description: string | null;
-  logo_url: string | null;
-  instagram: string | null;
-  whatsapp: string | null;
-  opening_time: string;
-  closing_time: string;
-  slot_interval_minutes: number;
-  buffer_minutes: number;
-  min_advance_hours: number;
-  auto_confirm: boolean;
-  allow_online_cancellation: boolean;
-  allow_online_reschedule: boolean;
-  cancellation_limit_hours: number;
-  closed_days: number[] | null;
-  referral_enabled: boolean | null;
-  referral_goal: number | null;
-  referral_reward: string | null;
-  created_at: string;
-  updated_at: string;
-}
+export type TenantProfile = Tables<"profiles">;
+export type TenantBarbershop = Tables<"barbershops">;
 
 type TenantStatus =
   | "loading"
