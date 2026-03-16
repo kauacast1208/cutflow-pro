@@ -131,8 +131,10 @@ const plans: PlanDef[] = [
     ],
     cta: "Falar com vendas",
     ctaStyle: "outline",
-    externalLink:
-      "https://wa.me/5553999481954?text=Olá! Tenho interesse no plano Franquias do CutFlow para minha rede de barbearias.",
+    externalWhatsApp: {
+      phone: "5553999481954",
+      message: "Olá! Tenho interesse no plano Franquias do CutFlow para minha rede de barbearias.",
+    },
   },
   {
     slug: "enterprise",
