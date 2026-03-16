@@ -219,4 +219,32 @@
       font-size: 10px !important;
     }
   }
+
+  /* Card lift on hover */
+  .card-lift {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .card-lift:hover {
+    transform: translateY(-3px);
+  }
+
+  /* Button glow pulse */
+  .btn-glow {
+    position: relative;
+    overflow: visible;
+  }
+  .btn-glow::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: hsl(var(--primary) / 0.25);
+    filter: blur(12px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+  }
+  .btn-glow:hover::after {
+    opacity: 1;
+  }
 }
