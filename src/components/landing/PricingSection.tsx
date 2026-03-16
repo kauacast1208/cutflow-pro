@@ -521,15 +521,17 @@ function EnterpriseCard({ plan }: { plan: PlanDef }) {
         </div>
       </div>
 
-      <button
-        onClick={whatsAppClickHandler(plan.externalWhatsApp!.phone, plan.externalWhatsApp!.message)}
+      <a
+        href={`https://wa.me/${plan.externalWhatsApp!.phone}?text=${encodeURIComponent(plan.externalWhatsApp!.message)}`}
+        target="_blank"
+        rel="noopener noreferrer"
         className="block mt-auto w-full"
       >
         <Button variant="outline" className="w-full rounded-xl gap-2 h-11 text-sm">
           <MessageSquare className="h-4 w-4" />
           {plan.cta}
         </Button>
-      </button>
+      </a>
     </motion.div>
   );
 }
