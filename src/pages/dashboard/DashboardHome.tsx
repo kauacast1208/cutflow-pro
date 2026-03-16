@@ -50,7 +50,7 @@ const statusLabels: Record<string, { label: string; className: string }> = {
 const fadeUp = (i: number) => ({
   initial: { opacity: 0, y: 16 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.4, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] },
+  transition: { duration: 0.4, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
 });
 
 const tooltipStyle = {
