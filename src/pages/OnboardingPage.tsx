@@ -125,7 +125,14 @@ export default function OnboardingPage() {
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-8 shadow-card">
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+            {formError && (
+              <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{formError}</span>
+              </div>
+            )}
+
             {/* Name */}
             <div className="space-y-2">
               <Label htmlFor="name">Nome da barbearia *</Label>
@@ -135,11 +142,16 @@ export default function OnboardingPage() {
                   id="name"
                   placeholder="Ex: Barbearia Premium"
                   value={barbershopName}
-                  onChange={(e) => setBarbershopName(e.target.value)}
+                  onChange={(e) => {
+                    setBarbershopName(e.target.value);
+                    if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: undefined }));
+                  }}
                   required
+                  aria-invalid={!!fieldErrors.name}
                   className="pl-9 transition-shadow focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.1)]"
                 />
               </div>
+              {fieldErrors.name && <p className="text-xs text-destructive">{fieldErrors.name}</p>}
             </div>
 
             {/* Phone */}
@@ -151,11 +163,16 @@ export default function OnboardingPage() {
                   id="phone"
                   placeholder="(11) 99999-0000"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    if (fieldErrors.phone) setFieldErrors((prev) => ({ ...prev, phone: undefined }));
+                  }}
                   autoComplete="tel"
+                  aria-invalid={!!fieldErrors.phone}
                   className="pl-9 transition-shadow focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.1)]"
                 />
               </div>
+              {fieldErrors.phone && <p className="text-xs text-destructive">{fieldErrors.phone}</p>}
             </div>
 
             {/* Address */}
@@ -167,14 +184,19 @@ export default function OnboardingPage() {
                   id="address"
                   placeholder="Rua, número - Cidade"
                   value={address}
-                  onChange={(e) => setAddress(e.target.value)}
+                  onChange={(e) => {
+                    setAddress(e.target.value);
+                    if (fieldErrors.address) setFieldErrors((prev) => ({ ...prev, address: undefined }));
+                  }}
                   autoComplete="street-address"
+                  aria-invalid={!!fieldErrors.address}
                   className="pl-9 transition-shadow focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.1)]"
                 />
               </div>
               <p className="text-[11px] text-muted-foreground/60 leading-tight">
                 Seu endereço aparece na página de agendamento.
               </p>
+              {fieldErrors.address && <p className="text-xs text-destructive">{fieldErrors.address}</p>}
             </div>
 
             {/* Complement */}
@@ -186,10 +208,15 @@ export default function OnboardingPage() {
                   id="complement"
                   placeholder="Apartamento, sala, bloco ou referência"
                   value={addressComplement}
-                  onChange={(e) => setAddressComplement(e.target.value)}
+                  onChange={(e) => {
+                    setAddressComplement(e.target.value);
+                    if (fieldErrors.addressComplement) setFieldErrors((prev) => ({ ...prev, addressComplement: undefined }));
+                  }}
+                  aria-invalid={!!fieldErrors.addressComplement}
                   className="pl-9 transition-shadow focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.1)]"
                 />
               </div>
+              {fieldErrors.addressComplement && <p className="text-xs text-destructive">{fieldErrors.addressComplement}</p>}
             </div>
 
             <motion.div
@@ -199,7 +226,7 @@ export default function OnboardingPage() {
               <Button
                 type="submit"
                 className="w-full mt-2 h-11 text-sm font-semibold btn-glow"
-                disabled={loading || !barbershopName.trim()}
+                disabled={isSubmitDisabled}
               >
                 {loading ? (
                   <>
