@@ -600,7 +600,7 @@ export function DemoSection() {
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          <div className="rounded-2xl border-2 border-border/60 dark:border-white/[0.08] bg-card dark:bg-[hsl(240,16%,8%)] shadow-2xl overflow-hidden ring-1 ring-border/20 dark:ring-white/[0.04]">
+          <div className="rounded-2xl border-2 border-border/60 dark:border-white/[0.08] bg-card dark:bg-[hsl(240,18%,6%)] shadow-2xl overflow-hidden ring-1 ring-border/20 dark:ring-white/[0.04]">
             {/* Browser chrome */}
             <div className="flex items-center gap-3 px-4 sm:px-5 py-2.5 border-b border-border/40 dark:border-white/[0.06] bg-muted/20 dark:bg-white/[0.02]">
               <div className="flex gap-1.5">
