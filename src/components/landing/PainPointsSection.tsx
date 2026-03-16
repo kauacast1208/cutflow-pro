@@ -14,8 +14,8 @@ const problems = [
   },
   {
     icon: MessageCircleWarning,
-    title: "WhatsApp confuso",
-    description: "Mensagens perdidas no meio de grupos e conversas pessoais. Clientes sem resposta.",
+    title: "WhatsApp virou bagunça",
+    description: "Mensagem de cliente se perde entre grupos e conversas pessoais. Agendamento esquecido.",
   },
   {
     icon: DollarSign,
