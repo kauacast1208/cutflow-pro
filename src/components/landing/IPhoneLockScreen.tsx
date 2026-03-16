@@ -52,8 +52,8 @@ export function IPhoneLockScreen() {
 
   return (
     <div className="h-full flex flex-col relative overflow-hidden select-none">
-      {/* Premium deep black wallpaper with subtle color */}
-      <div className="absolute inset-0 bg-[hsl(220,20%,4%)]" />
+      {/* Wallpaper - adapts to theme */}
+      <div className="absolute inset-0 bg-[hsl(240,20%,3%)] dark:bg-[hsl(240,20%,3%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(152,55%,30%,0.06),transparent_60%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,hsl(270,40%,25%,0.05),transparent_60%)]" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
