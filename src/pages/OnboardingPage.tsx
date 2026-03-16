@@ -124,6 +124,7 @@ export default function OnboardingPage() {
     }
     clearError();
     setLoading(true);
+    console.info("[Onboarding] Step 2 START — creating service", { barbershopId: createdBarbershopId, name: serviceName });
     try {
       const { error } = await supabase.from("services").insert({
         barbershop_id: createdBarbershopId,
@@ -133,8 +134,10 @@ export default function OnboardingPage() {
         active: true,
       });
       if (error) throw error;
+      console.info("[Onboarding] Step 2 DONE — service created");
       setCurrentStep(3);
     } catch (error) {
+      console.error("[Onboarding] Step 2 FAILED", error);
       setFormError("Não foi possível criar o serviço. Tente novamente.");
     } finally {
       setLoading(false);
