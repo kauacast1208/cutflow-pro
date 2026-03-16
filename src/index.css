@@ -99,13 +99,13 @@
     --input: 240 12% 14%;
     --ring: 152 55% 42%;
 
-    --sidebar-background: 220 14% 7%;
+    --sidebar-background: 240 18% 5%;
     --sidebar-foreground: 210 8% 85%;
     --sidebar-primary: 152 55% 42%;
-    --sidebar-primary-foreground: 220 16% 4%;
-    --sidebar-accent: 220 12% 12%;
+    --sidebar-primary-foreground: 240 20% 3%;
+    --sidebar-accent: 240 14% 10%;
     --sidebar-accent-foreground: 152 50% 58%;
-    --sidebar-border: 220 10% 13%;
+    --sidebar-border: 240 12% 11%;
     --sidebar-ring: 152 55% 42%;
 
     --success: 152 50% 44%;
