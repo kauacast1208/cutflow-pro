@@ -48,6 +48,7 @@ const Index = () => {
       <AboutSection />
       {/* 9. Pricing */}
       <div id="pricing"><PricingSection /></div>
+      <ROISection />
       {/* 10. FAQ + Final CTA */}
       <div id="faq"><FAQSection /></div>
       <FinalCTASection />
