@@ -551,8 +551,8 @@ export function DemoSection() {
 
         {/* ─── Cinematic iPhone Showcase ─── */}
         <div className="relative mt-20 sm:mt-28 lg:mt-36">
-          {/* Deep dark backdrop */}
-          <div className="absolute inset-0 -mx-5 sm:-mx-6 lg:-mx-8 -my-16 bg-[hsl(220,20%,3%)] rounded-3xl overflow-hidden">
+          {/* Deep backdrop - theme aware */}
+          <div className="absolute inset-0 -mx-5 sm:-mx-6 lg:-mx-8 -my-16 bg-[hsl(240,20%,3%)] dark:bg-[hsl(240,20%,3%)] rounded-3xl overflow-hidden">
             {/* Ambient glow */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-[radial-gradient(ellipse,hsl(152,55%,30%,0.08),transparent_60%)] blur-[60px]" />
             <div className="absolute top-1/3 left-1/4 w-[400px] h-[400px] bg-[radial-gradient(ellipse,hsl(270,40%,30%,0.06),transparent_60%)] blur-[80px]" />
@@ -575,62 +575,8 @@ export function DemoSection() {
               </p>
             </motion.div>
 
-            {/* Phone with cinematic 3D tilt */}
-            <motion.div
-              initial={{ opacity: 0, y: 60, rotateX: 8 }}
-              whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              className="flex justify-center"
-              style={{ perspective: "1200px" }}
-            >
-              <div
-                className="relative"
-                style={{
-                  transform: "rotateY(-4deg) rotateX(2deg) rotateZ(0.5deg)",
-                  transformStyle: "preserve-3d",
-                }}
-              >
-                {/* Ambient glow behind phone */}
-                <div className="absolute -inset-12 bg-[radial-gradient(ellipse_at_center,hsl(152,55%,30%,0.1),transparent_65%)] blur-3xl pointer-events-none" />
-                <div className="absolute -inset-16 bg-[radial-gradient(ellipse_at_bottom,hsl(270,40%,25%,0.07),transparent_65%)] blur-3xl pointer-events-none" />
-
-                {/* Phone frame — dark titanium */}
-                <div className="relative w-[270px] sm:w-[300px] rounded-[2.5rem] overflow-hidden shadow-[0_30px_100px_-15px_rgba(0,0,0,0.7),0_10px_30px_-10px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.04)]">
-                  {/* Outer titanium bezel */}
-                  <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-b from-[hsl(220,12%,16%)] via-[hsl(220,12%,10%)] to-[hsl(220,12%,7%)]" />
-
-                  {/* Side button highlights */}
-                  <div className="absolute top-[85px] -right-[1px] w-[2px] h-[45px] bg-gradient-to-b from-white/[0.06] via-white/[0.02] to-transparent rounded-full" />
-                  <div className="absolute top-[65px] -left-[1px] w-[2px] h-[26px] bg-gradient-to-b from-white/[0.04] via-white/[0.01] to-transparent rounded-full" />
-                  <div className="absolute top-[100px] -left-[1px] w-[2px] h-[40px] bg-gradient-to-b from-white/[0.04] via-white/[0.01] to-transparent rounded-full" />
-
-                  {/* Inner bezel ring */}
-                  <div className="absolute inset-[2.5px] rounded-[2.2rem] border border-white/[0.03]" />
-
-                  {/* Screen area */}
-                  <div className="relative m-[7px] rounded-[2rem] overflow-hidden">
-                    {/* Dynamic Island */}
-                    <div className="absolute top-2.5 left-1/2 -translate-x-1/2 z-30">
-                      <div className="w-[80px] h-[22px] bg-black rounded-full flex items-center justify-center gap-2 shadow-[0_0_8px_2px_rgba(0,0,0,0.3)]">
-                        <div className="w-[7px] h-[7px] rounded-full bg-[hsl(220,12%,12%)] ring-1 ring-[hsl(220,12%,18%)]" />
-                      </div>
-                    </div>
-
-                    {/* Screen content */}
-                    <div className="aspect-[9/19.5]">
-                      <IPhoneLockScreen />
-                    </div>
-
-                    {/* Screen glare overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] via-transparent to-transparent pointer-events-none rounded-[2rem]" />
-                  </div>
-                </div>
-
-                {/* Surface reflection */}
-                <div className="absolute -bottom-8 left-6 right-6 h-16 bg-gradient-to-b from-primary/[0.03] to-transparent blur-2xl opacity-50 pointer-events-none" />
-              </div>
-            </motion.div>
+            {/* Phone with interactive 3D mouse tracking */}
+            <InteractivePhone />
 
             {/* Caption */}
             <motion.p
