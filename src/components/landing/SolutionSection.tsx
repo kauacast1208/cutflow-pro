@@ -7,7 +7,7 @@ const solutions = [
   {
     icon: Calendar,
     title: "Agenda inteligente",
-    description: "Organize horários, evite conflitos e visualize tudo em um painel profissional.",
+    description: "Chega de caderno. Veja tudo num painel limpo, sem conflitos e sem estresse.",
   },
   {
     icon: CheckCircle2,
