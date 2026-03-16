@@ -194,9 +194,9 @@
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 60% 40% at 20% 10%, hsl(265 45% 55% / 0.04), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 20% 10%, hsl(240 30% 30% / 0.05), transparent 60%),
       radial-gradient(ellipse 50% 50% at 80% 80%, hsl(152 55% 42% / 0.03), transparent 60%),
-      radial-gradient(ellipse 80% 30% at 50% 50%, hsl(245 30% 30% / 0.04), transparent 70%);
+      radial-gradient(ellipse 80% 30% at 50% 50%, hsl(220 30% 25% / 0.04), transparent 70%);
     pointer-events: none;
     z-index: 0;
   }
@@ -210,9 +210,9 @@
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 70% 50% at 50% -10%, hsl(152 55% 42% / 0.1), transparent 60%),
-      radial-gradient(ellipse 50% 60% at 30% 20%, hsl(265 45% 55% / 0.06), transparent 50%),
-      radial-gradient(ellipse 40% 40% at 75% 30%, hsl(220 50% 50% / 0.04), transparent 50%);
+      radial-gradient(ellipse 70% 50% at 50% -10%, hsl(152 55% 42% / 0.09), transparent 60%),
+      radial-gradient(ellipse 50% 60% at 30% 20%, hsl(230 40% 40% / 0.05), transparent 50%),
+      radial-gradient(ellipse 40% 40% at 75% 30%, hsl(210 50% 45% / 0.04), transparent 50%);
     pointer-events: none;
     z-index: 0;
   }
