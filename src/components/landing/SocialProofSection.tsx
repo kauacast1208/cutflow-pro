@@ -22,7 +22,7 @@ export function SocialProofSection() {
             Resultados reais
           </span>
           <h3 className="text-xl sm:text-2xl font-bold tracking-tight">
-            O impacto de organizar sua barbearia com CutFlow
+            Barbearias com CutFlow faturam mais e perdem menos
           </h3>
         </motion.div>
 

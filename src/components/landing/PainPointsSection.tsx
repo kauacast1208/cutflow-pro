@@ -52,7 +52,7 @@ export function PainPointsSection() {
             transition={{ delay: 0.1 }}
             className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto leading-relaxed"
           >
-            Se você ainda organiza tudo pelo WhatsApp ou caderninho, está perdendo tempo e dinheiro todo dia.
+            Se você controla tudo pelo WhatsApp ou caderno, está deixando dinheiro na mesa sem perceber.
           </motion.p>
         </div>
 

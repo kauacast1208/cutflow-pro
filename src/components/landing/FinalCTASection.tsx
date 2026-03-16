@@ -22,12 +22,12 @@ export function FinalCTASection() {
             Não espere mais
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-primary-foreground mb-3 sm:mb-4 tracking-[-0.025em] leading-tight">
-            Organize sua barbearia antes que{" "}
+            Quanto mais você espera,{" "}
             <br className="hidden sm:block" />
-            a desorganização continue te fazendo perder clientes.
+            mais clientes você perde.
           </h2>
           <p className="text-primary-foreground/65 text-sm sm:text-base mb-7 sm:mb-8 max-w-md mx-auto leading-relaxed">
-            Leva menos de 5 minutos para criar sua conta. Comece agora com 7 dias grátis.
+            5 minutos para criar sua conta. 7 dias grátis. Zero risco.
           </p>
           <Link to="/signup" className="block w-full sm:w-auto sm:inline-block">
             <Button

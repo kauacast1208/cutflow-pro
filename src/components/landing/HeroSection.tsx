@@ -98,7 +98,7 @@ export function HeroSection() {
             className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-5 text-xs sm:text-[13px] text-muted-foreground"
           >
             {[
-              { icon: Users, label: "+200 barbeiros organizando com CutFlow" },
+              { icon: Users, label: "+200 barbearias já usam CutFlow" },
               { icon: Shield, label: "SSL seguro" },
               { icon: CreditCard, label: "Sem cartão" },
             ].map((badge) => (

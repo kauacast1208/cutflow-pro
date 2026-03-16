@@ -66,7 +66,7 @@ export function SolutionSection() {
             transition={{ delay: 0.1 }}
             className="text-muted-foreground text-[15px] sm:text-lg max-w-lg mx-auto leading-relaxed"
           >
-            Ferramentas práticas que trabalham por você enquanto você atende.
+            Enquanto você atende, o sistema organiza, lembra e controla tudo pra você.
           </motion.p>
         </div>
 
