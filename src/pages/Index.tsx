@@ -14,6 +14,7 @@ import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 import { AmbassadorSection } from "@/components/landing/AmbassadorSection";
 import { AboutSection } from "@/components/landing/AboutSection";
 import { PricingSection } from "@/components/landing/PricingSection";
+import { ROISection } from "@/components/landing/ROISection";
 import { FAQSection } from "@/components/landing/FAQSection";
 import { FinalCTASection } from "@/components/landing/FinalCTASection";
 import { Footer } from "@/components/landing/Footer";
@@ -47,6 +48,7 @@ const Index = () => {
       <AboutSection />
       {/* 9. Pricing */}
       <div id="pricing"><PricingSection /></div>
+      <ROISection />
       {/* 10. FAQ + Final CTA */}
       <div id="faq"><FAQSection /></div>
       <FinalCTASection />
