@@ -57,7 +57,7 @@ export function PainPointsSection() {
           </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 max-w-5xl mx-auto mb-10 sm:mb-14">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-3xl mx-auto mb-10 sm:mb-14">
           {problems.map((p, i) => (
             <motion.div
               key={p.title}
@@ -65,9 +65,7 @@ export function PainPointsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.06 }}
-              className={`rounded-2xl border border-destructive/10 bg-destructive/[0.02] p-5 sm:p-6 hover:border-destructive/20 transition-all duration-300 ${
-                i === 4 ? "sm:col-span-2 lg:col-span-1" : ""
-              }`}
+              className="rounded-2xl border border-destructive/10 bg-destructive/[0.03] p-5 sm:p-6 hover:border-destructive/25 hover:bg-destructive/[0.05] transition-all duration-300 card-lift"
             >
               <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-destructive/8 mb-4">
                 <p.icon className="h-5 w-5 sm:h-6 sm:w-6 text-destructive" />

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   ArrowRight, Play, CheckCircle2, Shield, CreditCard, TrendingDown,
   CalendarPlus, CalendarCheck, MessageSquare, Clock, Scissors, Wifi,
-  Check,
+  Check, Users,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
