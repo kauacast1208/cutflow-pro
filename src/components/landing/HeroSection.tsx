@@ -23,7 +23,7 @@ export function HeroSection() {
             className="inline-flex items-center gap-2 rounded-full border border-destructive/20 bg-destructive/[0.06] px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm text-destructive font-medium mb-5 sm:mb-6"
           >
             <TrendingDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Você está perdendo dinheiro agora</span>
+            <span>Cada dia sem sistema é dinheiro perdido</span>
           </motion.div>
 
           {/* Headline */}
