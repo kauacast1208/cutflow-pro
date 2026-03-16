@@ -9,8 +9,8 @@ const problems = [
   },
   {
     icon: CalendarX,
-    title: "Agenda desorganizada",
-    description: "Horários duplicados, conflitos e clientes esperando sem necessidade.",
+    title: "Agenda no caderno ou celular",
+    description: "Conflitos, horários trocados e cliente irritado. Você já perdeu quantos por isso?",
   },
   {
     icon: MessageCircleWarning,
