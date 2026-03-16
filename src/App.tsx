@@ -146,7 +146,7 @@ const AppRoutes = () => (
     <Route path="/faq" element={<FAQPage />} />
     <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
     <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
-    <Route path="/auth/callback" element={<AuthCallbackPage />} />
+    <Route path="/auth/callback" element={<OnboardingErrorBoundary><AuthCallbackPage /></OnboardingErrorBoundary>} />
     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
     <Route path="/reset-password" element={<ResetPasswordPage />} />
     <Route path="/onboarding" element={<ProtectedRoute><OnboardingErrorBoundary><OnboardingPage /></OnboardingErrorBoundary></ProtectedRoute>} />
