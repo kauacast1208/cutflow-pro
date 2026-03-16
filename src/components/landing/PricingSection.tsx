@@ -37,7 +37,7 @@ interface PlanDef {
   badge?: string;
   icon: React.ReactNode;
   link?: string;
-  externalLink?: string;
+  externalWhatsApp?: { phone: string; message: string };
   cardClass?: string;
 }
 
