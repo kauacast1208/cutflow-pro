@@ -22,7 +22,7 @@ const solutions = [
   {
     icon: BarChart3,
     title: "Financeiro simples",
-    description: "Receita, ticket médio e desempenho por profissional em tempo real.",
+    description: "Saiba exatamente quanto entra, por profissional, por dia. Controle real do seu negócio.",
   },
   {
     icon: MessageSquare,
