@@ -499,7 +499,7 @@ export function DemoSection() {
 
   return (
     <section id="showcase" className="relative overflow-hidden scroll-mt-20 py-20 sm:py-28 lg:py-36">
-      <div className="absolute inset-0 bg-secondary/40 dark:bg-[hsl(240,20%,4%)]" />
+      <div className="absolute inset-0 bg-secondary/40 dark:bg-[hsl(240,20%,3%)]" />
 
       {/* Glow effects */}
       <div className="absolute inset-0 pointer-events-none">
