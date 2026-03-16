@@ -363,13 +363,16 @@ function PlanCard({ plan, billing, index, wide }: { plan: PlanDef; billing: Bill
           ))}
         </ul>
 
-        {plan.externalLink ? (
-          <a href={plan.externalLink} target="_blank" rel="noopener noreferrer" className="block mt-auto">
-            <Button variant="outline" className={`w-full rounded-xl gap-2 h-11 sm:h-12 text-sm`}>
+        {plan.externalWhatsApp ? (
+          <button
+            onClick={whatsAppClickHandler(plan.externalWhatsApp.phone, plan.externalWhatsApp.message)}
+            className="block mt-auto w-full"
+          >
+            <Button variant="outline" className="w-full rounded-xl gap-2 h-11 sm:h-12 text-sm" asChild={false}>
               <MessageSquare className="h-4 w-4" />
               {plan.cta}
             </Button>
-          </a>
+          </button>
         ) : (
           <Link to={plan.link || "/checkout"} className="block mt-auto">
             <Button
