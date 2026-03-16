@@ -503,9 +503,9 @@ export function DemoSection() {
 
       {/* Glow effects */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-[700px] h-[700px] rounded-full bg-primary/[0.03] dark:bg-purple-600/[0.07] blur-[120px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] rounded-full bg-primary/[0.02] dark:bg-emerald-500/[0.04] blur-[100px]" />
-        <div className="absolute -bottom-32 -right-32 w-[600px] h-[600px] rounded-full bg-primary/[0.03] dark:bg-purple-500/[0.06] blur-[120px]" />
+        <div className="absolute -top-40 -left-40 w-[700px] h-[700px] rounded-full bg-primary/[0.03] dark:bg-[hsl(260,40%,40%,0.07)] blur-[120px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] rounded-full bg-primary/[0.02] dark:bg-[hsl(152,55%,40%,0.04)] blur-[100px]" />
+        <div className="absolute -bottom-32 -right-32 w-[600px] h-[600px] rounded-full bg-primary/[0.03] dark:bg-[hsl(260,40%,40%,0.06)] blur-[120px]" />
       </div>
 
       <div className="max-w-7xl mx-auto relative px-5 sm:px-6 lg:px-8">
