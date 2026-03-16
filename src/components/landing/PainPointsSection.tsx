@@ -43,7 +43,7 @@ export function PainPointsSection() {
             viewport={{ once: true }}
             className="text-2xl sm:text-4xl lg:text-[2.75rem] font-extrabold tracking-[-0.02em] mb-4 sm:mb-5"
           >
-            Você está perdendo dinheiro sem perceber
+            Isso está te custando caro — todo mês
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
