@@ -27,7 +27,7 @@ const solutions = [
   {
     icon: MessageSquare,
     title: "WhatsApp integrado",
-    description: "Confirmações, lembretes e comunicação automática direto no WhatsApp.",
+    description: "Tudo automático: confirmação, lembrete e follow-up direto no WhatsApp do cliente.",
   },
   {
     icon: Globe,
