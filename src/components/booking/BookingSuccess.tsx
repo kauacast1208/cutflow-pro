@@ -136,13 +136,14 @@ export function BookingSuccess({
 
             {/* Action buttons */}
             <div className="space-y-2.5 mb-5">
-              {whatsappUrl && (
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="block">
-                  <Button className="w-full rounded-xl h-12 font-semibold bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700">
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    Falar no WhatsApp
-                  </Button>
-                </a>
+              {whatsappNumber && (
+                <Button
+                  className="w-full rounded-xl h-12 font-semibold bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700"
+                  onClick={handleWhatsApp}
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  Falar no WhatsApp
+                </Button>
               )}
 
               <Button variant="outline" className="w-full rounded-xl h-12 font-semibold" onClick={handleAddToCalendar}>
