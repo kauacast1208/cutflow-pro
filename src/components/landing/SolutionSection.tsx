@@ -7,32 +7,32 @@ const solutions = [
   {
     icon: Calendar,
     title: "Agenda inteligente",
-    description: "Organize horários, evite conflitos e visualize tudo em um painel profissional.",
+    description: "Chega de caderno. Veja tudo num painel limpo, sem conflitos e sem estresse.",
   },
   {
     icon: CheckCircle2,
     title: "Confirmações automáticas",
-    description: "Lembretes por WhatsApp reduzem faltas em até 40% sem esforço.",
+    description: "Lembretes automáticos pelo WhatsApp. Menos faltas, mais cadeiras ocupadas.",
   },
   {
     icon: Users,
     title: "CRM de clientes",
-    description: "Histórico completo, aniversários e dados para fidelizar seus clientes.",
+    description: "Histórico, aniversários e perfil completo. Cliente fidelizado volta sozinho.",
   },
   {
     icon: BarChart3,
     title: "Financeiro simples",
-    description: "Receita, ticket médio e desempenho por profissional em tempo real.",
+    description: "Saiba exatamente quanto entra, por profissional, por dia. Controle real do seu negócio.",
   },
   {
     icon: MessageSquare,
     title: "WhatsApp integrado",
-    description: "Confirmações, lembretes e comunicação automática direto no WhatsApp.",
+    description: "Tudo automático: confirmação, lembrete e follow-up direto no WhatsApp do cliente.",
   },
   {
     icon: Globe,
     title: "Agendamento online",
-    description: "Página profissional para seus clientes agendarem 24h, sem precisar ligar.",
+    description: "Seu cliente agenda sozinho, 24h por dia, sem ligar. Você só atende.",
   },
 ];
 
@@ -56,8 +56,8 @@ export function SolutionSection() {
             viewport={{ once: true }}
             className="text-2xl sm:text-4xl lg:text-[2.75rem] font-extrabold tracking-[-0.02em] mb-3 sm:mb-4"
           >
-            Como o CutFlow{" "}
-            <span className="text-primary">resolve isso.</span>
+            O CutFlow{" "}
+            <span className="text-primary">resolve tudo isso.</span>
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -66,7 +66,7 @@ export function SolutionSection() {
             transition={{ delay: 0.1 }}
             className="text-muted-foreground text-[15px] sm:text-lg max-w-lg mx-auto leading-relaxed"
           >
-            Ferramentas práticas que trabalham por você enquanto você atende.
+            Enquanto você atende, o sistema organiza, lembra e controla tudo pra você.
           </motion.p>
         </div>
 

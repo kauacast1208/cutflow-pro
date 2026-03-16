@@ -4,23 +4,23 @@ import { UserX, CalendarX, MessageCircleWarning, DollarSign, ArrowRight } from "
 const problems = [
   {
     icon: UserX,
-    title: "Falta de confirmação",
-    description: "Clientes não aparecem porque ninguém lembrou. Cadeira vazia e prejuízo no seu dia.",
+    title: "Clientes não aparecem",
+    description: "Sem lembrete, ninguém confirma. Cadeira vazia = dinheiro jogado fora todo santo dia.",
   },
   {
     icon: CalendarX,
-    title: "Agenda desorganizada",
-    description: "Horários duplicados, conflitos e clientes esperando sem necessidade.",
+    title: "Agenda no caderno ou celular",
+    description: "Conflitos, horários trocados e cliente irritado. Você já perdeu quantos por isso?",
   },
   {
     icon: MessageCircleWarning,
-    title: "WhatsApp confuso",
-    description: "Mensagens perdidas no meio de grupos e conversas pessoais. Clientes sem resposta.",
+    title: "WhatsApp virou bagunça",
+    description: "Mensagem de cliente se perde entre grupos e conversas pessoais. Agendamento esquecido.",
   },
   {
     icon: DollarSign,
-    title: "Cliente não retorna",
-    description: "Sem follow-up, sem dados, sem fidelização. Cada cliente perdido é dinheiro que não volta.",
+    title: "Dinheiro escorrendo pelo ralo",
+    description: "Sem dados, sem follow-up, sem fidelização. Você trabalha muito e fatura pouco.",
   },
 ];
 
@@ -43,7 +43,7 @@ export function PainPointsSection() {
             viewport={{ once: true }}
             className="text-2xl sm:text-4xl lg:text-[2.75rem] font-extrabold tracking-[-0.02em] mb-4 sm:mb-5"
           >
-            Você está perdendo dinheiro sem perceber
+            Isso está te custando caro — todo mês
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -52,7 +52,7 @@ export function PainPointsSection() {
             transition={{ delay: 0.1 }}
             className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto leading-relaxed"
           >
-            Se você ainda organiza tudo pelo WhatsApp ou caderninho, está perdendo tempo e dinheiro todo dia.
+            Se você controla tudo pelo WhatsApp ou caderno, está deixando dinheiro na mesa sem perceber.
           </motion.p>
         </div>
 

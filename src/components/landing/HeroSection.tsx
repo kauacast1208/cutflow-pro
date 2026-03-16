@@ -23,7 +23,7 @@ export function HeroSection() {
             className="inline-flex items-center gap-2 rounded-full border border-destructive/20 bg-destructive/[0.06] px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm text-destructive font-medium mb-5 sm:mb-6"
           >
             <TrendingDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span>Você está perdendo dinheiro agora</span>
+            <span>Cada dia sem sistema é dinheiro perdido</span>
           </motion.div>
 
           {/* Headline */}
@@ -33,10 +33,10 @@ export function HeroSection() {
             transition={{ duration: 0.6, delay: 0.08 }}
             className="text-[1.75rem] leading-[1.1] sm:text-4xl lg:text-[3.25rem] font-extrabold tracking-[-0.03em] sm:leading-[1.08] mb-5 sm:mb-6 px-1 sm:px-0"
           >
-            Pare de perder clientes{" "}
+            Sua barbearia perde clientes{" "}
             <br className="hidden sm:block" />
-            por falta de{" "}
-            <span className="text-primary">organização.</span>
+            todo dia por falta de{" "}
+            <span className="text-primary">controle.</span>
           </motion.h1>
 
           {/* Subheadline */}
@@ -46,7 +46,7 @@ export function HeroSection() {
             transition={{ duration: 0.5, delay: 0.14 }}
             className="text-[15px] sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-5 sm:mb-6 leading-relaxed px-2 sm:px-0"
           >
-            Confirmações automáticas, agenda inteligente, CRM e controle financeiro para barbearias que querem crescer sem bagunça.
+            Agenda, lembretes automáticos, CRM e financeiro — tudo que você precisa para parar de perder dinheiro e começar a crescer de verdade.
           </motion.p>
 
           {/* Pain bullets */}
@@ -57,10 +57,10 @@ export function HeroSection() {
             className="flex flex-wrap items-center justify-center gap-2 mb-7 sm:mb-8 text-[12px] sm:text-[13px]"
           >
             {[
-              "Clientes esquecem horário",
-              "WhatsApp vira bagunça",
-              "Faltas fazem você perder dinheiro",
-              "Agenda manual gera erros",
+              "Clientes faltam sem avisar",
+              "WhatsApp vira um caos",
+              "Você perde R$ 500+/mês com faltas",
+              "Zero controle do financeiro",
             ].map((pain) => (
               <span key={pain} className="inline-flex items-center gap-1.5 rounded-full border border-destructive/15 bg-destructive/[0.04] px-3 py-1 text-muted-foreground">
                 <span className="h-1.5 w-1.5 rounded-full bg-destructive/60 shrink-0" />
@@ -98,7 +98,7 @@ export function HeroSection() {
             className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-5 text-xs sm:text-[13px] text-muted-foreground"
           >
             {[
-              { icon: Users, label: "+200 barbeiros organizando com CutFlow" },
+              { icon: Users, label: "+200 barbearias já usam CutFlow" },
               { icon: Shield, label: "SSL seguro" },
               { icon: CreditCard, label: "Sem cartão" },
             ].map((badge) => (
