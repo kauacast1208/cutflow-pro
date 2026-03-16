@@ -425,10 +425,7 @@ function ProCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
 }
 
 /* ── Franchise card ── */
-function FranchiseCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
-  const price = billing === "monthly" ? plan.monthly : plan.yearly;
-  const savings = plan.monthly && plan.yearly ? (plan.monthly - plan.yearly) * 12 : 0;
-
+function FranchiseCard({ plan }: { plan: PlanDef }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -454,14 +451,8 @@ function FranchiseCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
           <p className="text-xs sm:text-sm text-muted-foreground mb-4">{plan.tagline}</p>
 
           <div className="mb-5">
-            <div className="flex items-baseline gap-1">
-              <span className="text-xs text-muted-foreground">R$</span>
-              <span className="text-3xl sm:text-4xl font-extrabold tracking-tight">{price}</span>
-              <span className="text-muted-foreground text-xs">/mês</span>
-            </div>
-            {billing === "yearly" && savings > 0 && (
-              <p className="text-[11px] text-primary mt-1 font-medium">Economia de R${savings}/ano</p>
-            )}
+            <span className="text-2xl sm:text-3xl font-extrabold tracking-tight">Sob medida</span>
+            <p className="text-xs text-muted-foreground mt-1.5">{plan.description}</p>
           </div>
         </div>
 
@@ -477,15 +468,17 @@ function FranchiseCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
         </div>
       </div>
 
-      <button
-        onClick={whatsAppClickHandler(plan.externalWhatsApp!.phone, plan.externalWhatsApp!.message)}
+      <a
+        href={`https://wa.me/${plan.externalWhatsApp!.phone}?text=${encodeURIComponent(plan.externalWhatsApp!.message)}`}
+        target="_blank"
+        rel="noopener noreferrer"
         className="block mt-auto w-full"
       >
         <Button variant="outline" className="w-full rounded-xl gap-2 h-11 text-sm border-primary/20 hover:bg-primary/5">
           <MessageSquare className="h-4 w-4" />
           {plan.cta}
         </Button>
-      </button>
+      </a>
     </motion.div>
   );
 }
