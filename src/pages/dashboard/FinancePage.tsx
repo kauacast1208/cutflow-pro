@@ -4,14 +4,13 @@ import {
   DollarSign, TrendingUp, Receipt, Loader2, ArrowUpRight, ArrowDownRight,
   Calendar, Users, Target, BarChart3,
 } from "lucide-react";
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { useBarbershop } from "@/hooks/useBarbershop";
 import { supabase } from "@/integrations/supabase/client";
 import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { UpgradeBanner } from "@/components/dashboard/UpgradePrompt";
-import { format, subDays, parseISO, startOfWeek, addDays, eachDayOfInterval } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { Button } from "@/components/ui/button";
+import { format, subDays, startOfWeek, addDays, eachDayOfInterval } from "date-fns";
+import { Badge } from "@/components/ui/badge";
 
 const fadeUp = (i: number) => ({
   initial: { opacity: 0, y: 14 },
@@ -24,6 +23,24 @@ const periodOptions = [
   { label: "30 dias", value: 30 },
   { label: "90 dias", value: 90 },
 ] as const;
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-xl border border-border/60 bg-card px-3 py-2.5 shadow-lg backdrop-blur-sm">
+      <p className="text-[10px] font-medium text-muted-foreground mb-1.5">{label}</p>
+      {payload.map((p: any, i: number) => (
+        <div key={i} className="flex items-center gap-2 text-xs">
+          <div className="h-2 w-2 rounded-full" style={{ backgroundColor: p.stroke || p.color }} />
+          <span className="text-muted-foreground">{p.name}:</span>
+          <span className="font-semibold text-foreground">
+            {p.name === "Receita" ? `R$ ${p.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : p.value}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 export default function FinancePage() {
   const { barbershop } = useBarbershop();
@@ -54,7 +71,6 @@ export default function FinancePage() {
   const completed = useMemo(() => appointments.filter(a => a.status !== "cancelled"), [appointments]);
   const prevCompleted = useMemo(() => prevAppointments.filter(a => a.status !== "cancelled"), [prevAppointments]);
 
-  // Revenue by professional
   const proRevenue = useMemo(() => {
     const map: Record<string, { name: string; revenue: number; count: number }> = {};
     completed.forEach(a => {
@@ -66,7 +82,6 @@ export default function FinancePage() {
     return Object.values(map).sort((a, b) => b.revenue - a.revenue);
   }, [completed]);
 
-  // Time series for chart
   const timeSeriesData = useMemo(() => {
     const days = eachDayOfInterval({
       start: subDays(new Date(), Math.min(period, 30)),
@@ -77,8 +92,8 @@ export default function FinancePage() {
       const dayAppts = completed.filter(a => a.date === dateStr);
       return {
         date: format(d, "dd/MM"),
-        revenue: dayAppts.reduce((s, a) => s + Number(a.price || 0), 0),
-        count: dayAppts.length,
+        Receita: dayAppts.reduce((s, a) => s + Number(a.price || 0), 0),
+        Atendimentos: dayAppts.length,
       };
     });
   }, [completed, period]);
@@ -107,8 +122,8 @@ export default function FinancePage() {
   const monthRevenue = completed.filter(a => a.date.startsWith(monthStr)).reduce((s, a) => s + Number(a.price || 0), 0);
 
   const ticket = completed.length > 0 ? totalRevenue / completed.length : 0;
+  const totalAtendimentos = completed.length;
 
-  // Revenue projection (based on daily average)
   const daysInPeriod = Math.min(period, Math.ceil((Date.now() - new Date(format(subDays(new Date(), period), "yyyy-MM-dd")).getTime()) / (1000 * 60 * 60 * 24)));
   const dailyAvg = daysInPeriod > 0 ? totalRevenue / daysInPeriod : 0;
   const monthProjection = dailyAvg * 30;
@@ -162,11 +177,11 @@ export default function FinancePage() {
       ) : (
         <>
           {/* Metric cards */}
-           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {cards.map((card, i) => {
               const Icon = card.icon;
               return (
-                 <motion.div key={card.label} {...fadeUp(i + 1)}
+                <motion.div key={card.label} {...fadeUp(i + 1)}
                   className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card p-4 shadow-card hover:shadow-card-hover transition-all duration-300"
                 >
                   <div className="flex items-center justify-between mb-2">
@@ -189,39 +204,75 @@ export default function FinancePage() {
             })}
           </div>
 
-          {/* Revenue chart */}
+          {/* Dual-axis Stripe-style area chart */}
           <motion.div {...fadeUp(7)} className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-card">
-            <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              Evolucao do faturamento
-            </h3>
-            <div className="h-48 sm:h-64">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm sm:text-base font-semibold text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                Receita & Atendimentos
+              </h3>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2 w-4 rounded-full bg-primary" />
+                  <span className="text-[10px] text-muted-foreground">Receita</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2 w-4 rounded-full bg-purple-500/60" />
+                  <span className="text-[10px] text-muted-foreground">Atendimentos</span>
+                </div>
+              </div>
+            </div>
+            <div className="h-56 sm:h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={timeSeriesData} margin={{ left: -10, right: 5, top: 5, bottom: 0 }}>
                   <defs>
-                    <linearGradient id="finRevGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    <linearGradient id="finRevGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
+                      <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="finAptGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#a855f7" stopOpacity={0.15} />
+                      <stop offset="100%" stopColor="#a855f7" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.4} />
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" interval="preserveStartEnd" />
-                  <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={40} />
-                  <Tooltip
-                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: 12 }}
-                    formatter={(value: number) => [fmt(value), "Faturamento"]}
+                  <YAxis yAxisId="left" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={45} />
+                  <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={30} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area
+                    yAxisId="left"
+                    type="monotone"
+                    dataKey="Receita"
+                    name="Receita"
+                    stroke="hsl(var(--primary))"
+                    fill="url(#finRevGrad)"
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 4, fill: "hsl(var(--primary))", stroke: "hsl(var(--background))", strokeWidth: 2 }}
                   />
-                  <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#finRevGradient)" strokeWidth={2} />
+                  <Area
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="Atendimentos"
+                    name="Atendimentos"
+                    stroke="#a855f7"
+                    fill="url(#finAptGrad)"
+                    strokeWidth={2}
+                    strokeDasharray="4 2"
+                    dot={false}
+                    activeDot={{ r: 4, fill: "#a855f7", stroke: "hsl(var(--background))", strokeWidth: 2 }}
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </motion.div>
 
-          {/* Revenue by professional */}
+          {/* Revenue by professional — with real appointment counts */}
           <motion.div {...fadeUp(8)} className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-card">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-semibold text-foreground flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                 <Users className="h-4 w-4 text-primary" />
-                Faturamento por profissional
+                Ranking de profissionais
               </h3>
               <span className="text-xs text-muted-foreground">Últimos {period} dias</span>
             </div>
@@ -234,6 +285,7 @@ export default function FinancePage() {
                   const pct = totalRevenue > 0 ? (pro.revenue / totalRevenue * 100) : 0;
                   return (
                     <div key={i} className="flex items-center gap-4">
+                      <span className="text-xs font-bold text-muted-foreground w-5 shrink-0">{i + 1}º</span>
                       <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
                         {pro.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
                       </div>
@@ -246,7 +298,9 @@ export default function FinancePage() {
                           <div className="flex-1 h-2 rounded-full bg-muted/50 overflow-hidden">
                             <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
                           </div>
-                          <span className="text-[10px] text-muted-foreground w-12 text-right">{pro.count} atend.</span>
+                          <Badge variant="secondary" className="text-[10px] px-2 py-0.5 shrink-0">
+                            {pro.count} atendimentos
+                          </Badge>
                         </div>
                       </div>
                     </div>
@@ -254,9 +308,24 @@ export default function FinancePage() {
                 })}
               </div>
             )}
+
+            {/* Summary */}
+            {proRevenue.length > 0 && (
+              <div className="flex items-center justify-center gap-6 mt-5 pt-4 border-t border-border/50">
+                <div className="text-center">
+                  <p className="text-lg font-extrabold text-foreground">{fmt(totalRevenue)}</p>
+                  <p className="text-[10px] text-muted-foreground">Receita total</p>
+                </div>
+                <div className="w-px h-8 bg-border/50" />
+                <div className="text-center">
+                  <p className="text-lg font-extrabold text-foreground">{totalAtendimentos}</p>
+                  <p className="text-[10px] text-muted-foreground">Atendimentos</p>
+                </div>
+              </div>
+            )}
           </motion.div>
 
-          {/* Commission prep */}
+          {/* Commission placeholder */}
           <motion.div {...fadeUp(9)} className="rounded-2xl border border-dashed border-border bg-muted/20 p-6 text-center">
             <DollarSign className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
             <h3 className="text-sm font-semibold text-foreground mb-1">Controle de comissões</h3>
