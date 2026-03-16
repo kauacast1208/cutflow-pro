@@ -1,8 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   CheckCircle2, Clock, Scissors, TrendingUp, Users, ChevronRight,
   Calendar, DollarSign, Bell, ArrowUpRight, Star, Wifi, Signal,
+  CalendarPlus, MessageSquare,
 } from "lucide-react";
 
 /* ─── Data ─── */
@@ -22,9 +23,16 @@ const agenda = [
   { name: "Lucas Oliveira", service: "Barba + Sobrancelha", time: "16:30", duration: "40min", status: "confirmed" as const, avatar: "LO" },
 ];
 
+const pushNotifications = [
+  { icon: CalendarPlus, title: "Novo agendamento", body: "Rafael marcou Corte + Barba às 17:30", accent: "emerald" },
+  { icon: CheckCircle2, title: "Horário confirmado", body: "Pedro Santos confirmou para 15:00", accent: "sky" },
+  { icon: MessageSquare, title: "Lembrete enviado", body: "WhatsApp enviado para Lucas Oliveira", accent: "teal" },
+  { icon: Clock, title: "Horário liberado", body: "18:00 ficou disponível para agendamento", accent: "amber" },
+];
+
 const statusConfig = {
-  confirmed: { bg: "bg-emerald-500/15", text: "text-emerald-400", dot: "bg-emerald-400", label: "Confirmado" },
-  pending: { bg: "bg-amber-500/15", text: "text-amber-400", dot: "bg-amber-400", label: "Pendente" },
+  confirmed: { bg: "bg-emerald-500/15", text: "text-emerald-400", label: "Confirmado" },
+  pending: { bg: "bg-amber-500/15", text: "text-amber-400", label: "Pendente" },
 };
 
 /* ─── Smooth weekly chart ─── */
@@ -43,7 +51,6 @@ function WeeklyChart() {
     y: padTop + drawH - (d.value / max) * drawH,
   }));
 
-  // Catmull-Rom to cubic bezier
   let line = `M ${pts[0].x} ${pts[0].y}`;
   for (let i = 0; i < pts.length - 1; i++) {
     const p0 = pts[Math.max(0, i - 1)];
@@ -58,7 +65,7 @@ function WeeklyChart() {
   }
 
   const area = line + ` L ${pts[pts.length - 1].x} ${H} L ${pts[0].x} ${H} Z`;
-  const peakIdx = 5; // Saturday
+  const peakIdx = 5;
   const peak = pts[peakIdx];
 
   return (
@@ -83,15 +90,23 @@ function WeeklyChart() {
         </filter>
       </defs>
 
-      {/* Horizontal guides */}
       {[0.33, 0.66].map((r) => (
         <line key={r} x1={padX} x2={W - padX} y1={padTop + drawH * (1 - r)} y2={padTop + drawH * (1 - r)} stroke="white" strokeOpacity={0.03} strokeWidth="0.5" strokeDasharray="2 3" />
       ))}
 
       <path d={area} fill="url(#chartArea)" />
-      <path d={line} fill="none" stroke="url(#chartLine)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <motion.path
+        d={line}
+        fill="none"
+        stroke="url(#chartLine)"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        initial={{ pathLength: 0, opacity: 0 }}
+        animate={{ pathLength: 1, opacity: 1 }}
+        transition={{ duration: 1.8, ease: "easeOut", delay: 0.5 }}
+      />
 
-      {/* Peak highlight */}
       <circle cx={peak.x} cy={peak.y} r="8" fill="hsl(152,60%,50%)" opacity={0.08} filter="url(#glow)">
         <animate attributeName="r" values="8;12;8" dur="3s" repeatCount="indefinite" />
         <animate attributeName="opacity" values="0.08;0.03;0.08" dur="3s" repeatCount="indefinite" />
@@ -104,9 +119,76 @@ function WeeklyChart() {
   );
 }
 
+/* ─── Push notification banner ─── */
+function NotificationBanner({ notif, onDismiss }: { notif: typeof pushNotifications[0]; onDismiss: () => void }) {
+  const Icon = notif.icon;
+  const accentMap = {
+    emerald: { icon: "text-emerald-400", bg: "bg-emerald-500/20", ring: "ring-emerald-500/10" },
+    sky: { icon: "text-sky-400", bg: "bg-sky-500/20", ring: "ring-sky-500/10" },
+    teal: { icon: "text-teal-400", bg: "bg-teal-500/20", ring: "ring-teal-500/10" },
+    amber: { icon: "text-amber-400", bg: "bg-amber-500/20", ring: "ring-amber-500/10" },
+  };
+  const a = accentMap[notif.accent as keyof typeof accentMap] || accentMap.emerald;
+
+  useEffect(() => {
+    const t = setTimeout(onDismiss, 3200);
+    return () => clearTimeout(t);
+  }, [onDismiss]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -48, scale: 0.92 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -20, scale: 0.95 }}
+      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+      className="absolute top-1.5 left-2 right-2 z-40"
+    >
+      <div
+        className="rounded-2xl px-2.5 py-2 flex items-start gap-2 ring-1"
+        style={{
+          background: "linear-gradient(135deg, rgba(30,32,38,0.97) 0%, rgba(22,24,28,0.98) 100%)",
+          backdropFilter: "blur(20px) saturate(1.6)",
+          boxShadow: "0 12px 40px -8px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+        }}
+      >
+        <div className={`mt-0.5 h-5 w-5 rounded-lg ${a.bg} flex items-center justify-center shrink-0`}>
+          <Icon className={`h-2.5 w-2.5 ${a.icon}`} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1">
+            <p className="text-[7.5px] font-bold text-white/90 leading-tight">{notif.title}</p>
+            <span className="text-[5px] text-white/20 ml-auto shrink-0">agora</span>
+          </div>
+          <p className="text-[6.5px] text-white/40 leading-snug mt-0.5 line-clamp-1">{notif.body}</p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── Live KPI counter ─── */
+function AnimatedValue({ value, prefix = "" }: { value: string; prefix?: string }) {
+  return (
+    <motion.span
+      key={value}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: "spring", stiffness: 300, damping: 24 }}
+      className="inline-block"
+    >
+      {prefix}{value}
+    </motion.span>
+  );
+}
+
 export function IPhoneLockScreen() {
   const [visibleItems, setVisibleItems] = useState(0);
+  const [activeNotif, setActiveNotif] = useState<number | null>(null);
+  const [notifCycle, setNotifCycle] = useState(0);
+  const [revenueValue, setRevenueValue] = useState("2.840");
+  const [agendaCount, setAgendaCount] = useState("18");
 
+  // Stagger agenda items
   useEffect(() => {
     const timers = agenda.map((_, i) =>
       setTimeout(() => setVisibleItems(i + 1), 800 + i * 600)
@@ -114,15 +196,58 @@ export function IPhoneLockScreen() {
     return () => timers.forEach(clearTimeout);
   }, []);
 
+  // Cycle push notifications
+  useEffect(() => {
+    const show = () => {
+      setActiveNotif(notifCycle % pushNotifications.length);
+    };
+    const timer = setTimeout(show, 4000 + notifCycle * 5500);
+    return () => clearTimeout(timer);
+  }, [notifCycle]);
+
+  const dismissNotif = useCallback(() => {
+    setActiveNotif(null);
+    setNotifCycle((c) => c + 1);
+  }, []);
+
+  // Animate KPI values periodically
+  useEffect(() => {
+    const values = ["2.840", "2.920", "3.080", "2.960"];
+    const counts = ["18", "19", "19", "20"];
+    let idx = 0;
+    const interval = setInterval(() => {
+      idx = (idx + 1) % values.length;
+      setRevenueValue(values[idx]);
+      setAgendaCount(counts[idx]);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, []);
+
   const now = new Date();
   const hours = String(now.getHours()).padStart(2, "0");
   const minutes = String(now.getMinutes()).padStart(2, "0");
 
   return (
-    <div className="h-full flex flex-col relative overflow-hidden select-none" style={{ background: "linear-gradient(180deg, hsl(220,20%,8%) 0%, hsl(220,18%,6%) 100%)" }}>
+    <div className="h-full flex flex-col relative overflow-hidden select-none" style={{ background: "linear-gradient(180deg, hsl(220,20%,8%) 0%, hsl(222,22%,5%) 100%)" }}>
+
+      {/* Ambient screen light */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[140%] h-[35%] bg-[radial-gradient(ellipse_at_top,hsl(152,50%,40%,0.04),transparent_70%)]" />
+        <div className="absolute bottom-0 left-0 w-[80%] h-[30%] bg-[radial-gradient(ellipse_at_bottom_left,hsl(220,60%,50%,0.03),transparent_70%)]" />
+      </div>
+
+      {/* Push notification overlay */}
+      <AnimatePresence>
+        {activeNotif !== null && (
+          <NotificationBanner
+            notif={pushNotifications[activeNotif]}
+            onDismiss={dismissNotif}
+          />
+        )}
+      </AnimatePresence>
 
       {/* ── iOS Status Bar ── */}
-      <div className="flex items-center justify-between px-5 pt-2.5 pb-1 shrink-0">
+      <div className="flex items-center justify-between px-5 pt-2.5 pb-1 shrink-0 relative z-10">
         <span className="text-[9px] font-semibold text-white/50 tabular-nums">{hours}:{minutes}</span>
         <div className="flex items-center gap-1.5">
           <Signal className="h-2.5 w-2.5 text-white/30" />
@@ -134,56 +259,78 @@ export function IPhoneLockScreen() {
       </div>
 
       {/* ── App Header ── */}
-      <div className="px-4 pt-1 pb-2 flex items-center justify-between shrink-0">
+      <div className="px-4 pt-1 pb-2 flex items-center justify-between shrink-0 relative z-10">
         <div>
-          <p className="text-[6.5px] text-white/20 uppercase tracking-[0.12em] font-bold leading-none">CutFlow</p>
-          <p className="text-[12px] font-bold text-white/90 leading-tight mt-1">Bom dia, Rafael</p>
+          <div className="flex items-center gap-1.5">
+            <div className="h-3 w-3 rounded-[3px] bg-emerald-500/20 flex items-center justify-center">
+              <Scissors className="h-1.5 w-1.5 text-emerald-400" />
+            </div>
+            <p className="text-[6.5px] text-white/25 uppercase tracking-[0.12em] font-bold leading-none">CutFlow</p>
+          </div>
+          <p className="text-[12px] font-bold text-white/90 leading-tight mt-1.5">Bom dia, Rafael</p>
           <p className="text-[7px] text-white/25 mt-0.5">Terça-feira, 16 março</p>
         </div>
         <div className="relative">
           <div className="h-7 w-7 rounded-full bg-white/[0.05] border border-white/[0.08] flex items-center justify-center">
             <Bell className="h-3 w-3 text-white/35" />
           </div>
-          <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-[hsl(220,20%,7%)] flex items-center justify-center">
+          <motion.div
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-[hsl(220,20%,7%)] flex items-center justify-center"
+          >
             <span className="text-[4px] font-bold text-white">3</span>
-          </div>
+          </motion.div>
         </div>
       </div>
 
       {/* ── Quick Stats Row ── */}
-      <div className="px-3 grid grid-cols-3 gap-1.5 mb-2 shrink-0">
+      <div className="px-3 grid grid-cols-3 gap-1.5 mb-2 shrink-0 relative z-10">
         {[
-          { label: "Receita", value: "R$2.840", change: "+12%", icon: DollarSign, accent: "emerald" },
-          { label: "Agenda", value: "18", change: "+3 hoje", icon: Calendar, accent: "sky" },
-          { label: "Clientes", value: "248", change: "+5 novos", icon: Users, accent: "violet" },
+          { label: "Receita", value: revenueValue, prefix: "R$", change: "+12%", icon: DollarSign, accent: "emerald" },
+          { label: "Agenda", value: agendaCount, prefix: "", change: "+3 hoje", icon: Calendar, accent: "sky" },
+          { label: "Clientes", value: "248", prefix: "", change: "+5 novos", icon: Users, accent: "violet" },
         ].map((kpi) => (
-          <div
+          <motion.div
             key={kpi.label}
-            className="rounded-xl p-2 relative overflow-hidden"
-            style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)", border: "1px solid rgba(255,255,255,0.06)" }}
+            whileHover={{ scale: 1.02 }}
+            className="rounded-xl p-2 relative overflow-hidden group"
+            style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)", border: "1px solid rgba(255,255,255,0.06)" }}
           >
-            <div className="flex items-center gap-1 mb-1">
+            {/* Subtle inner glow on hover */}
+            <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ${
+              kpi.accent === "emerald" ? "bg-emerald-500/[0.03]" : kpi.accent === "sky" ? "bg-sky-500/[0.03]" : "bg-violet-500/[0.03]"
+            }`} />
+            <div className="flex items-center gap-1 mb-1 relative">
               <kpi.icon className={`h-2.5 w-2.5 ${kpi.accent === "emerald" ? "text-emerald-400/50" : kpi.accent === "sky" ? "text-sky-400/50" : "text-violet-400/50"}`} />
               <p className="text-[6px] text-white/20 uppercase tracking-wider font-bold">{kpi.label}</p>
             </div>
-            <p className="text-[14px] font-extrabold text-white/90 leading-none tracking-tight">{kpi.value}</p>
-            <div className="flex items-center gap-0.5 mt-1">
+            <p className="text-[14px] font-extrabold text-white/90 leading-none tracking-tight relative">
+              <AnimatedValue value={kpi.value} prefix={kpi.prefix} />
+            </p>
+            <div className="flex items-center gap-0.5 mt-1 relative">
               <ArrowUpRight className="h-2 w-2 text-emerald-400/60" />
               <p className="text-[5.5px] text-emerald-400/60 font-bold">{kpi.change}</p>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
 
       {/* ── Weekly Chart ── */}
-      <div className="px-3 mb-2 shrink-0">
+      <div className="px-3 mb-2 shrink-0 relative z-10">
         <div className="rounded-xl p-2.5 relative" style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.015) 100%)", border: "1px solid rgba(255,255,255,0.06)" }}>
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-1.5">
               <TrendingUp className="h-2.5 w-2.5 text-emerald-400/50" />
               <span className="text-[7px] font-bold text-white/25 uppercase tracking-wider">Atendimentos da semana</span>
             </div>
-            <span className="text-[6px] text-emerald-400/60 font-bold bg-emerald-400/[0.08] rounded px-1.5 py-0.5">+18%</span>
+            <motion.span
+              animate={{ opacity: [0.6, 1, 0.6] }}
+              transition={{ duration: 3, repeat: Infinity }}
+              className="text-[6px] text-emerald-400/80 font-bold bg-emerald-400/[0.08] rounded px-1.5 py-0.5"
+            >
+              +18%
+            </motion.span>
           </div>
           <div className="h-16">
             <WeeklyChart />
@@ -199,7 +346,7 @@ export function IPhoneLockScreen() {
       </div>
 
       {/* ── Agenda Section ── */}
-      <div className="px-3 flex-1 min-h-0 flex flex-col overflow-hidden">
+      <div className="px-3 flex-1 min-h-0 flex flex-col overflow-hidden relative z-10">
         <div className="flex items-center justify-between mb-1.5 shrink-0">
           <div className="flex items-center gap-1.5">
             <Clock className="h-2.5 w-2.5 text-white/20" />
@@ -221,9 +368,19 @@ export function IPhoneLockScreen() {
                   initial={{ opacity: 0, y: 14, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ type: "spring", stiffness: 280, damping: 28, delay: i * 0.05 }}
-                  className="rounded-xl p-2 flex items-center gap-2"
+                  className="rounded-xl p-2 flex items-center gap-2 relative group"
                   style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}
                 >
+                  {/* Time line indicator */}
+                  {i === 0 && (
+                    <motion.div
+                      className="absolute left-0 top-1 bottom-1 w-[2px] rounded-full bg-emerald-400/60"
+                      layoutId="timeCursor"
+                      animate={{ opacity: [0.4, 0.8, 0.4] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    />
+                  )}
+
                   {/* Avatar */}
                   <div className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0 relative overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(16,185,129,0.05) 100%)" }}>
                     <span className="text-[8px] font-bold text-emerald-400/80">{item.avatar}</span>
@@ -242,9 +399,9 @@ export function IPhoneLockScreen() {
                         <Scissors className="h-2 w-2 text-white/15" />
                         <span className="text-[7px] text-white/30">{item.service}</span>
                       </div>
-                      <span className="text-white/08">•</span>
+                      <span className="text-white/[0.06]">•</span>
                       <span className="text-[7px] text-white/40 font-semibold">{item.time}</span>
-                      <span className="text-white/08">•</span>
+                      <span className="text-white/[0.06]">•</span>
                       <span className="text-[6.5px] text-white/20">{item.duration}</span>
                     </div>
                   </div>
@@ -256,7 +413,7 @@ export function IPhoneLockScreen() {
       </div>
 
       {/* ── Review highlight ── */}
-      <div className="px-3 mt-1.5 mb-1 shrink-0">
+      <div className="px-3 mt-1.5 mb-1 shrink-0 relative z-10">
         <div className="rounded-lg px-2.5 py-1.5 flex items-center gap-2" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.04)" }}>
           <div className="flex items-center gap-0.5">
             {[1, 2, 3, 4, 5].map((s) => (
@@ -270,7 +427,7 @@ export function IPhoneLockScreen() {
       </div>
 
       {/* ── Bottom Tab Bar ── */}
-      <div className="px-3 pt-1 pb-1 mt-auto shrink-0">
+      <div className="px-3 pt-1 pb-1 mt-auto shrink-0 relative z-10">
         <div className="flex items-center justify-around rounded-2xl py-1.5 px-1" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}>
           {[
             { icon: TrendingUp, label: "Home", active: true },
@@ -279,10 +436,13 @@ export function IPhoneLockScreen() {
             { icon: Scissors, label: "Serviços", active: false },
           ].map((tab) => (
             <div key={tab.label} className="flex flex-col items-center gap-[2px] min-w-0">
-              <div className={`relative ${tab.active ? "" : ""}`}>
+              <div className="relative">
                 <tab.icon className={`h-3 w-3 ${tab.active ? "text-emerald-400" : "text-white/15"}`} />
                 {tab.active && (
-                  <div className="absolute -bottom-[3px] left-1/2 -translate-x-1/2 w-1 h-[2px] rounded-full bg-emerald-400" />
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute -bottom-[3px] left-1/2 -translate-x-1/2 w-1 h-[2px] rounded-full bg-emerald-400"
+                  />
                 )}
               </div>
               <span className={`text-[5px] font-semibold ${tab.active ? "text-emerald-400" : "text-white/15"}`}>{tab.label}</span>
@@ -290,7 +450,7 @@ export function IPhoneLockScreen() {
           ))}
         </div>
         {/* Home indicator */}
-        <div className="mx-auto w-[52px] h-[3px] rounded-full bg-white/8 mt-1.5" />
+        <div className="mx-auto w-[52px] h-[3px] rounded-full bg-white/[0.06] mt-1.5" />
       </div>
     </div>
   );
