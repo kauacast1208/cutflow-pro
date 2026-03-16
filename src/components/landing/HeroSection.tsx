@@ -33,10 +33,10 @@ export function HeroSection() {
             transition={{ duration: 0.6, delay: 0.08 }}
             className="text-[1.75rem] leading-[1.1] sm:text-4xl lg:text-[3.25rem] font-extrabold tracking-[-0.03em] sm:leading-[1.08] mb-5 sm:mb-6 px-1 sm:px-0"
           >
-            Pare de perder clientes{" "}
+            Sua barbearia perde clientes{" "}
             <br className="hidden sm:block" />
-            por falta de{" "}
-            <span className="text-primary">organização.</span>
+            todo dia por falta de{" "}
+            <span className="text-primary">controle.</span>
           </motion.h1>
 
           {/* Subheadline */}
