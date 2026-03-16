@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import {
   Scissors, ArrowRight, Loader2, MapPin, Phone, Store, Building2,
-  AlertCircle, CheckCircle2, Shield, Zap, Calendar,
+  AlertCircle, CheckCircle2, Shield, Zap, Calendar, Sparkles, Users, Globe,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,6 +13,7 @@ import { useTenant } from "@/hooks/useTenant";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { buildBarbershopInsert, getBarbershopErrorMessage, onboardingBarbershopSchema } from "@/lib/barbershop";
+import { formatPhone } from "@/lib/format";
 
 function slugify(text: string) {
   return text
@@ -23,10 +24,17 @@ function slugify(text: string) {
     .replace(/^-|-$/g, "");
 }
 
-const VALUE_PROPS = [
-  { icon: Calendar, text: "Agendamento online 24h" },
-  { icon: Zap, text: "Lembretes automáticos" },
-  { icon: Shield, text: "Dados protegidos" },
+const STEPS = [
+  { label: "Criar conta", done: true },
+  { label: "Configurar barbearia", done: false, active: true },
+  { label: "Pronto para usar", done: false },
+];
+
+const TRUST_ITEMS = [
+  { icon: Calendar, label: "Agendamento online 24h" },
+  { icon: Users, label: "Gestão de clientes" },
+  { icon: Zap, label: "Lembretes automáticos" },
+  { icon: Shield, label: "Dados protegidos" },
 ];
 
 export default function OnboardingPage() {
@@ -44,6 +52,7 @@ export default function OnboardingPage() {
   const { toast } = useToast();
 
   const isSubmitDisabled = useMemo(() => loading || !barbershopName.trim(), [loading, barbershopName]);
+  const slug = useMemo(() => slugify(barbershopName), [barbershopName]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,25 +82,25 @@ export default function OnboardingPage() {
     setLoading(true);
 
     try {
-      let slug = slugify(parsed.data.name);
-      if (!slug) {
-        slug = `barbearia-${Math.random().toString(36).slice(2, 7)}`;
+      let finalSlug = slugify(parsed.data.name);
+      if (!finalSlug) {
+        finalSlug = `barbearia-${Math.random().toString(36).slice(2, 7)}`;
       }
 
       const { data: existing, error: existingError } = await supabase
         .from("barbershops")
         .select("id")
-        .eq("slug", slug)
+        .eq("slug", finalSlug)
         .limit(1)
         .maybeSingle();
 
       if (existingError) throw existingError;
 
       if (existing) {
-        slug = `${slug}-${Math.random().toString(36).slice(2, 5)}`;
+        finalSlug = `${finalSlug}-${Math.random().toString(36).slice(2, 5)}`;
       }
 
-      const payload = buildBarbershopInsert(parsed.data, user.id, slug);
+      const payload = buildBarbershopInsert(parsed.data, user.id, finalSlug);
       const { error } = await supabase.from("barbershops").insert(payload);
 
       if (error) throw error;
@@ -99,10 +108,9 @@ export default function OnboardingPage() {
       await refresh();
       setSuccess(true);
 
-      // Navigate after showing success briefly
       setTimeout(() => {
         navigate("/dashboard");
-      }, 2200);
+      }, 2500);
     } catch (error) {
       const message = getBarbershopErrorMessage(error, "Não foi possível criar sua barbearia agora.");
       setFormError(message);
@@ -117,10 +125,11 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 sm:p-6">
-      {/* Subtle background glow */}
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 sm:p-6 relative">
+      {/* Background effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary/[0.03] blur-[120px]" />
+        <div className="absolute top-[-30%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-primary/[0.04] blur-[150px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-accent/[0.03] blur-[120px]" />
       </div>
 
       <AnimatePresence mode="wait">
@@ -131,44 +140,80 @@ export default function OnboardingPage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full max-w-md text-center"
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full max-w-md text-center relative z-10"
           >
+            {/* Animated glow ring */}
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.15, type: "spring", stiffness: 200, damping: 15 }}
-              className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.1, type: "spring", stiffness: 180, damping: 14 }}
+              className="mx-auto mb-8 relative"
             >
-              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary shadow-lg">
-                <CheckCircle2 className="h-7 w-7 text-primary-foreground" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.1, 0.3] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  className="w-24 h-24 rounded-full bg-primary/20 blur-xl"
+                />
+              </div>
+              <div className="relative flex h-20 w-20 mx-auto items-center justify-center rounded-2xl bg-primary/10 border border-primary/20">
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/25">
+                  <CheckCircle2 className="h-7 w-7 text-primary-foreground" />
+                </div>
               </div>
             </motion.div>
 
             <motion.h1
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-2xl font-bold mb-2"
+              className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3"
             >
               Tudo pronto!
             </motion.h1>
             <motion.p
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="text-muted-foreground text-sm mb-6"
+              className="text-muted-foreground text-sm leading-relaxed mb-2"
             >
               <span className="font-semibold text-foreground">{barbershopName}</span> foi criada com sucesso.
-              <br />
-              Agora vamos configurar seus serviços e profissionais.
             </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="text-muted-foreground/60 text-sm mb-8"
+            >
+              Próximo passo: configurar seus serviços e profissionais.
+            </motion.p>
+
+            {/* Success checklist preview */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-4 mb-8 text-left max-w-xs mx-auto"
+            >
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Próximos passos</p>
+              <div className="space-y-2.5">
+                {["Adicionar serviços", "Cadastrar profissionais", "Definir horários"].map((step, i) => (
+                  <div key={step} className="flex items-center gap-2.5">
+                    <div className="flex h-5 w-5 items-center justify-center rounded-full border border-border/60 text-muted-foreground/40">
+                      <span className="text-[10px] font-medium">{i + 1}</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">{step}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
 
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.55 }}
-              className="flex items-center justify-center gap-2 text-xs text-muted-foreground"
+              transition={{ delay: 0.7 }}
+              className="flex items-center justify-center gap-2 text-xs text-muted-foreground/50"
             >
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
               Preparando seu painel...
@@ -184,10 +229,37 @@ export default function OnboardingPage() {
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             className="w-full max-w-lg relative z-10"
           >
+            {/* Progress Steps */}
+            <div className="flex items-center justify-center gap-2 mb-8">
+              {STEPS.map((step, i) => (
+                <div key={step.label} className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <div className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${
+                      step.done
+                        ? "bg-primary text-primary-foreground"
+                        : step.active
+                          ? "bg-primary/15 text-primary border border-primary/30"
+                          : "bg-muted text-muted-foreground/40"
+                    }`}>
+                      {step.done ? <CheckCircle2 className="h-3.5 w-3.5" /> : i + 1}
+                    </div>
+                    <span className={`text-xs font-medium hidden sm:inline ${
+                      step.active ? "text-foreground" : step.done ? "text-muted-foreground" : "text-muted-foreground/40"
+                    }`}>
+                      {step.label}
+                    </span>
+                  </div>
+                  {i < STEPS.length - 1 && (
+                    <div className={`w-8 sm:w-12 h-px ${step.done ? "bg-primary/40" : "bg-border/50"}`} />
+                  )}
+                </div>
+              ))}
+            </div>
+
             {/* Header */}
             <div className="text-center mb-8">
               <div className="inline-flex items-center gap-2 mb-5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-sm">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-sm shadow-primary/20">
                   <Scissors className="h-4.5 w-4.5 text-primary-foreground" />
                 </div>
                 <span className="text-lg font-bold tracking-tight">CutFlow</span>
@@ -196,12 +268,12 @@ export default function OnboardingPage() {
                 Configure sua barbearia
               </h1>
               <p className="text-muted-foreground text-sm max-w-sm mx-auto leading-relaxed">
-                Preencha as informações básicas para começar a receber agendamentos online.
+                Essas informações serão exibidas na sua página de agendamento. Você pode alterar tudo depois.
               </p>
             </div>
 
             {/* Card */}
-            <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-[var(--shadow-lg)]">
+            <div className="rounded-2xl border border-border/80 bg-card p-6 sm:p-8 shadow-xl shadow-black/5">
               <form onSubmit={handleSubmit} className="space-y-6" noValidate>
                 {/* Error banner */}
                 <AnimatePresence>
@@ -221,37 +293,48 @@ export default function OnboardingPage() {
                 </AnimatePresence>
 
                 {/* ── Section: Informações do negócio ── */}
-                <fieldset className="space-y-4">
-                  <legend className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-                    Informações do negócio
-                  </legend>
+                <fieldset className="space-y-5">
+                  <div className="flex items-center gap-2">
+                    <Store className="h-4 w-4 text-primary/60" />
+                    <legend className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Informações do negócio
+                    </legend>
+                  </div>
 
                   {/* Name */}
                   <div className="space-y-1.5">
                     <Label htmlFor="name" className="text-sm font-medium">
                       Nome da barbearia <span className="text-destructive">*</span>
                     </Label>
-                    <div className="relative">
-                      <Store className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60 pointer-events-none" />
-                      <Input
-                        id="name"
-                        placeholder="Ex: Barbearia Premium"
-                        value={barbershopName}
-                        onChange={(e) => {
-                          setBarbershopName(e.target.value);
-                          clearFieldError("name");
-                        }}
-                        required
-                        autoFocus
-                        autoComplete="organization"
-                        aria-invalid={!!fieldErrors.name}
-                        className="pl-9 h-11 transition-shadow focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.08)]"
-                      />
-                    </div>
+                    <Input
+                      id="name"
+                      placeholder="Ex: Barbearia Premium"
+                      value={barbershopName}
+                      onChange={(e) => {
+                        setBarbershopName(e.target.value);
+                        clearFieldError("name");
+                      }}
+                      required
+                      autoFocus
+                      autoComplete="organization"
+                      aria-invalid={!!fieldErrors.name}
+                      className={`h-11 transition-all focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.08)] ${
+                        fieldErrors.name ? "border-destructive/50" : ""
+                      }`}
+                    />
                     {fieldErrors.name ? (
                       <p className="text-xs text-destructive flex items-center gap-1">
                         <AlertCircle className="h-3 w-3" /> {fieldErrors.name}
                       </p>
+                    ) : barbershopName.trim() && slug ? (
+                      <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-[11px] text-muted-foreground/50 flex items-center gap-1"
+                      >
+                        <Globe className="h-3 w-3" />
+                        cutflow.app/b/{slug}
+                      </motion.p>
                     ) : (
                       <p className="text-[11px] text-muted-foreground/50">
                         Será exibido na sua página de agendamento
@@ -264,21 +347,20 @@ export default function OnboardingPage() {
                     <Label htmlFor="phone" className="text-sm font-medium">
                       Telefone de contato
                     </Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60 pointer-events-none" />
-                      <Input
-                        id="phone"
-                        placeholder="(11) 99999-0000"
-                        value={phone}
-                        onChange={(e) => {
-                          setPhone(e.target.value);
-                          clearFieldError("phone");
-                        }}
-                        autoComplete="tel"
-                        aria-invalid={!!fieldErrors.phone}
-                        className="pl-9 h-11 transition-shadow focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.08)]"
-                      />
-                    </div>
+                    <Input
+                      id="phone"
+                      placeholder="(11) 99999-0000"
+                      value={phone}
+                      onChange={(e) => {
+                        setPhone(formatPhone(e.target.value));
+                        clearFieldError("phone");
+                      }}
+                      autoComplete="tel"
+                      aria-invalid={!!fieldErrors.phone}
+                      className={`h-11 transition-all focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.08)] ${
+                        fieldErrors.phone ? "border-destructive/50" : ""
+                      }`}
+                    />
                     {fieldErrors.phone && (
                       <p className="text-xs text-destructive flex items-center gap-1">
                         <AlertCircle className="h-3 w-3" /> {fieldErrors.phone}
@@ -288,41 +370,43 @@ export default function OnboardingPage() {
                 </fieldset>
 
                 {/* Divider */}
-                <div className="border-t border-border/50" />
+                <div className="border-t border-border/40" />
 
                 {/* ── Section: Localização ── */}
-                <fieldset className="space-y-4">
-                  <legend className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-                    Localização
-                  </legend>
+                <fieldset className="space-y-5">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-primary/60" />
+                    <legend className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Localização
+                    </legend>
+                  </div>
 
                   {/* Address */}
                   <div className="space-y-1.5">
                     <Label htmlFor="address" className="text-sm font-medium">
                       Endereço
                     </Label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60 pointer-events-none" />
-                      <Input
-                        id="address"
-                        placeholder="Rua das Palmeiras, 123 — Centro, São Paulo"
-                        value={address}
-                        onChange={(e) => {
-                          setAddress(e.target.value);
-                          clearFieldError("address");
-                        }}
-                        autoComplete="street-address"
-                        aria-invalid={!!fieldErrors.address}
-                        className="pl-9 h-11 transition-shadow focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.08)]"
-                      />
-                    </div>
+                    <Input
+                      id="address"
+                      placeholder="Rua das Palmeiras, 123 — Centro, São Paulo"
+                      value={address}
+                      onChange={(e) => {
+                        setAddress(e.target.value);
+                        clearFieldError("address");
+                      }}
+                      autoComplete="street-address"
+                      aria-invalid={!!fieldErrors.address}
+                      className={`h-11 transition-all focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.08)] ${
+                        fieldErrors.address ? "border-destructive/50" : ""
+                      }`}
+                    />
                     {fieldErrors.address ? (
                       <p className="text-xs text-destructive flex items-center gap-1">
                         <AlertCircle className="h-3 w-3" /> {fieldErrors.address}
                       </p>
                     ) : (
                       <p className="text-[11px] text-muted-foreground/50">
-                        Seus clientes verão essa informação ao agendar
+                        Seus clientes verão isso ao agendar
                       </p>
                     )}
                   </div>
@@ -333,24 +417,23 @@ export default function OnboardingPage() {
                       <Label htmlFor="complement" className="text-sm font-medium">
                         Complemento
                       </Label>
-                      <span className="text-[10px] text-muted-foreground/40 font-medium uppercase tracking-wide">
+                      <span className="text-[10px] text-muted-foreground/40 font-medium uppercase tracking-wide rounded-full bg-muted/50 px-2 py-0.5">
                         opcional
                       </span>
                     </div>
-                    <div className="relative">
-                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60 pointer-events-none" />
-                      <Input
-                        id="complement"
-                        placeholder="Sala 12, 2º andar"
-                        value={addressComplement}
-                        onChange={(e) => {
-                          setAddressComplement(e.target.value);
-                          clearFieldError("addressComplement");
-                        }}
-                        aria-invalid={!!fieldErrors.addressComplement}
-                        className="pl-9 h-11 transition-shadow focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.08)]"
-                      />
-                    </div>
+                    <Input
+                      id="complement"
+                      placeholder="Sala 12, 2º andar, Bloco B"
+                      value={addressComplement}
+                      onChange={(e) => {
+                        setAddressComplement(e.target.value);
+                        clearFieldError("addressComplement");
+                      }}
+                      aria-invalid={!!fieldErrors.addressComplement}
+                      className={`h-11 transition-all focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.08)] ${
+                        fieldErrors.addressComplement ? "border-destructive/50" : ""
+                      }`}
+                    />
                     {fieldErrors.addressComplement && (
                       <p className="text-xs text-destructive flex items-center gap-1">
                         <AlertCircle className="h-3 w-3" /> {fieldErrors.addressComplement}
@@ -360,14 +443,10 @@ export default function OnboardingPage() {
                 </fieldset>
 
                 {/* Submit */}
-                <motion.div
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                  className="pt-1"
-                >
+                <div className="pt-2">
                   <Button
                     type="submit"
-                    className="w-full h-12 text-sm font-semibold rounded-xl gap-2 shadow-sm"
+                    className="w-full h-12 text-sm font-semibold rounded-xl gap-2 shadow-md shadow-primary/10 transition-all hover:shadow-lg hover:shadow-primary/15"
                     disabled={isSubmitDisabled}
                   >
                     {loading ? (
@@ -377,21 +456,28 @@ export default function OnboardingPage() {
                       </>
                     ) : (
                       <>
+                        <Sparkles className="h-4 w-4" />
                         Criar minha barbearia
                         <ArrowRight className="h-4 w-4" />
                       </>
                     )}
                   </Button>
-                </motion.div>
+                  <p className="text-[11px] text-muted-foreground/40 text-center mt-3">
+                    Leva menos de 30 segundos. Você pode editar tudo depois.
+                  </p>
+                </div>
               </form>
             </div>
 
-            {/* Value props */}
-            <div className="mt-6 flex items-center justify-center gap-5 sm:gap-6">
-              {VALUE_PROPS.map((prop) => (
-                <div key={prop.text} className="flex items-center gap-1.5 text-muted-foreground/50">
-                  <prop.icon className="h-3.5 w-3.5" />
-                  <span className="text-[11px] font-medium">{prop.text}</span>
+            {/* Trust bar */}
+            <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {TRUST_ITEMS.map((item) => (
+                <div
+                  key={item.label}
+                  className="flex items-center gap-2 rounded-lg border border-border/30 bg-card/40 backdrop-blur-sm px-3 py-2.5"
+                >
+                  <item.icon className="h-3.5 w-3.5 text-primary/50 shrink-0" />
+                  <span className="text-[11px] font-medium text-muted-foreground/60 leading-tight">{item.label}</span>
                 </div>
               ))}
             </div>
