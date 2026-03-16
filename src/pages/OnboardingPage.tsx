@@ -26,52 +26,77 @@ export default function OnboardingPage() {
   const [address, setAddress] = useState("");
   const [addressComplement, setAddressComplement] = useState("");
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<"name" | "phone" | "address" | "addressComplement", string>>>({});
   const navigate = useNavigate();
   const { user } = useAuth();
   const { refresh } = useTenant();
   const { toast } = useToast();
 
+  const isSubmitDisabled = useMemo(() => loading || !barbershopName.trim(), [loading, barbershopName]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmedName = barbershopName.trim();
-    if (!user || !trimmedName) return;
+    if (!user) return;
+
+    setFormError(null);
+    setFieldErrors({});
+
+    const parsed = onboardingBarbershopSchema.safeParse({
+      name: barbershopName,
+      phone,
+      address,
+      addressComplement,
+    });
+
+    if (!parsed.success) {
+      const nextErrors: Partial<Record<"name" | "phone" | "address" | "addressComplement", string>> = {};
+      for (const issue of parsed.error.issues) {
+        const key = issue.path[0] as keyof typeof nextErrors;
+        if (!nextErrors[key]) nextErrors[key] = issue.message;
+      }
+      setFieldErrors(nextErrors);
+      setFormError("Revise os campos destacados antes de continuar.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      let slug = slugify(trimmedName);
+      let slug = slugify(parsed.data.name);
       if (!slug) {
-        slug = "barbearia-" + Math.random().toString(36).slice(2, 7);
+        slug = `barbearia-${Math.random().toString(36).slice(2, 7)}`;
       }
 
-      const { data: existing } = await supabase
+      const { data: existing, error: existingError } = await supabase
         .from("barbershops")
         .select("id")
         .eq("slug", slug)
+        .limit(1)
         .maybeSingle();
 
-      if (existing) {
-        slug = slug + "-" + Math.random().toString(36).slice(2, 5);
+      if (existingError) {
+        throw existingError;
       }
 
-      const { error } = await supabase.from("barbershops").insert({
-        owner_id: user.id,
-        name: trimmedName,
-        slug,
-        phone: phone.trim() || null,
-        address: address.trim() || null,
-        address_complement: addressComplement.trim() || null,
-      });
+      if (existing) {
+        slug = `${slug}-${Math.random().toString(36).slice(2, 5)}`;
+      }
+
+      const payload = buildBarbershopInsert(parsed.data, user.id, slug);
+      const { error } = await supabase.from("barbershops").insert(payload);
 
       if (error) {
-        toast({ title: "Erro ao criar barbearia", description: error.message, variant: "destructive" });
-        return;
+        throw error;
       }
 
       await refresh();
       toast({ title: "Barbearia criada!", description: "Sua barbearia está pronta para uso." });
       navigate("/dashboard");
-    } catch (err) {
-      toast({ title: "Erro inesperado", description: "Tente novamente em instantes.", variant: "destructive" });
+    } catch (error) {
+      const message = getBarbershopErrorMessage(error, "Não foi possível criar sua barbearia agora.");
+      setFormError(message);
+      toast({ title: "Erro ao criar barbearia", description: message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
