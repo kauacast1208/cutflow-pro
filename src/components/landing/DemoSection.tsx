@@ -549,42 +549,101 @@ export function DemoSection() {
           </p>
         </motion.div>
 
-        {/* ─── iPhone (BOTTOM) ─── */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.25 }}
-          className="flex flex-col items-center mt-16 sm:mt-20"
-        >
-          <h3 className="text-lg sm:text-2xl font-bold text-foreground mb-2 text-center">
-            Seus clientes recebem tudo no celular
-          </h3>
-          <p className="text-sm text-muted-foreground mb-8 text-center max-w-md">
-            Notificações em tempo real direto na tela de bloqueio. Sem app, sem atrito.
-          </p>
-
-          <div className="relative w-[260px] sm:w-[280px]">
-            {/* Glow */}
-            <div className="absolute -inset-8 sm:-inset-12 rounded-[3rem] bg-gradient-to-br from-primary/[0.08] via-purple-500/[0.04] to-transparent blur-2xl" />
-
-            {/* Phone frame */}
-            <div className="relative rounded-[2.5rem] border-[3px] border-border/60 dark:border-white/[0.15] bg-[hsl(240,20%,8%)] shadow-2xl overflow-hidden ring-1 ring-border/30 dark:ring-white/[0.06]">
-              {/* Notch */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-7 bg-black rounded-b-2xl z-20 flex items-end justify-center pb-1">
-                <div className="w-14 h-1 rounded-full bg-white/10" />
-              </div>
-
-              <div className="h-[480px] sm:h-[520px]">
-                <IPhoneLockScreen />
-              </div>
-            </div>
+        {/* ─── Cinematic iPhone Showcase ─── */}
+        <div className="relative mt-20 sm:mt-28 lg:mt-36">
+          {/* Deep dark backdrop */}
+          <div className="absolute inset-0 -mx-5 sm:-mx-6 lg:-mx-8 -my-16 bg-[hsl(220,20%,3%)] rounded-3xl overflow-hidden">
+            {/* Ambient glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-[radial-gradient(ellipse,hsl(152,55%,30%,0.08),transparent_60%)] blur-[60px]" />
+            <div className="absolute top-1/3 left-1/4 w-[400px] h-[400px] bg-[radial-gradient(ellipse,hsl(270,40%,30%,0.06),transparent_60%)] blur-[80px]" />
+            <div className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] bg-[radial-gradient(ellipse,hsl(152,55%,30%,0.05),transparent_60%)] blur-[60px]" />
           </div>
 
-          <p className="text-center text-[11px] text-muted-foreground mt-4 font-medium">
-            Tela de bloqueio — Experiência do cliente
-          </p>
-        </motion.div>
+          <div className="relative py-16 sm:py-20 lg:py-24">
+            {/* Header */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-10 sm:mb-14"
+            >
+              <h3 className="text-xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-[-0.02em] mb-3">
+                Seus clientes recebem tudo no celular
+              </h3>
+              <p className="text-sm sm:text-base text-white/40 max-w-md mx-auto leading-relaxed">
+                Notificações em tempo real direto na tela de bloqueio. Sem app, sem atrito.
+              </p>
+            </motion.div>
+
+            {/* Phone with cinematic 3D tilt */}
+            <motion.div
+              initial={{ opacity: 0, y: 60, rotateX: 8 }}
+              whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              className="flex justify-center"
+              style={{ perspective: "1200px" }}
+            >
+              <div
+                className="relative"
+                style={{
+                  transform: "rotateY(-4deg) rotateX(2deg) rotateZ(0.5deg)",
+                  transformStyle: "preserve-3d",
+                }}
+              >
+                {/* Ambient glow behind phone */}
+                <div className="absolute -inset-12 bg-[radial-gradient(ellipse_at_center,hsl(152,55%,30%,0.1),transparent_65%)] blur-3xl pointer-events-none" />
+                <div className="absolute -inset-16 bg-[radial-gradient(ellipse_at_bottom,hsl(270,40%,25%,0.07),transparent_65%)] blur-3xl pointer-events-none" />
+
+                {/* Phone frame — dark titanium */}
+                <div className="relative w-[270px] sm:w-[300px] rounded-[2.5rem] overflow-hidden shadow-[0_30px_100px_-15px_rgba(0,0,0,0.7),0_10px_30px_-10px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.04)]">
+                  {/* Outer titanium bezel */}
+                  <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-b from-[hsl(220,12%,16%)] via-[hsl(220,12%,10%)] to-[hsl(220,12%,7%)]" />
+
+                  {/* Side button highlights */}
+                  <div className="absolute top-[85px] -right-[1px] w-[2px] h-[45px] bg-gradient-to-b from-white/[0.06] via-white/[0.02] to-transparent rounded-full" />
+                  <div className="absolute top-[65px] -left-[1px] w-[2px] h-[26px] bg-gradient-to-b from-white/[0.04] via-white/[0.01] to-transparent rounded-full" />
+                  <div className="absolute top-[100px] -left-[1px] w-[2px] h-[40px] bg-gradient-to-b from-white/[0.04] via-white/[0.01] to-transparent rounded-full" />
+
+                  {/* Inner bezel ring */}
+                  <div className="absolute inset-[2.5px] rounded-[2.2rem] border border-white/[0.03]" />
+
+                  {/* Screen area */}
+                  <div className="relative m-[7px] rounded-[2rem] overflow-hidden">
+                    {/* Dynamic Island */}
+                    <div className="absolute top-2.5 left-1/2 -translate-x-1/2 z-30">
+                      <div className="w-[80px] h-[22px] bg-black rounded-full flex items-center justify-center gap-2 shadow-[0_0_8px_2px_rgba(0,0,0,0.3)]">
+                        <div className="w-[7px] h-[7px] rounded-full bg-[hsl(220,12%,12%)] ring-1 ring-[hsl(220,12%,18%)]" />
+                      </div>
+                    </div>
+
+                    {/* Screen content */}
+                    <div className="aspect-[9/19.5]">
+                      <IPhoneLockScreen />
+                    </div>
+
+                    {/* Screen glare overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] via-transparent to-transparent pointer-events-none rounded-[2rem]" />
+                  </div>
+                </div>
+
+                {/* Surface reflection */}
+                <div className="absolute -bottom-8 left-6 right-6 h-16 bg-gradient-to-b from-primary/[0.03] to-transparent blur-2xl opacity-50 pointer-events-none" />
+              </div>
+            </motion.div>
+
+            {/* Caption */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.5 }}
+              className="text-center text-[11px] text-white/25 mt-8 font-medium tracking-wide"
+            >
+              Tela de bloqueio — Experiência do cliente
+            </motion.p>
+          </div>
+        </div>
       </div>
     </section>
   );
