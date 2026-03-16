@@ -91,25 +91,15 @@ export default function SignupPage() {
       }
 
       if (data.session) {
-        if (data.user?.id) {
-          const { error: profileError } = await supabase
-            .from("profiles")
-            .upsert(
-              {
-                user_id: data.user.id,
-                full_name: fullName.trim(),
-              },
-              { onConflict: "user_id" },
-            );
-
-          if (profileError) {
-            console.error("[Signup] Profile upsert error:", profileError.message);
-            await supabase.auth.signOut();
-            setDebugRawError(profileError.message || "profile_upsert_failed_after_signup");
-            setError("Sua conta foi criada, mas não conseguimos finalizar seu perfil agora. Faça login e tente novamente.");
-            setLoading(false);
-            return;
-          }
+        try {
+          await ensureCurrentUserSetup(fullName.trim());
+        } catch (setupError) {
+          const rawMessage = setupError instanceof Error ? setupError.message : "profile_setup_failed_after_signup";
+          console.error("[Signup] Setup finalize error:", rawMessage);
+          setDebugRawError(rawMessage);
+          setError("Sua conta foi criada, mas não conseguimos finalizar seu acesso agora. Tente entrar novamente.");
+          setLoading(false);
+          return;
         }
 
         toast({ title: "Conta criada!", description: "Bem-vindo ao CutFlow!" });

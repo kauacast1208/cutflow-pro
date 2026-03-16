@@ -8,43 +8,27 @@ import {
   ReactNode,
 } from "react";
 import { useAuth } from "./useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import type { Tables } from "@/integrations/supabase/types";
+import {
+  ensureCurrentUserSetup,
+  fetchTenantSnapshot,
+  type TenantBarbershop,
+  type TenantProfile,
+  type TenantRole,
+} from "@/lib/tenant";
 
-// ── Types ──────────────────────────────────────────────
-export type TenantRole = "owner" | "admin" | "professional" | "receptionist";
-export type TenantProfile = Tables<"profiles">;
-export type TenantBarbershop = Tables<"barbershops">;
-
-type TenantStatus =
-  | "loading"
-  | "unauthenticated"
-  | "no_barbershop"
-  | "ready";
+type TenantStatus = "loading" | "unauthenticated" | "no_barbershop" | "ready";
 
 interface TenantContextType {
-  /** Current status of the tenant resolution */
   status: TenantStatus;
-  /** Shortcut: true while resolving auth + tenant */
   loading: boolean;
-  /** The authenticated user's profile */
   profile: TenantProfile | null;
-  /** The resolved barbershop (tenant) */
   barbershop: TenantBarbershop | null;
-  /** The user's role within the barbershop */
   role: TenantRole;
-  /** Whether the user is the barbershop owner */
   isOwner: boolean;
-  /** Whether the user has admin-level access (owner or admin) */
   isAdmin: boolean;
-  /** Convenience: current barbershop ID or null */
   tenantId: string | null;
-  /** Force re-fetch of tenant data (e.g. after onboarding) */
   refresh: () => Promise<void>;
-  /** Update barbershop in context without refetch (optimistic) */
   setBarbershop: (shop: TenantBarbershop | null) => void;
-
-  // ── Permission helpers ──
   canManageServices: boolean;
   canManageProfessionals: boolean;
   canManageSettings: boolean;
@@ -76,10 +60,8 @@ const TenantContext = createContext<TenantContextType>({
   canManageCampaigns: true,
 });
 
-// ── Provider ───────────────────────────────────────────
 export function TenantProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
-
   const [profile, setProfile] = useState<TenantProfile | null>(null);
   const [barbershop, setBarbershop] = useState<TenantBarbershop | null>(null);
   const [role, setRole] = useState<TenantRole>("owner");
@@ -97,72 +79,25 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     setTenantLoading(true);
 
     try {
-      const [profileRes, roleRes, ownedShopRes] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select("*")
-          .eq("user_id", user.id)
-          .limit(1)
-          .maybeSingle(),
-        supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id)
-          .limit(1)
-          .maybeSingle(),
-        supabase
-          .from("barbershops")
-          .select("*")
-          .eq("owner_id", user.id)
-          .limit(1)
-          .maybeSingle(),
-      ]);
+      await ensureCurrentUserSetup(user.user_metadata?.full_name || user.email || null);
+      const snapshot = await fetchTenantSnapshot(user.id);
 
-      if (profileRes.error) throw profileRes.error;
-      if (roleRes.error) throw roleRes.error;
-      if (ownedShopRes.error) throw ownedShopRes.error;
-
-      setProfile(profileRes.data || null);
-      setRole((roleRes.data?.role as TenantRole) || "owner");
-
-      if (ownedShopRes.data) {
-        setBarbershop(ownedShopRes.data);
-        return;
-      }
-
-      const { data: pro, error: proError } = await supabase
-        .from("professionals")
-        .select("barbershop_id")
-        .eq("user_id", user.id)
-        .eq("active", true)
-        .limit(1)
-        .maybeSingle();
-
-      if (proError) throw proError;
-
-      if (pro?.barbershop_id) {
-        const { data: shop, error: shopError } = await supabase
-          .from("barbershops")
-          .select("*")
-          .eq("id", pro.barbershop_id)
-          .limit(1)
-          .maybeSingle();
-
-        if (shopError) throw shopError;
-        setBarbershop(shop || null);
-        return;
-      }
-
-      setBarbershop(null);
+      setProfile(snapshot.profile);
+      setRole(snapshot.role);
+      setBarbershop(snapshot.barbershop);
     } catch (error) {
-      console.error("[Tenant] Failed to resolve tenant context", error);
+      console.error("[Tenant] Failed to resolve tenant context", {
+        userId: user.id,
+        error,
+      });
+      setProfile(null);
       setBarbershop(null);
+      setRole("owner");
     } finally {
       setTenantLoading(false);
     }
   }, [user]);
 
-  // Resolve on mount and when user changes
   useEffect(() => {
     if (!authLoading) {
       resolve();
@@ -180,7 +115,6 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
   const isOwner = role === "owner";
   const isAdmin = role === "admin" || role === "owner";
-  const isProfessional = role === "professional";
   const isReceptionist = role === "receptionist";
 
   const value: TenantContextType = useMemo(
@@ -195,7 +129,6 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       tenantId: barbershop?.id || null,
       refresh: resolve,
       setBarbershop,
-      // Permissions
       canManageServices: isAdmin,
       canManageProfessionals: isAdmin,
       canManageSettings: isAdmin,
@@ -208,18 +141,11 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     [status, loading, profile, barbershop, role, isOwner, isAdmin, isReceptionist, resolve]
   );
 
-  return (
-    <TenantContext.Provider value={value}>{children}</TenantContext.Provider>
-  );
+  return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>;
 }
 
-// ── Hook ───────────────────────────────────────────────
 export const useTenant = () => useContext(TenantContext);
 
-/**
- * Quick helper — returns the current tenant (barbershop) ID.
- * Throws if called outside TenantProvider or before tenant resolves.
- */
 export function useTenantId(): string {
   const { tenantId } = useTenant();
   if (!tenantId) {

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useBarbershop } from "./useBarbershop";
 import { useAuth } from "./useAuth";
+import { isNoRowsError } from "@/lib/tenant";
 
 export type SubscriptionStatus = "trial" | "active" | "past_due" | "cancelled" | "expired";
 export type SubscriptionPlan = "starter" | "pro" | "premium" | "franquias";
@@ -31,12 +32,17 @@ export function useSubscription() {
       return;
     }
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("subscriptions")
       .select("*")
       .eq("barbershop_id", barbershop.id)
       .maybeSingle();
-    setSubscription(data as Subscription | null);
+
+    if (error && !isNoRowsError(error)) {
+      console.warn("[Subscription] Failed to fetch subscription", error);
+    }
+
+    setSubscription((error && !isNoRowsError(error) ? null : data) as Subscription | null);
     setLoading(false);
   }, [barbershop]);
 

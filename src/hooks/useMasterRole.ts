@@ -1,6 +1,6 @@
 import { useAuth } from "./useAuth";
-import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import { fetchUserRole, isMasterRole } from "@/lib/tenant";
 
 export function useMasterRole() {
   const { user, loading: authLoading } = useAuth();
@@ -15,15 +15,13 @@ export function useMasterRole() {
       return;
     }
 
-    supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        setIsMaster(data?.role === "master");
-        setLoading(false);
-      });
+    fetchUserRole(user.id)
+      .then((role) => setIsMaster(isMasterRole(role)))
+      .catch((error) => {
+        console.warn("[useMasterRole] Role fetch warning:", error);
+        setIsMaster(false);
+      })
+      .finally(() => setLoading(false));
   }, [user, authLoading]);
 
   return { isMaster, loading: authLoading || loading };

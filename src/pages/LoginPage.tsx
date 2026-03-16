@@ -60,19 +60,19 @@ export default function LoginPage() {
       if (data.session) {
         console.info("[Login] Session obtained, user:", data.session.user.id);
 
-        const { data: roleData, error: roleError } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", data.session.user.id)
-          .maybeSingle();
-
-        if (roleError) {
-          console.warn("[Login] Role fetch warning:", roleError.message);
+        let resolvedRole: string | null = null;
+        try {
+          const setup = await ensureCurrentUserSetup(
+            data.session.user.user_metadata?.full_name || data.session.user.email || null,
+          );
+          resolvedRole = setup.role;
+        } catch (setupError) {
+          console.warn("[Login] Setup warning:", setupError);
         }
 
         toast({ title: "Bem-vindo de volta!", description: "Login realizado com sucesso." });
 
-        if (roleData?.role === "master") {
+        if (isMasterRole(resolvedRole)) {
           console.info("[Login] Redirect decision: /master");
           navigate("/master", { replace: true });
         } else {

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { mapSessionRestoreError } from "@/lib/authErrors";
 import { Loader2, Scissors } from "lucide-react";
+import { ensureCurrentUserSetup, fetchTenantSnapshot, isMasterRole } from "@/lib/tenant";
 
 export default function AuthCallbackPage() {
   const navigate = useNavigate();
@@ -17,45 +18,27 @@ export default function AuthCallbackPage() {
     const resolveRedirect = async (userId: string) => {
       console.info("[AuthCallback] Resolving final redirect for user:", userId);
 
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .maybeSingle();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      if (roleData?.role === "master") {
+      await ensureCurrentUserSetup(user?.user_metadata?.full_name || user?.email || null);
+      const snapshot = await fetchTenantSnapshot(userId);
+
+      if (isMasterRole(snapshot.rawRole)) {
         console.info("[AuthCallback] Final redirect decision: /master");
         navigate("/master", { replace: true });
         return;
       }
 
-      const { data: barbershop } = await supabase
-        .from("barbershops")
-        .select("id")
-        .eq("owner_id", userId)
-        .limit(1)
-        .maybeSingle();
-
-      if (barbershop) {
-        console.info("[AuthCallback] Final redirect decision: /dashboard (owner)");
+      if (snapshot.barbershop) {
+        console.info("[AuthCallback] Final redirect decision: /dashboard");
         navigate("/dashboard", { replace: true });
         return;
       }
 
-      const { data: pro } = await supabase
-        .from("professionals")
-        .select("barbershop_id")
-        .eq("user_id", userId)
-        .eq("active", true)
-        .maybeSingle();
-
-      if (pro?.barbershop_id) {
-        console.info("[AuthCallback] Final redirect decision: /dashboard (professional)");
-        navigate("/dashboard", { replace: true });
-      } else {
-        console.info("[AuthCallback] Final redirect decision: /onboarding");
-        navigate("/onboarding", { replace: true });
-      }
+      console.info("[AuthCallback] Final redirect decision: /onboarding");
+      navigate("/onboarding", { replace: true });
     };
 
     const getCallbackParams = () => {
