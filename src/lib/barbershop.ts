@@ -97,7 +97,19 @@ export function getBarbershopErrorMessage(error: unknown, fallback: string) {
   const normalized = maybeMessage.toLowerCase();
 
   if (maybeCode === "23505" || normalized.includes("duplicate key")) {
-    return "Já existe uma barbearia com esse identificador. Tente novamente.";
+    if (normalized.includes("barbershops_slug_key")) {
+      return "Já existe uma barbearia com esse identificador. Tente novamente.";
+    }
+
+    if (normalized.includes("subscriptions_barbershop_id_key")) {
+      return "A assinatura inicial desta barbearia já foi criada. Tente novamente em alguns segundos.";
+    }
+
+    if (normalized.includes("profiles_user_id_key") || normalized.includes("user_roles_user_id_role_key")) {
+      return "Seu cadastro inicial já existe. Atualize a página e tente novamente.";
+    }
+
+    return "Já existe um registro com esses dados. Tente novamente.";
   }
 
   if (normalized.includes("row-level security") || normalized.includes("permission denied")) {

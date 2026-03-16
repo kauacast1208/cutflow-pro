@@ -110,16 +110,38 @@ export async function fetchUserBarbershop(userId: string): Promise<TenantBarbers
 }
 
 export async function fetchTenantSnapshot(userId: string) {
-  const [profile, role, barbershop] = await Promise.all([
+  const [profileResult, roleResult, barbershopResult] = await Promise.allSettled([
     fetchTenantProfile(userId),
     fetchUserRole(userId),
     fetchUserBarbershop(userId),
   ]);
 
+  if (profileResult.status === "rejected") {
+    console.warn("[Tenant] Profile lookup failed during snapshot", {
+      userId,
+      error: profileResult.reason,
+    });
+  }
+
+  if (roleResult.status === "rejected") {
+    console.warn("[Tenant] Role lookup failed during snapshot", {
+      userId,
+      error: roleResult.reason,
+    });
+  }
+
+  if (barbershopResult.status === "rejected") {
+    throw barbershopResult.reason;
+  }
+
+  const profile = profileResult.status === "fulfilled" ? profileResult.value : null;
+  const rawRole = roleResult.status === "fulfilled" ? roleResult.value : null;
+  const barbershop = barbershopResult.value;
+
   return {
     profile,
-    role: normalizeTenantRole(role),
-    rawRole: role,
+    role: normalizeTenantRole(rawRole),
+    rawRole,
     barbershop,
   };
 }

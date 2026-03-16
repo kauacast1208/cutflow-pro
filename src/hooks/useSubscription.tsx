@@ -19,11 +19,20 @@ export interface Subscription {
   stripe_subscription_id: string | null;
 }
 
+function getErrorMessage(error: unknown) {
+  if (typeof error === "object" && error && "message" in error && typeof error.message === "string") {
+    return error.message;
+  }
+
+  return "Erro desconhecido ao verificar assinatura.";
+}
+
 export function useSubscription() {
   const { barbershop } = useBarbershop();
   const { user } = useAuth();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
+  const [syncError, setSyncError] = useState<string | null>(null);
 
   const fetchSubscription = useCallback(async () => {
     if (!barbershop) {
@@ -46,94 +55,104 @@ export function useSubscription() {
     setLoading(false);
   }, [barbershop]);
 
+  const syncFromStripe = useCallback(async () => {
+    if (!user || !barbershop) {
+      setSyncError(null);
+      return;
+    }
+
+    const { error } = await supabase.functions.invoke("check-subscription");
+
+    if (error) {
+      const message = getErrorMessage(error);
+      setSyncError(message);
+      console.error("[Subscription] check-subscription failed", { error });
+      throw error;
+    }
+
+    setSyncError(null);
+    await fetchSubscription();
+  }, [user, barbershop, fetchSubscription]);
+
   useEffect(() => {
     fetchSubscription();
   }, [fetchSubscription]);
 
-  // Sync with Stripe on mount and after checkout
   useEffect(() => {
-    if (!user) return;
-
-    const syncFromStripe = async () => {
-      try {
-        await supabase.functions.invoke("check-subscription");
-        await fetchSubscription();
-      } catch {
-        // Silent fail - local data is still valid
-      }
-    };
+    if (!user || !barbershop) {
+      setSyncError(null);
+      return;
+    }
 
     const params = new URLSearchParams(window.location.search);
     if (params.get("checkout") === "success") {
-      setTimeout(syncFromStripe, 2000);
+      setTimeout(() => {
+        void syncFromStripe().catch(() => undefined);
+      }, 2000);
       window.history.replaceState({}, "", window.location.pathname);
     } else {
-      syncFromStripe();
+      void syncFromStripe().catch(() => undefined);
     }
 
-    const interval = setInterval(syncFromStripe, 60000);
+    const interval = setInterval(() => {
+      void syncFromStripe().catch(() => undefined);
+    }, 60000);
+
     return () => clearInterval(interval);
-  }, [user, fetchSubscription]);
+  }, [user, barbershop, syncFromStripe]);
 
-  // ---------- Computed state helpers ----------
-
-  const isTrialExpired = useMemo(() =>
-    subscription?.status === "trial" &&
-    new Date(subscription.trial_ends_at) < new Date(),
-    [subscription]
+  const isTrialExpired = useMemo(
+    () => subscription?.status === "trial" && new Date(subscription.trial_ends_at) < new Date(),
+    [subscription],
   );
 
-  const isTrial = useMemo(() =>
-    subscription?.status === "trial" && !isTrialExpired,
-    [subscription, isTrialExpired]
+  const isTrial = useMemo(
+    () => subscription?.status === "trial" && !isTrialExpired,
+    [subscription, isTrialExpired],
   );
 
-  const isPastDue = useMemo(() =>
-    subscription?.status === "past_due",
-    [subscription]
+  const isPastDue = useMemo(() => subscription?.status === "past_due", [subscription]);
+
+  const isCancelled = useMemo(() => subscription?.status === "cancelled", [subscription]);
+
+  const isCancelledButStillActive = useMemo(
+    () =>
+      subscription?.status === "cancelled" &&
+      !!subscription?.current_period_end &&
+      new Date(subscription.current_period_end) > new Date(),
+    [subscription],
   );
 
-  const isCancelled = useMemo(() =>
-    subscription?.status === "cancelled",
-    [subscription]
+  const isExpired = useMemo(
+    () => subscription?.status === "expired" || isTrialExpired,
+    [subscription, isTrialExpired],
   );
 
-  const isCancelledButStillActive = useMemo(() =>
-    subscription?.status === "cancelled" &&
-    !!subscription?.current_period_end &&
-    new Date(subscription.current_period_end) > new Date(),
-    [subscription]
-  );
-
-  const isExpired = useMemo(() =>
-    subscription?.status === "expired" || isTrialExpired,
-    [subscription, isTrialExpired]
-  );
-
-  /** Whether the user can access the dashboard */
-  const isActive = useMemo(() =>
-    subscription?.status === "active" ||
-    isTrial ||
-    isCancelledButStillActive ||
-    isPastDue, // past_due still allows access with warning
-    [subscription, isTrial, isCancelledButStillActive, isPastDue]
+  const isActive = useMemo(
+    () =>
+      subscription?.status === "active" ||
+      isTrial ||
+      isCancelledButStillActive ||
+      isPastDue,
+    [subscription, isTrial, isCancelledButStillActive, isPastDue],
   );
 
   const daysRemaining = useMemo(() => {
     if (subscription?.status === "trial") {
-      return Math.max(0, Math.ceil(
-        (new Date(subscription.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-      ));
+      return Math.max(
+        0,
+        Math.ceil((new Date(subscription.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+      );
     }
     if (isCancelledButStillActive && subscription?.current_period_end) {
-      return Math.max(0, Math.ceil(
-        (new Date(subscription.current_period_end).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-      ));
+      return Math.max(
+        0,
+        Math.ceil((new Date(subscription.current_period_end).getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+      );
     }
     return null;
   }, [subscription, isCancelledButStillActive]);
 
-  /** Human-readable status label */
   const statusLabel = useMemo(() => {
     if (isTrialExpired) return "Teste expirado";
     const labels: Record<SubscriptionStatus, string> = {
@@ -146,7 +165,6 @@ export function useSubscription() {
     return labels[subscription?.status || "trial"];
   }, [subscription, isTrialExpired, isCancelledButStillActive]);
 
-  /** Status severity for UI coloring */
   const statusSeverity = useMemo((): "success" | "warning" | "error" | "info" => {
     if (subscription?.status === "active") return "success";
     if (isTrial) return "info";
@@ -155,18 +173,19 @@ export function useSubscription() {
   }, [subscription, isTrial, isPastDue, isCancelledButStillActive]);
 
   const refreshSubscription = useCallback(async () => {
-    try {
-      await supabase.functions.invoke("check-subscription");
+    if (!barbershop) {
+      setSyncError(null);
       await fetchSubscription();
-    } catch {
-      // silent
+      return;
     }
-  }, [fetchSubscription]);
+
+    await syncFromStripe();
+  }, [barbershop, fetchSubscription, syncFromStripe]);
 
   return {
     subscription,
     loading,
-    // State booleans
+    syncError,
     isTrial,
     isTrialExpired,
     isActive,
@@ -174,11 +193,9 @@ export function useSubscription() {
     isCancelled,
     isCancelledButStillActive,
     isExpired,
-    // Display helpers
     daysRemaining,
     statusLabel,
     statusSeverity,
-    // Actions
     refreshSubscription,
   };
 }

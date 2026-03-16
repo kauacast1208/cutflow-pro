@@ -300,9 +300,16 @@ export default function OnboardingPage() {
                       exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                        <span>{formError}</span>
+                      <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                        <div className="flex items-start gap-3">
+                          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                          <span>{formError}</span>
+                        </div>
+                        {technicalError ? (
+                          <p className="mt-2 text-xs text-destructive/80 break-all">
+                            Detalhe técnico: {technicalError}
+                          </p>
+                        ) : null}
                       </div>
                     </motion.div>
                   )}
