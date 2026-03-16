@@ -1,11 +1,12 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import {
-  Scissors, ArrowRight, Loader2, MapPin, Phone, Store, Building2,
-  AlertCircle, CheckCircle2, Shield, Zap, Calendar, Sparkles, Users, Globe,
+  Scissors, ArrowRight, ArrowLeft, Loader2, MapPin, Phone, Store,
+  AlertCircle, CheckCircle2, Sparkles, Globe, DollarSign, Clock,
+  UserPlus, Rocket, PartyPopper, Check,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,6 +16,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { buildBarbershopInsert, getBarbershopErrorMessage, onboardingBarbershopSchema } from "@/lib/barbershop";
 import { formatPhone } from "@/lib/format";
 import { ensureCurrentUserSetup, isNoRowsError } from "@/lib/tenant";
+import { Progress } from "@/components/ui/progress";
 
 function slugify(text: string) {
   return text
@@ -26,487 +28,517 @@ function slugify(text: string) {
 }
 
 const STEPS = [
-  { label: "Criar conta", done: true },
-  { label: "Configurar barbearia", done: false, active: true },
-  { label: "Pronto para usar", done: false },
-];
-
-const TRUST_ITEMS = [
-  { icon: Calendar, label: "Agendamento online 24h" },
-  { icon: Users, label: "Gestão de clientes" },
-  { icon: Zap, label: "Lembretes automáticos" },
-  { icon: Shield, label: "Dados protegidos" },
+  { id: "account", label: "Conta criada", icon: CheckCircle2 },
+  { id: "barbershop", label: "Sua barbearia", icon: Store },
+  { id: "service", label: "Primeiro serviço", icon: Scissors },
+  { id: "client", label: "Primeiro cliente", icon: UserPlus },
+  { id: "ready", label: "Pronto!", icon: Rocket },
 ];
 
 export default function OnboardingPage() {
+  const [currentStep, setCurrentStep] = useState(1); // 0=account(done), 1=barbershop, 2=service, 3=client, 4=ready
+  const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  // Step 1: Barbershop
   const [barbershopName, setBarbershopName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
-  const [addressComplement, setAddressComplement] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [technicalError, setTechnicalError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Partial<Record<"name" | "phone" | "address" | "addressComplement", string>>>({});
+  const [createdBarbershopId, setCreatedBarbershopId] = useState<string | null>(null);
+
+  // Step 2: Service
+  const [serviceName, setServiceName] = useState("");
+  const [servicePrice, setServicePrice] = useState("");
+  const [serviceDuration, setServiceDuration] = useState("30");
+
+  // Step 3: Client
+  const [clientName, setClientName] = useState("");
+  const [clientPhone, setClientPhone] = useState("");
+
   const navigate = useNavigate();
   const { user } = useAuth();
   const { refresh, setBarbershop } = useTenant();
   const { toast } = useToast();
 
-  const isSubmitDisabled = useMemo(() => loading || !barbershopName.trim(), [loading, barbershopName]);
   const slug = useMemo(() => slugify(barbershopName), [barbershopName]);
+  const progress = Math.round((currentStep / (STEPS.length - 1)) * 100);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const clearError = useCallback(() => setFormError(null), []);
+
+  // ── Step 1: Create barbershop ──
+  const handleCreateBarbershop = async () => {
     if (!user) return;
-
-    setFormError(null);
-    setTechnicalError(null);
-    setFieldErrors({});
+    clearError();
 
     const parsed = onboardingBarbershopSchema.safeParse({
       name: barbershopName,
       phone,
       address,
-      addressComplement,
     });
-
     if (!parsed.success) {
-      const nextErrors: Partial<Record<"name" | "phone" | "address" | "addressComplement", string>> = {};
-      for (const issue of parsed.error.issues) {
-        const key = issue.path[0] as keyof typeof nextErrors;
-        if (!nextErrors[key]) nextErrors[key] = issue.message;
-      }
-      setFieldErrors(nextErrors);
-      setFormError("Revise os campos destacados antes de continuar.");
+      setFormError(parsed.error.issues[0]?.message || "Revise os campos.");
       return;
     }
 
     setLoading(true);
-
     try {
       await ensureCurrentUserSetup(user.user_metadata?.full_name || user.email?.split("@")[0] || null);
 
-      let finalSlug = slugify(parsed.data.name);
-      if (!finalSlug) {
-        finalSlug = `barbearia-${Math.random().toString(36).slice(2, 7)}`;
-      }
-
-      const { data: existing, error: existingError } = await supabase
-        .from("barbershops")
-        .select("id")
-        .eq("slug", finalSlug)
-        .limit(1)
-        .maybeSingle();
-
-      if (existingError && !isNoRowsError(existingError)) throw existingError;
-
-      if (existing) {
-        finalSlug = `${finalSlug}-${Math.random().toString(36).slice(2, 5)}`;
-      }
+      let finalSlug = slugify(parsed.data.name) || `barbearia-${Math.random().toString(36).slice(2, 7)}`;
+      const { data: existing } = await supabase
+        .from("barbershops").select("id").eq("slug", finalSlug).limit(1).maybeSingle();
+      if (existing) finalSlug = `${finalSlug}-${Math.random().toString(36).slice(2, 5)}`;
 
       const payload = buildBarbershopInsert(parsed.data, user.id, finalSlug);
-      const { data: createdBarbershop, error } = await supabase
-        .from("barbershops")
-        .insert(payload)
-        .select("*")
-        .maybeSingle();
+      const { data: created, error } = await supabase
+        .from("barbershops").insert(payload).select("*").maybeSingle();
 
       if (error) throw error;
-      if (createdBarbershop) {
-        setBarbershop(createdBarbershop);
+      if (created) {
+        setBarbershop(created);
+        setCreatedBarbershopId(created.id);
       }
-
       await refresh();
-      setSuccess(true);
-
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 2500);
+      setCurrentStep(2);
     } catch (error) {
-      const rawMessage = error instanceof Error ? error.message : String(error);
-      const message = getBarbershopErrorMessage(error, "Não foi possível criar sua barbearia agora.");
+      const message = getBarbershopErrorMessage(error, "Não foi possível criar sua barbearia.");
       setFormError(message);
-      setTechnicalError(rawMessage && rawMessage !== message ? rawMessage : null);
-      console.error("[Onboarding] Failed to create first barbershop", { userId: user.id, error });
-      toast({ title: "Erro ao criar barbearia", description: message, variant: "destructive" });
+      toast({ title: "Erro", description: message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
-  const clearFieldError = (field: keyof typeof fieldErrors) => {
-    if (fieldErrors[field]) setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+  // ── Step 2: Create first service ──
+  const handleCreateService = async () => {
+    if (!createdBarbershopId) return;
+    if (!serviceName.trim()) {
+      setFormError("Informe o nome do serviço.");
+      return;
+    }
+    clearError();
+    setLoading(true);
+    try {
+      const { error } = await supabase.from("services").insert({
+        barbershop_id: createdBarbershopId,
+        name: serviceName.trim(),
+        price: parseFloat(servicePrice) || 0,
+        duration_minutes: parseInt(serviceDuration) || 30,
+        active: true,
+      });
+      if (error) throw error;
+      setCurrentStep(3);
+    } catch (error) {
+      setFormError("Não foi possível criar o serviço. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // ── Step 3: Create first client ──
+  const handleCreateClient = async () => {
+    if (!createdBarbershopId) return;
+    if (!clientName.trim()) {
+      setFormError("Informe o nome do cliente.");
+      return;
+    }
+    clearError();
+    setLoading(true);
+    try {
+      const { error } = await supabase.from("clients").insert({
+        barbershop_id: createdBarbershopId,
+        name: clientName.trim(),
+        phone: clientPhone.trim() || null,
+      });
+      if (error) throw error;
+      setCurrentStep(4);
+    } catch (error) {
+      setFormError("Não foi possível cadastrar o cliente. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Skip handlers ──
+  const skipToNext = () => {
+    clearError();
+    setCurrentStep((s) => Math.min(s + 1, 4));
+  };
+
+  const goToDashboard = () => navigate("/dashboard");
+
+  // ── Step indicator component ──
+  const StepIndicator = () => (
+    <div className="w-full max-w-md mx-auto mb-8">
+      <div className="flex items-center justify-between mb-3">
+        {STEPS.map((step, i) => {
+          const isDone = i < currentStep;
+          const isActive = i === currentStep;
+          const Icon = step.icon;
+          return (
+            <div key={step.id} className="flex flex-col items-center relative z-10">
+              <motion.div
+                initial={false}
+                animate={{
+                  scale: isActive ? 1 : 0.85,
+                  backgroundColor: isDone
+                    ? "hsl(var(--primary))"
+                    : isActive
+                      ? "hsl(var(--primary) / 0.15)"
+                      : "hsl(var(--muted))",
+                }}
+                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                className={`flex h-9 w-9 items-center justify-center rounded-full transition-all ${
+                  isActive ? "ring-2 ring-primary/30 ring-offset-2 ring-offset-background" : ""
+                }`}
+              >
+                {isDone ? (
+                  <Check className="h-4 w-4 text-primary-foreground" />
+                ) : (
+                  <Icon className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground/40"}`} />
+                )}
+              </motion.div>
+              <span className={`text-[10px] font-medium mt-1.5 text-center leading-tight max-w-[60px] ${
+                isDone ? "text-primary" : isActive ? "text-foreground" : "text-muted-foreground/40"
+              }`}>
+                {step.label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <Progress value={progress} className="h-1.5" />
+    </div>
+  );
+
+  // ── Error banner ──
+  const ErrorBanner = () =>
+    formError ? (
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-3 mb-6"
+      >
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+        <span>{formError}</span>
+      </motion.div>
+    ) : null;
+
+  // ── Card wrapper ──
+  const StepCard = ({ children, title, subtitle }: { children: React.ReactNode; title: string; subtitle: string }) => (
+    <motion.div
+      key={currentStep}
+      initial={{ opacity: 0, x: 40 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -40 }}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      className="w-full max-w-md mx-auto"
+    >
+      <div className="text-center mb-6">
+        <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight mb-1.5">{title}</h1>
+        <p className="text-sm text-muted-foreground">{subtitle}</p>
+      </div>
+
+      <div className="rounded-2xl border border-border/80 bg-card p-6 sm:p-8 shadow-xl shadow-black/5">
+        <AnimatePresence>
+          <ErrorBanner />
+        </AnimatePresence>
+        {children}
+      </div>
+    </motion.div>
+  );
+
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 sm:p-6 relative atmosphere">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 sm:p-6 relative">
       {/* Background effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-30%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-primary/[0.03] blur-[150px]" />
         <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-accent/[0.04] blur-[120px]" />
-        <div className="absolute top-[10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-[hsl(265_45%_55%/0.03)] blur-[100px]" />
       </div>
 
-      <AnimatePresence mode="wait">
-        {success ? (
-          /* ──── Success State ──── */
-          <motion.div
-            key="success"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full max-w-md text-center relative z-10"
-          >
-            {/* Animated glow ring */}
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.1, type: "spring", stiffness: 180, damping: 14 }}
-              className="mx-auto mb-8 relative"
-            >
-              <div className="absolute inset-0 flex items-center justify-center">
-                <motion.div
-                  animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.1, 0.3] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  className="w-24 h-24 rounded-full bg-primary/20 blur-xl"
-                />
+      <div className="relative z-10 w-full max-w-lg">
+        {/* Logo */}
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary shadow-sm shadow-primary/20">
+            <Scissors className="h-4 w-4 text-primary-foreground" />
+          </div>
+          <span className="text-lg font-bold tracking-tight">CutFlow</span>
+        </div>
+
+        <StepIndicator />
+
+        <AnimatePresence mode="wait">
+          {/* ─────────── STEP 1: Barbershop ─────────── */}
+          {currentStep === 1 && (
+            <StepCard title="Configure sua barbearia" subtitle="Informações básicas da sua página de agendamento">
+              <div className="space-y-5">
+                <div className="space-y-1.5">
+                  <Label htmlFor="name" className="text-sm font-medium">
+                    Nome da barbearia <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="name"
+                    placeholder="Ex: Barbearia Premium"
+                    value={barbershopName}
+                    onChange={(e) => { setBarbershopName(e.target.value); clearError(); }}
+                    autoFocus
+                    className="h-11"
+                  />
+                  {barbershopName.trim() && slug && (
+                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[11px] text-muted-foreground/50 flex items-center gap-1">
+                      <Globe className="h-3 w-3" /> cutflow.app/b/{slug}
+                    </motion.p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="phone" className="text-sm font-medium">Telefone</Label>
+                  <Input
+                    id="phone"
+                    placeholder="(11) 99999-0000"
+                    value={phone}
+                    onChange={(e) => { setPhone(formatPhone(e.target.value)); clearError(); }}
+                    className="h-11"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="address" className="text-sm font-medium">Endereço</Label>
+                  <Input
+                    id="address"
+                    placeholder="Rua das Palmeiras, 123 — Centro"
+                    value={address}
+                    onChange={(e) => { setAddress(e.target.value); clearError(); }}
+                    className="h-11"
+                  />
+                </div>
+
+                <Button
+                  onClick={handleCreateBarbershop}
+                  disabled={loading || !barbershopName.trim()}
+                  className="w-full h-12 text-sm font-semibold rounded-xl gap-2 shadow-md shadow-primary/10"
+                >
+                  {loading ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" /> Criando...</>
+                  ) : (
+                    <><Sparkles className="h-4 w-4" /> Criar minha barbearia <ArrowRight className="h-4 w-4" /></>
+                  )}
+                </Button>
               </div>
-              <div className="relative flex h-20 w-20 mx-auto items-center justify-center rounded-2xl bg-primary/10 border border-primary/20">
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/25">
-                  <CheckCircle2 className="h-7 w-7 text-primary-foreground" />
+            </StepCard>
+          )}
+
+          {/* ─────────── STEP 2: Service ─────────── */}
+          {currentStep === 2 && (
+            <StepCard title="Adicione seu primeiro serviço" subtitle="Seus clientes verão isso ao agendar">
+              <div className="space-y-5">
+                <div className="space-y-1.5">
+                  <Label htmlFor="svc-name" className="text-sm font-medium">
+                    Nome do serviço <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="svc-name"
+                    placeholder="Ex: Corte masculino"
+                    value={serviceName}
+                    onChange={(e) => { setServiceName(e.target.value); clearError(); }}
+                    autoFocus
+                    className="h-11"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="svc-price" className="text-sm font-medium flex items-center gap-1.5">
+                      <DollarSign className="h-3.5 w-3.5 text-muted-foreground" /> Preço (R$)
+                    </Label>
+                    <Input
+                      id="svc-price"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder="45.00"
+                      value={servicePrice}
+                      onChange={(e) => setServicePrice(e.target.value)}
+                      className="h-11"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="svc-dur" className="text-sm font-medium flex items-center gap-1.5">
+                      <Clock className="h-3.5 w-3.5 text-muted-foreground" /> Duração (min)
+                    </Label>
+                    <Input
+                      id="svc-dur"
+                      type="number"
+                      min="5"
+                      step="5"
+                      placeholder="30"
+                      value={serviceDuration}
+                      onChange={(e) => setServiceDuration(e.target.value)}
+                      className="h-11"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={skipToNext}
+                    className="flex-1 h-12 rounded-xl text-sm font-medium"
+                  >
+                    Pular por agora
+                  </Button>
+                  <Button
+                    onClick={handleCreateService}
+                    disabled={loading || !serviceName.trim()}
+                    className="flex-1 h-12 rounded-xl text-sm font-semibold gap-2 shadow-md shadow-primary/10"
+                  >
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Salvar</>}
+                  </Button>
                 </div>
               </div>
-            </motion.div>
+            </StepCard>
+          )}
 
-            <motion.h1
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3"
-            >
-              Tudo pronto!
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="text-muted-foreground text-sm leading-relaxed mb-2"
-            >
-              <span className="font-semibold text-foreground">{barbershopName}</span> foi criada com sucesso.
-            </motion.p>
-            <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="text-muted-foreground/60 text-sm mb-8"
-            >
-              Próximo passo: configurar seus serviços e profissionais.
-            </motion.p>
+          {/* ─────────── STEP 3: Client ─────────── */}
+          {currentStep === 3 && (
+            <StepCard title="Cadastre seu primeiro cliente" subtitle="Você pode importar mais clientes depois">
+              <div className="space-y-5">
+                <div className="space-y-1.5">
+                  <Label htmlFor="cli-name" className="text-sm font-medium">
+                    Nome do cliente <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="cli-name"
+                    placeholder="Ex: João Silva"
+                    value={clientName}
+                    onChange={(e) => { setClientName(e.target.value); clearError(); }}
+                    autoFocus
+                    className="h-11"
+                  />
+                </div>
 
-            {/* Success checklist preview */}
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-4 mb-8 text-left max-w-xs mx-auto"
-            >
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Próximos passos</p>
-              <div className="space-y-2.5">
-                {["Adicionar serviços", "Cadastrar profissionais", "Definir horários"].map((step, i) => (
-                  <div key={step} className="flex items-center gap-2.5">
-                    <div className="flex h-5 w-5 items-center justify-center rounded-full border border-border/60 text-muted-foreground/40">
-                      <span className="text-[10px] font-medium">{i + 1}</span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">{step}</span>
-                  </div>
-                ))}
+                <div className="space-y-1.5">
+                  <Label htmlFor="cli-phone" className="text-sm font-medium">Telefone do cliente</Label>
+                  <Input
+                    id="cli-phone"
+                    placeholder="(11) 99999-0000"
+                    value={clientPhone}
+                    onChange={(e) => setClientPhone(formatPhone(e.target.value))}
+                    className="h-11"
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={skipToNext}
+                    className="flex-1 h-12 rounded-xl text-sm font-medium"
+                  >
+                    Pular por agora
+                  </Button>
+                  <Button
+                    onClick={handleCreateClient}
+                    disabled={loading || !clientName.trim()}
+                    className="flex-1 h-12 rounded-xl text-sm font-semibold gap-2 shadow-md shadow-primary/10"
+                  >
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Salvar</>}
+                  </Button>
+                </div>
               </div>
-            </motion.div>
+            </StepCard>
+          )}
 
+          {/* ─────────── STEP 4: Ready ─────────── */}
+          {currentStep === 4 && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 }}
-              className="flex items-center justify-center gap-2 text-xs text-muted-foreground/50"
+              key="ready"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full max-w-md mx-auto text-center"
             >
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Preparando seu painel...
-            </motion.div>
-          </motion.div>
-        ) : (
-          /* ──── Form State ──── */
-          <motion.div
-            key="form"
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full max-w-lg relative z-10"
-          >
-            {/* Progress Steps */}
-            <div className="flex items-center justify-center gap-2 mb-8">
-              {STEPS.map((step, i) => (
-                <div key={step.label} className="flex items-center gap-2">
-                  <div className="flex items-center gap-1.5">
-                    <div className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${
-                      step.done
-                        ? "bg-primary text-primary-foreground"
-                        : step.active
-                          ? "bg-primary/15 text-primary border border-primary/30"
-                          : "bg-muted text-muted-foreground/40"
-                    }`}>
-                      {step.done ? <CheckCircle2 className="h-3.5 w-3.5" /> : i + 1}
-                    </div>
-                    <span className={`text-xs font-medium hidden sm:inline ${
-                      step.active ? "text-foreground" : step.done ? "text-muted-foreground" : "text-muted-foreground/40"
-                    }`}>
-                      {step.label}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", delay: 0.15, stiffness: 180, damping: 14 }}
+                className="mx-auto mb-6 relative"
+              >
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <motion.div
+                    animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.08, 0.3] }}
+                    transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                    className="w-28 h-28 rounded-full bg-primary/20 blur-xl"
+                  />
+                </div>
+                <div className="relative flex h-20 w-20 mx-auto items-center justify-center rounded-2xl bg-primary/10 border border-primary/20">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/25">
+                    <PartyPopper className="h-7 w-7 text-primary-foreground" />
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.h1
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2"
+              >
+                Tudo pronto! 🎉
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="text-muted-foreground text-sm mb-8"
+              >
+                <span className="font-semibold text-foreground">{barbershopName}</span> está configurada e pronta para receber agendamentos.
+              </motion.p>
+
+              {/* Summary */}
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-5 mb-8 text-left max-w-xs mx-auto space-y-3"
+              >
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Resumo da configuração</p>
+                {[
+                  { label: "Conta criada", done: true },
+                  { label: "Barbearia configurada", done: true },
+                  { label: "Serviço cadastrado", done: !!serviceName },
+                  { label: "Cliente cadastrado", done: !!clientName },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center gap-2.5">
+                    {item.done ? (
+                      <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                    ) : (
+                      <div className="h-4 w-4 rounded-full border border-border/60 shrink-0" />
+                    )}
+                    <span className={`text-sm ${item.done ? "text-foreground" : "text-muted-foreground/60"}`}>
+                      {item.label}
                     </span>
                   </div>
-                  {i < STEPS.length - 1 && (
-                    <div className={`w-8 sm:w-12 h-px ${step.done ? "bg-primary/40" : "bg-border/50"}`} />
-                  )}
-                </div>
-              ))}
-            </div>
+                ))}
+              </motion.div>
 
-            {/* Header */}
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 mb-5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-sm shadow-primary/20">
-                  <Scissors className="h-4.5 w-4.5 text-primary-foreground" />
-                </div>
-                <span className="text-lg font-bold tracking-tight">CutFlow</span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">
-                Configure sua barbearia
-              </h1>
-              <p className="text-muted-foreground text-sm max-w-sm mx-auto leading-relaxed">
-                Essas informações serão exibidas na sua página de agendamento. Você pode alterar tudo depois.
-              </p>
-            </div>
-
-            {/* Card */}
-            <div className="rounded-2xl border border-border/80 bg-card p-6 sm:p-8 shadow-xl shadow-black/5">
-              <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-                {/* Error banner */}
-                <AnimatePresence>
-                  {formError && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                        <div className="flex items-start gap-3">
-                          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                          <span>{formError}</span>
-                        </div>
-                        {technicalError ? (
-                          <p className="mt-2 text-xs text-destructive/80 break-all">
-                            Detalhe técnico: {technicalError}
-                          </p>
-                        ) : null}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* ── Section: Informações do negócio ── */}
-                <fieldset className="space-y-5">
-                  <div className="flex items-center gap-2">
-                    <Store className="h-4 w-4 text-primary/60" />
-                    <legend className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Informações do negócio
-                    </legend>
-                  </div>
-
-                  {/* Name */}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="name" className="text-sm font-medium">
-                      Nome da barbearia <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="name"
-                      placeholder="Ex: Barbearia Premium"
-                      value={barbershopName}
-                      onChange={(e) => {
-                        setBarbershopName(e.target.value);
-                        clearFieldError("name");
-                      }}
-                      required
-                      autoFocus
-                      autoComplete="organization"
-                      aria-invalid={!!fieldErrors.name}
-                      className={`h-11 transition-all focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.08)] ${
-                        fieldErrors.name ? "border-destructive/50" : ""
-                      }`}
-                    />
-                    {fieldErrors.name ? (
-                      <p className="text-xs text-destructive flex items-center gap-1">
-                        <AlertCircle className="h-3 w-3" /> {fieldErrors.name}
-                      </p>
-                    ) : barbershopName.trim() && slug ? (
-                      <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-[11px] text-muted-foreground/50 flex items-center gap-1"
-                      >
-                        <Globe className="h-3 w-3" />
-                        cutflow.app/b/{slug}
-                      </motion.p>
-                    ) : (
-                      <p className="text-[11px] text-muted-foreground/50">
-                        Será exibido na sua página de agendamento
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Phone */}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="phone" className="text-sm font-medium">
-                      Telefone de contato
-                    </Label>
-                    <Input
-                      id="phone"
-                      placeholder="(11) 99999-0000"
-                      value={phone}
-                      onChange={(e) => {
-                        setPhone(formatPhone(e.target.value));
-                        clearFieldError("phone");
-                      }}
-                      autoComplete="tel"
-                      aria-invalid={!!fieldErrors.phone}
-                      className={`h-11 transition-all focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.08)] ${
-                        fieldErrors.phone ? "border-destructive/50" : ""
-                      }`}
-                    />
-                    {fieldErrors.phone && (
-                      <p className="text-xs text-destructive flex items-center gap-1">
-                        <AlertCircle className="h-3 w-3" /> {fieldErrors.phone}
-                      </p>
-                    )}
-                  </div>
-                </fieldset>
-
-                {/* Divider */}
-                <div className="border-t border-border/40" />
-
-                {/* ── Section: Localização ── */}
-                <fieldset className="space-y-5">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-primary/60" />
-                    <legend className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Localização
-                    </legend>
-                  </div>
-
-                  {/* Address */}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="address" className="text-sm font-medium">
-                      Endereço
-                    </Label>
-                    <Input
-                      id="address"
-                      placeholder="Rua das Palmeiras, 123 — Centro, São Paulo"
-                      value={address}
-                      onChange={(e) => {
-                        setAddress(e.target.value);
-                        clearFieldError("address");
-                      }}
-                      autoComplete="street-address"
-                      aria-invalid={!!fieldErrors.address}
-                      className={`h-11 transition-all focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.08)] ${
-                        fieldErrors.address ? "border-destructive/50" : ""
-                      }`}
-                    />
-                    {fieldErrors.address ? (
-                      <p className="text-xs text-destructive flex items-center gap-1">
-                        <AlertCircle className="h-3 w-3" /> {fieldErrors.address}
-                      </p>
-                    ) : (
-                      <p className="text-[11px] text-muted-foreground/50">
-                        Seus clientes verão isso ao agendar
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Complement */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-baseline gap-2">
-                      <Label htmlFor="complement" className="text-sm font-medium">
-                        Complemento
-                      </Label>
-                      <span className="text-[10px] text-muted-foreground/40 font-medium uppercase tracking-wide rounded-full bg-muted/50 px-2 py-0.5">
-                        opcional
-                      </span>
-                    </div>
-                    <Input
-                      id="complement"
-                      placeholder="Sala 12, 2º andar, Bloco B"
-                      value={addressComplement}
-                      onChange={(e) => {
-                        setAddressComplement(e.target.value);
-                        clearFieldError("addressComplement");
-                      }}
-                      aria-invalid={!!fieldErrors.addressComplement}
-                      className={`h-11 transition-all focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.08)] ${
-                        fieldErrors.addressComplement ? "border-destructive/50" : ""
-                      }`}
-                    />
-                    {fieldErrors.addressComplement && (
-                      <p className="text-xs text-destructive flex items-center gap-1">
-                        <AlertCircle className="h-3 w-3" /> {fieldErrors.addressComplement}
-                      </p>
-                    )}
-                  </div>
-                </fieldset>
-
-                {/* Submit */}
-                <div className="pt-2">
-                  <Button
-                    type="submit"
-                    className="w-full h-12 text-sm font-semibold rounded-xl gap-2 shadow-md shadow-primary/10 transition-all hover:shadow-lg hover:shadow-primary/15"
-                    disabled={isSubmitDisabled}
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Criando sua barbearia...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-4 w-4" />
-                        Criar minha barbearia
-                        <ArrowRight className="h-4 w-4" />
-                      </>
-                    )}
-                  </Button>
-                  <p className="text-[11px] text-muted-foreground/40 text-center mt-3">
-                    Leva menos de 30 segundos. Você pode editar tudo depois.
-                  </p>
-                </div>
-              </form>
-            </div>
-
-            {/* Trust bar */}
-            <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {TRUST_ITEMS.map((item) => (
-                <div
-                  key={item.label}
-                  className="flex items-center gap-2 rounded-lg border border-border/30 bg-card/40 backdrop-blur-sm px-3 py-2.5"
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+              >
+                <Button
+                  size="lg"
+                  onClick={goToDashboard}
+                  className="w-full max-w-xs h-12 text-sm font-semibold rounded-xl gap-2 shadow-md shadow-primary/10"
                 >
-                  <item.icon className="h-3.5 w-3.5 text-primary/50 shrink-0" />
-                  <span className="text-[11px] font-medium text-muted-foreground/60 leading-tight">{item.label}</span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                  Acessar meu painel <ArrowRight className="h-4 w-4" />
+                </Button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
