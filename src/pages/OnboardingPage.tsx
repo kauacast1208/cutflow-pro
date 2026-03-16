@@ -69,6 +69,7 @@ export default function OnboardingPage() {
   const handleCreateBarbershop = async () => {
     if (!user) return;
     clearError();
+    console.info("[Onboarding] Step 1 START — creating barbershop", { userId: user.id, name: barbershopName });
 
     const parsed = onboardingBarbershopSchema.safeParse({
       name: barbershopName,
@@ -82,7 +83,9 @@ export default function OnboardingPage() {
 
     setLoading(true);
     try {
+      console.info("[Onboarding] Ensuring user setup...");
       await ensureCurrentUserSetup(user.user_metadata?.full_name || user.email?.split("@")[0] || null);
+      console.info("[Onboarding] User setup OK");
 
       let finalSlug = slugify(parsed.data.name) || `barbearia-${Math.random().toString(36).slice(2, 7)}`;
       const { data: existing } = await supabase
@@ -90,6 +93,7 @@ export default function OnboardingPage() {
       if (existing) finalSlug = `${finalSlug}-${Math.random().toString(36).slice(2, 5)}`;
 
       const payload = buildBarbershopInsert(parsed.data, user.id, finalSlug);
+      console.info("[Onboarding] Inserting barbershop with slug:", finalSlug);
       const { data: created, error } = await supabase
         .from("barbershops").insert(payload).select("*").maybeSingle();
 
@@ -97,11 +101,13 @@ export default function OnboardingPage() {
       if (created) {
         setBarbershop(created);
         setCreatedBarbershopId(created.id);
+        console.info("[Onboarding] Step 1 DONE — barbershop created:", created.id);
       }
       await refresh();
       setCurrentStep(2);
     } catch (error) {
       const message = getBarbershopErrorMessage(error, "Não foi possível criar sua barbearia.");
+      console.error("[Onboarding] Step 1 FAILED", { userId: user.id, error });
       setFormError(message);
       toast({ title: "Erro", description: message, variant: "destructive" });
     } finally {
@@ -118,6 +124,7 @@ export default function OnboardingPage() {
     }
     clearError();
     setLoading(true);
+    console.info("[Onboarding] Step 2 START — creating service", { barbershopId: createdBarbershopId, name: serviceName });
     try {
       const { error } = await supabase.from("services").insert({
         barbershop_id: createdBarbershopId,
@@ -127,8 +134,10 @@ export default function OnboardingPage() {
         active: true,
       });
       if (error) throw error;
+      console.info("[Onboarding] Step 2 DONE — service created");
       setCurrentStep(3);
     } catch (error) {
+      console.error("[Onboarding] Step 2 FAILED", error);
       setFormError("Não foi possível criar o serviço. Tente novamente.");
     } finally {
       setLoading(false);
@@ -144,6 +153,7 @@ export default function OnboardingPage() {
     }
     clearError();
     setLoading(true);
+    console.info("[Onboarding] Step 3 START — creating client", { barbershopId: createdBarbershopId, name: clientName });
     try {
       const { error } = await supabase.from("clients").insert({
         barbershop_id: createdBarbershopId,
@@ -151,8 +161,10 @@ export default function OnboardingPage() {
         phone: clientPhone.trim() || null,
       });
       if (error) throw error;
+      console.info("[Onboarding] Step 3 DONE — client created");
       setCurrentStep(4);
     } catch (error) {
+      console.error("[Onboarding] Step 3 FAILED", error);
       setFormError("Não foi possível cadastrar o cliente. Tente novamente.");
     } finally {
       setLoading(false);

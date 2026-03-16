@@ -12,6 +12,7 @@ import SignupPage from "./pages/SignupPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import OnboardingPage from "./pages/OnboardingPage";
+import { OnboardingErrorBoundary } from "./components/OnboardingErrorBoundary";
 import DemoPage from "./pages/DemoPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
 import CheckoutPage from "./pages/CheckoutPage";
@@ -145,10 +146,10 @@ const AppRoutes = () => (
     <Route path="/faq" element={<FAQPage />} />
     <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
     <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
-    <Route path="/auth/callback" element={<AuthCallbackPage />} />
+    <Route path="/auth/callback" element={<OnboardingErrorBoundary><AuthCallbackPage /></OnboardingErrorBoundary>} />
     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
     <Route path="/reset-password" element={<ResetPasswordPage />} />
-    <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
+    <Route path="/onboarding" element={<ProtectedRoute><OnboardingErrorBoundary><OnboardingPage /></OnboardingErrorBoundary></ProtectedRoute>} />
     <Route path="/demo" element={<DemoPage />} />
     <Route path="/checkout" element={<CheckoutPage />} />
     <Route path="/trial-expired" element={<ProtectedRoute><TrialExpiredPage /></ProtectedRoute>} />
