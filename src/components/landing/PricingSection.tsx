@@ -16,14 +16,18 @@ import {
   RefreshCw,
   ShieldCheck,
   Globe,
+  Headphones,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 
+type Billing = "monthly" | "yearly";
+
 interface PlanDef {
   slug: string;
   label: string;
-  price: number | null;
+  monthly: number | null;
+  yearly: number | null;
   description: string;
   features: string[];
   cta: string;
@@ -38,7 +42,8 @@ const plans: PlanDef[] = [
   {
     slug: "starter",
     label: "Starter",
-    price: 29,
+    monthly: 49,
+    yearly: 39,
     description: "Para barbeiros autônomos que querem se organizar.",
     icon: <Zap className="h-5 w-5" />,
     features: [
@@ -58,7 +63,8 @@ const plans: PlanDef[] = [
   {
     slug: "pro",
     label: "Pro",
-    price: 79,
+    monthly: 79,
+    yearly: 63,
     popular: true,
     description: "Para barbearias em crescimento que precisam de mais controle.",
     icon: <Star className="h-5 w-5" />,
@@ -81,7 +87,8 @@ const plans: PlanDef[] = [
   {
     slug: "business",
     label: "Business",
-    price: 149,
+    monthly: 159,
+    yearly: 127,
     description: "Para operações profissionais que precisam de escala.",
     icon: <Sparkles className="h-5 w-5" />,
     features: [
@@ -101,7 +108,8 @@ const plans: PlanDef[] = [
   {
     slug: "franquias",
     label: "Franquias",
-    price: 349,
+    monthly: 397,
+    yearly: 317,
     description: "Para redes com múltiplas unidades.",
     icon: <Building2 className="h-5 w-5" />,
     features: [
@@ -121,7 +129,8 @@ const plans: PlanDef[] = [
   {
     slug: "enterprise",
     label: "Enterprise",
-    price: null,
+    monthly: null,
+    yearly: null,
     description: "Para operações de grande porte com necessidades personalizadas.",
     icon: <Crown className="h-5 w-5" />,
     features: [
@@ -137,35 +146,23 @@ const plans: PlanDef[] = [
     cta: "Falar com vendas",
     ctaStyle: "outline",
     externalLink:
-      "https://wa.me/5553999481954?text=Olá! Tenho interesse no plano Enterprise do CutFlow para minha barbearia e gostaria de entender como funciona a solução personalizada.",
+      "https://wa.me/5553999481954?text=Olá! Tenho interesse no plano Enterprise do CutFlow para minha barbearia e gostaria de conversar sobre uma solução personalizada.",
   },
 ];
 
 const includedInAll = [
   { icon: <Lock className="h-4 w-4" />, label: "SSL incluso" },
   { icon: <ShieldCheck className="h-4 w-4" />, label: "Backup diário" },
-  { icon: <RefreshCw className="h-4 w-4" />, label: "Atualizações automáticas" },
   { icon: <Shield className="h-4 w-4" />, label: "Segurança avançada" },
   { icon: <Globe className="h-4 w-4" />, label: "Login com Google" },
+  { icon: <Headphones className="h-4 w-4" />, label: "Suporte incluído" },
 ];
 
 const faqs = [
-  {
-    q: "Posso cancelar a qualquer momento?",
-    a: "Sim. Sem fidelidade, sem multa. Cancele quando quiser diretamente pelo painel.",
-  },
-  {
-    q: "O teste gratuito precisa de cartão?",
-    a: "Não. Você começa o trial de 7 dias sem informar dados de pagamento.",
-  },
-  {
-    q: "Posso trocar de plano depois?",
-    a: "Sim. Faça upgrade ou downgrade a qualquer momento. A cobrança é ajustada proporcionalmente.",
-  },
-  {
-    q: "O que acontece quando o trial acaba?",
-    a: "Você escolhe um plano para continuar. Seus dados ficam salvos por 30 dias caso precise de mais tempo.",
-  },
+  { q: "Posso cancelar a qualquer momento?", a: "Sim. Sem fidelidade, sem multa. Cancele quando quiser diretamente pelo painel." },
+  { q: "O teste gratuito precisa de cartão?", a: "Não. Você começa o trial de 7 dias sem informar dados de pagamento." },
+  { q: "Posso trocar de plano depois?", a: "Sim. Faça upgrade ou downgrade a qualquer momento. A cobrança é ajustada proporcionalmente." },
+  { q: "O que acontece quando o trial acaba?", a: "Você escolhe um plano para continuar. Seus dados ficam salvos por 30 dias caso precise de mais tempo." },
 ];
 
 function FAQItem({ q, a }: { q: string; a: string }) {
@@ -177,20 +174,16 @@ function FAQItem({ q, a }: { q: string; a: string }) {
     >
       <div className="flex items-center justify-between gap-4">
         <span className="text-sm font-medium">{q}</span>
-        {open ? (
-          <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" />
-        ) : (
-          <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
-        )}
+        {open ? <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />}
       </div>
-      {open && (
-        <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{a}</p>
-      )}
+      {open && <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{a}</p>}
     </button>
   );
 }
 
 export function PricingSection() {
+  const [billing, setBilling] = useState<Billing>("monthly");
+
   return (
     <section id="pricing" className="section-padding bg-secondary/30">
       <div className="max-w-7xl mx-auto">
@@ -218,23 +211,48 @@ export function PricingSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.05 }}
-            className="text-muted-foreground text-[15px] sm:text-lg max-w-lg mx-auto"
+            className="text-muted-foreground text-[15px] sm:text-lg max-w-lg mx-auto mb-8"
           >
             Comece grátis. Sem fidelidade, sem taxa escondida.
           </motion.p>
+
+          {/* Billing toggle */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-card/80 backdrop-blur-sm p-1"
+          >
+            <button
+              onClick={() => setBilling("monthly")}
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${billing === "monthly" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Mensal
+            </button>
+            <button
+              onClick={() => setBilling("yearly")}
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${billing === "yearly" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Anual
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-semibold">
+                -20%
+              </Badge>
+            </button>
+          </motion.div>
         </div>
 
         {/* Top 3 plans */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 max-w-5xl mx-auto items-start">
           {plans.slice(0, 3).map((plan, i) => (
-            <PlanCard key={plan.slug} plan={plan} index={i} />
+            <PlanCard key={plan.slug} plan={plan} billing={billing} index={i} />
           ))}
         </div>
 
         {/* Franchise + Enterprise */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 lg:gap-6 max-w-5xl mx-auto mt-5 sm:mt-6">
           {plans.slice(3).map((plan, i) => (
-            <PlanCard key={plan.slug} plan={plan} index={i + 3} wide />
+            <PlanCard key={plan.slug} plan={plan} billing={billing} index={i + 3} wide />
           ))}
         </div>
 
@@ -249,10 +267,7 @@ export function PricingSection() {
           <p className="text-sm font-semibold mb-4">Todos os planos incluem:</p>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
             {includedInAll.map((item) => (
-              <div
-                key={item.label}
-                className="flex items-center gap-2 text-xs sm:text-[13px] text-muted-foreground"
-              >
+              <div key={item.label} className="flex items-center gap-2 text-xs sm:text-[13px] text-muted-foreground">
                 <span className="text-primary/60">{item.icon}</span>
                 <span>{item.label}</span>
               </div>
@@ -268,22 +283,10 @@ export function PricingSection() {
           transition={{ delay: 0.3 }}
           className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 mt-8 sm:mt-10 text-xs sm:text-[13px] text-muted-foreground"
         >
-          <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-primary/60" />
-            <span>Pagamento seguro via Stripe</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Check className="h-4 w-4 text-primary/60" />
-            <span>7 dias grátis</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Check className="h-4 w-4 text-primary/60" />
-            <span>Sem taxa escondida</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Check className="h-4 w-4 text-primary/60" />
-            <span>Cancele quando quiser</span>
-          </div>
+          <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-primary/60" /><span>Pagamento seguro via Stripe</span></div>
+          <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary/60" /><span>7 dias grátis</span></div>
+          <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary/60" /><span>Sem taxa escondida</span></div>
+          <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary/60" /><span>Cancele quando quiser</span></div>
         </motion.div>
 
         {/* FAQ */}
@@ -294,9 +297,7 @@ export function PricingSection() {
           transition={{ delay: 0.2 }}
           className="max-w-2xl mx-auto mt-16 sm:mt-20"
         >
-          <h3 className="text-xl sm:text-2xl font-bold text-center mb-6">
-            Perguntas frequentes
-          </h3>
+          <h3 className="text-xl sm:text-2xl font-bold text-center mb-6">Perguntas frequentes</h3>
           <div className="space-y-3">
             {faqs.map((f) => (
               <FAQItem key={f.q} q={f.q} a={f.a} />
@@ -308,17 +309,11 @@ export function PricingSection() {
   );
 }
 
-function PlanCard({
-  plan,
-  index,
-  wide,
-}: {
-  plan: PlanDef;
-  index: number;
-  wide?: boolean;
-}) {
+function PlanCard({ plan, billing, index, wide }: { plan: PlanDef; billing: Billing; index: number; wide?: boolean }) {
   const isPopular = plan.popular;
-  const isCustom = plan.price === null;
+  const price = billing === "monthly" ? plan.monthly : plan.yearly;
+  const isCustom = price === null;
+  const savings = plan.monthly && plan.yearly ? (plan.monthly - plan.yearly) * 12 : 0;
 
   return (
     <motion.div
@@ -345,20 +340,12 @@ function PlanCard({
       <div className={`relative ${wide ? "md:flex-1" : ""}`}>
         <div className="mb-4 sm:mb-5">
           <div className="flex items-center gap-2.5 mb-2">
-            <div
-              className={`h-9 w-9 rounded-lg flex items-center justify-center ${
-                isPopular ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
-              }`}
-            >
+            <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${isPopular ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
               {plan.icon}
             </div>
-            <h3 className={`font-bold ${isPopular ? "text-xl sm:text-2xl" : "text-lg sm:text-xl"}`}>
-              {plan.label}
-            </h3>
+            <h3 className={`font-bold ${isPopular ? "text-xl sm:text-2xl" : "text-lg sm:text-xl"}`}>{plan.label}</h3>
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            {plan.description}
-          </p>
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{plan.description}</p>
         </div>
 
         <div className="mb-5 sm:mb-6">
@@ -371,14 +358,18 @@ function PlanCard({
             <div>
               <div className="flex items-baseline gap-1">
                 <span className="text-xs sm:text-sm text-muted-foreground">R$</span>
-                <span className={`font-extrabold tracking-tight ${isPopular ? "text-4xl sm:text-5xl" : "text-3xl sm:text-4xl"}`}>
-                  {plan.price}
-                </span>
+                <span className={`font-extrabold tracking-tight ${isPopular ? "text-4xl sm:text-5xl" : "text-3xl sm:text-4xl"}`}>{price}</span>
                 <span className="text-muted-foreground text-xs sm:text-sm">/mês</span>
               </div>
-              <p className="text-[11px] sm:text-xs text-primary mt-1.5 font-medium">
-                7 dias grátis · Sem cobrança hoje
-              </p>
+              {billing === "yearly" && savings > 0 ? (
+                <p className="text-[11px] sm:text-xs text-primary mt-1.5 font-medium">
+                  Economia de R${savings}/ano
+                </p>
+              ) : (
+                <p className="text-[11px] sm:text-xs text-primary mt-1.5 font-medium">
+                  7 dias grátis · Sem cobrança hoje
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -396,10 +387,7 @@ function PlanCard({
 
         {plan.externalLink ? (
           <a href={plan.externalLink} target="_blank" rel="noopener noreferrer" className="block mt-auto">
-            <Button
-              variant={plan.ctaStyle === "hero" ? "hero" : "outline"}
-              className={`w-full rounded-xl gap-2 ${isPopular ? "h-12 sm:h-13 text-[15px]" : "h-11 sm:h-12 text-sm"}`}
-            >
+            <Button variant="outline" className={`w-full rounded-xl gap-2 ${isPopular ? "h-12 sm:h-13 text-[15px]" : "h-11 sm:h-12 text-sm"}`}>
               <MessageSquare className="h-4 w-4" />
               {plan.cta}
             </Button>
