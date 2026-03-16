@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
-import { Scissors, ArrowRight, Loader2, Sparkles } from "lucide-react";
+import { Scissors, ArrowRight, Loader2, Sparkles, MapPin, Phone, Store, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTenant } from "@/hooks/useTenant";
 import { useToast } from "@/hooks/use-toast";
+import { motion } from "framer-motion";
 
 function slugify(text: string) {
   return text
@@ -35,14 +36,13 @@ export default function OnboardingPage() {
     setLoading(true);
 
     let slug = slugify(barbershopName);
-    
-    // Check uniqueness, append short suffix only if needed
+
     const { data: existing } = await supabase
       .from("barbershops")
       .select("id")
       .eq("slug", slug)
       .maybeSingle();
-    
+
     if (existing) {
       slug = slug + "-" + Math.random().toString(36).slice(2, 5);
     }
@@ -62,16 +62,19 @@ export default function OnboardingPage() {
       return;
     }
 
-    // Refresh tenant context so TenantGuard picks up the new barbershop
     await refresh();
-
     toast({ title: "Barbearia criada!", description: "Sua barbearia está pronta para uso." });
     navigate("/dashboard");
   };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
-      <div className="w-full max-w-lg">
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-lg"
+      >
         <div className="text-center mb-8">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <Sparkles className="h-8 w-8 text-primary" />
@@ -87,56 +90,98 @@ export default function OnboardingPage() {
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-8 shadow-card">
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Name */}
             <div className="space-y-2">
               <Label htmlFor="name">Nome da barbearia *</Label>
-              <Input
-                id="name"
-                placeholder="Ex: Barbearia Premium"
-                value={barbershopName}
-                onChange={(e) => setBarbershopName(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <Store className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  id="name"
+                  placeholder="Ex: Barbearia Premium"
+                  value={barbershopName}
+                  onChange={(e) => setBarbershopName(e.target.value)}
+                  required
+                  className="pl-9 transition-shadow focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.1)]"
+                />
+              </div>
             </div>
 
+            {/* Phone */}
             <div className="space-y-2">
               <Label htmlFor="phone">Telefone</Label>
-              <Input
-                id="phone"
-                placeholder="(11) 99999-0000"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  id="phone"
+                  placeholder="(11) 99999-0000"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  autoComplete="tel"
+                  className="pl-9 transition-shadow focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.1)]"
+                />
+              </div>
             </div>
 
+            {/* Address */}
             <div className="space-y-2">
               <Label htmlFor="address">Endereço</Label>
-              <Input
-                id="address"
-                placeholder="Rua, número - Cidade"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-              />
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  id="address"
+                  placeholder="Rua, número - Cidade"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  autoComplete="street-address"
+                  className="pl-9 transition-shadow focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.1)]"
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground/60 leading-tight">
+                Seu endereço aparece na página de agendamento.
+              </p>
             </div>
 
+            {/* Complement */}
             <div className="space-y-2">
               <Label htmlFor="complement">Complemento (opcional)</Label>
-              <Input
-                id="complement"
-                placeholder="Apartamento, sala, bloco ou referência"
-                value={addressComplement}
-                onChange={(e) => setAddressComplement(e.target.value)}
-              />
+              <div className="relative">
+                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  id="complement"
+                  placeholder="Apartamento, sala, bloco ou referência"
+                  value={addressComplement}
+                  onChange={(e) => setAddressComplement(e.target.value)}
+                  className="pl-9 transition-shadow focus-visible:ring-primary/40 focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.1)]"
+                />
+              </div>
             </div>
 
-            <Button type="submit" className="w-full mt-2" disabled={loading || !barbershopName.trim()}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Criar minha barbearia
-              {!loading && <ArrowRight className="h-4 w-4 ml-1" />}
-            </Button>
+            <motion.div
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            >
+              <Button
+                type="submit"
+                className="w-full mt-2 h-11 text-sm font-semibold btn-glow"
+                disabled={loading || !barbershopName.trim()}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Criando...
+                  </>
+                ) : (
+                  <>
+                    Criar minha barbearia
+                    <ArrowRight className="h-4 w-4 ml-1" />
+                  </>
+                )}
+              </Button>
+            </motion.div>
           </form>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
