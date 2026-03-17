@@ -349,7 +349,7 @@ function StarterCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
         {billing === "yearly" && savings > 0 ? (
           <p className="text-[11px] text-primary mt-1 font-medium">Economia de R${savings}/ano</p>
         ) : (
-          <p className="text-[11px] text-primary mt-1 font-medium">7 dias grátis</p>
+          <p className="text-[11px] text-primary mt-1 font-medium">15 dias grátis</p>
         )}
       </div>
 
