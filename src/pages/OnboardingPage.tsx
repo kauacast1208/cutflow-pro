@@ -438,7 +438,7 @@ export default function OnboardingPage() {
                   {/* Reserved height for slug helper — prevents layout shift */}
                   <div className="h-4">
                     {barbershopName.trim() && slug ? (
-                      <p className="text-[11px] text-muted-foreground/50 flex items-center gap-1 animate-fade-in">
+                      <p className="text-[11px] text-muted-foreground/50 flex items-center gap-1 transition-opacity duration-200">
                         <Globe className="h-3 w-3" /> cutflow.app/b/{slug}
                       </p>
                     ) : null}
