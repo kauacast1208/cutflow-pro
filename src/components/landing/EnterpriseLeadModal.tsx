@@ -326,10 +326,25 @@ Quero entender SLA, integrações e solução sob medida.`;
                   )}
                 </Button>
 
+                <a
+                  href={whatsAppUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full"
+                >
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full rounded-xl h-10 text-xs text-muted-foreground gap-1.5 hover:text-foreground"
+                  >
+                    <MessageSquare className="h-3.5 w-3.5" />
+                    Falar direto no WhatsApp
+                  </Button>
+                </a>
+
                 <p className="text-center text-[10px] text-muted-foreground">
                   Seus dados estão seguros. Sem spam, prometemos.
                 </p>
-              </form>
             </motion.div>
           ) : (
             <motion.div
