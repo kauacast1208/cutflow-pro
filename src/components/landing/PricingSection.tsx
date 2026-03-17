@@ -186,7 +186,7 @@ const includedInAll = [
 
 const faqs = [
   { q: "Posso cancelar a qualquer momento?", a: "Sim. Sem fidelidade, sem multa. Cancele quando quiser diretamente pelo painel." },
-  { q: "O teste gratuito precisa de cartão?", a: "Não. Você começa o trial de 7 dias sem informar dados de pagamento." },
+  { q: "O teste gratuito precisa de cartão?", a: "Não. Você começa o trial de 15 dias sem informar dados de pagamento." },
   { q: "Posso trocar de plano depois?", a: "Sim. Faça upgrade ou downgrade a qualquer momento. A cobrança é ajustada proporcionalmente." },
   { q: "O que acontece quando o trial acaba?", a: "Você escolhe um plano para continuar. Seus dados ficam salvos por 30 dias caso precise de mais tempo." },
 ];
