@@ -533,6 +533,7 @@ function EnterpriseCard({ plan }: { plan: PlanDef }) {
           {plan.cta}
         </Button>
       </a>
+      <p className="text-center text-[10px] text-muted-foreground mt-2.5">Vamos montar a solução ideal para sua operação</p>
     </motion.div>
   );
 }
