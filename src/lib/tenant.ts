@@ -1,147 +1,132 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables } from "@/integrations/supabase/types";
+import { isMissingRelationError, isNoRowsError } from "@/lib/supabaseErrors";
 
-export type TenantRole = "owner" | "admin" | "professional" | "receptionist";
-export type RawUserRole = TenantRole | "master" | null;
-export type TenantProfile = Tables<"profiles">;
-export type TenantBarbershop = Tables<"barbershops">;
+type TenantRole = "owner" | "admin" | "professional" | "receptionist";
+type TenantSubscriptionStatus = "trial" | "active" | "past_due" | "cancelled" | "expired";
+type TenantSubscriptionPlan = "starter" | "pro" | "premium";
 
-function getErrorStatus(error: unknown) {
-  return typeof error === "object" && error && "status" in error && typeof error.status === "number"
-    ? error.status
-    : null;
+export interface DirectTenantContext {
+  onboardingRequired: boolean;
+  barbershopId: string | null;
+  role: TenantRole | null;
+  subscription: {
+    id: string;
+    plan: TenantSubscriptionPlan;
+    status: TenantSubscriptionStatus;
+    trialEndsAt: string | null;
+  } | null;
 }
 
-function getErrorCode(error: unknown) {
-  return typeof error === "object" && error && "code" in error && typeof error.code === "string"
-    ? error.code
-    : "";
-}
-
-function getErrorMessage(error: unknown) {
-  return typeof error === "object" && error && "message" in error && typeof error.message === "string"
-    ? error.message.toLowerCase()
-    : "";
-}
-
-export function isNoRowsError(error: unknown) {
-  const status = getErrorStatus(error);
-  const code = getErrorCode(error);
-  const message = getErrorMessage(error);
-
-  return (
-    status === 406 ||
-    code === "PGRST116" ||
-    message.includes("0 rows") ||
-    message.includes("no rows") ||
-    message.includes("json object requested")
-  );
-}
-
-export function normalizeTenantRole(role: RawUserRole | string | undefined): TenantRole {
-  if (role === "admin" || role === "professional" || role === "receptionist" || role === "owner") {
-    return role;
-  }
-
-  return "owner";
-}
-
-export function isMasterRole(role: RawUserRole | string | undefined) {
-  return role === "master";
-}
-
-export async function ensureCurrentUserSetup(fullName?: string | null) {
-  const { data, error } = await (supabase as any).rpc("ensure_current_user_setup", {
-    _full_name: fullName?.trim() || null,
-  });
-
-  if (error) throw error;
-
-  const row = Array.isArray(data) ? data[0] : data;
-
-  return {
-    profileId: row?.profile_id ?? null,
-    role: (row?.user_role as RawUserRole | undefined) ?? null,
-  };
-}
-
-export async function fetchUserRole(userId: string): Promise<RawUserRole> {
-  const { data, error } = await supabase.rpc("get_user_role", { _user_id: userId });
-
-  if (error) {
-    if (isNoRowsError(error)) return null;
-    throw error;
-  }
-
-  return typeof data === "string" ? (data as RawUserRole) : null;
-}
-
-export async function fetchTenantProfile(userId: string): Promise<TenantProfile | null> {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("user_id", userId)
-    .limit(1)
-    .maybeSingle();
-
-  if (error && !isNoRowsError(error)) throw error;
-
-  return data ?? null;
-}
-
-export async function fetchUserBarbershop(userId: string): Promise<TenantBarbershop | null> {
-  const { data: barbershopId, error: idError } = await supabase.rpc("get_user_barbershop_id", {
-    _user_id: userId,
-  });
-
-  if (idError) throw idError;
-  if (!barbershopId) return null;
-
-  const { data, error } = await supabase
+export async function findUserBarbershopId(userId: string) {
+  const { data: owned, error: ownedError } = await supabase
     .from("barbershops")
-    .select("*")
-    .eq("id", barbershopId)
-    .limit(1)
+    .select("id")
+    .eq("owner_id", userId)
     .maybeSingle();
 
-  if (error && !isNoRowsError(error)) throw error;
+  if (ownedError && !isNoRowsError(ownedError)) {
+    throw ownedError;
+  }
 
-  return data ?? null;
+  if (owned?.id) {
+    return owned.id;
+  }
+
+  const { data: professional, error: professionalError } = await supabase
+    .from("professionals")
+    .select("barbershop_id")
+    .eq("user_id", userId)
+    .eq("active", true)
+    .maybeSingle();
+
+  if (professionalError && !isNoRowsError(professionalError)) {
+    throw professionalError;
+  }
+
+  return professional?.barbershop_id ?? null;
 }
 
-export async function fetchTenantSnapshot(userId: string) {
-  const [profileResult, roleResult, barbershopResult] = await Promise.allSettled([
-    fetchTenantProfile(userId),
-    fetchUserRole(userId),
-    fetchUserBarbershop(userId),
-  ]);
+export async function findUserRoleForBarbershop(userId: string, barbershopId: string) {
+  const { data: roleRow, error: roleError } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("barbershop_id", barbershopId)
+    .maybeSingle();
 
-  if (profileResult.status === "rejected") {
-    console.warn("[Tenant] Profile lookup failed during snapshot", {
-      userId,
-      error: profileResult.reason,
-    });
+  if (roleError && !isMissingRelationError(roleError) && !isNoRowsError(roleError)) {
+    throw roleError;
   }
 
-  if (roleResult.status === "rejected") {
-    console.warn("[Tenant] Role lookup failed during snapshot", {
-      userId,
-      error: roleResult.reason,
-    });
+  if (roleRow?.role) {
+    return roleRow.role;
   }
 
-  if (barbershopResult.status === "rejected") {
-    throw barbershopResult.reason;
+  const { data: owned, error: ownedError } = await supabase
+    .from("barbershops")
+    .select("id")
+    .eq("id", barbershopId)
+    .eq("owner_id", userId)
+    .maybeSingle();
+
+  if (ownedError && !isNoRowsError(ownedError)) {
+    throw ownedError;
   }
 
-  const profile = profileResult.status === "fulfilled" ? profileResult.value : null;
-  const rawRole = roleResult.status === "fulfilled" ? roleResult.value : null;
-  const barbershop = barbershopResult.value;
+  if (owned?.id) {
+    return "owner";
+  }
+
+  const { data: professional, error: professionalError } = await supabase
+    .from("professionals")
+    .select("id")
+    .eq("barbershop_id", barbershopId)
+    .eq("user_id", userId)
+    .eq("active", true)
+    .maybeSingle();
+
+  if (professionalError && !isNoRowsError(professionalError)) {
+    throw professionalError;
+  }
+
+  return professional?.id ? "professional" : null;
+}
+
+export async function resolveTenantContextDirect(userId: string): Promise<DirectTenantContext> {
+  const barbershopId = await findUserBarbershopId(userId);
+
+  if (!barbershopId) {
+    return {
+      onboardingRequired: true,
+      barbershopId: null,
+      role: null,
+      subscription: null,
+    };
+  }
+
+  const role = (await findUserRoleForBarbershop(userId, barbershopId)) as TenantRole | null;
+
+  const { data: subscription, error: subscriptionError } = await supabase
+    .from("subscriptions")
+    .select("id, plan, status, trial_ends_at")
+    .eq("barbershop_id", barbershopId)
+    .maybeSingle();
+
+  if (subscriptionError && !isNoRowsError(subscriptionError) && !isMissingRelationError(subscriptionError)) {
+    throw subscriptionError;
+  }
 
   return {
-    profile,
-    role: normalizeTenantRole(rawRole),
-    rawRole,
-    barbershop,
+    onboardingRequired: false,
+    barbershopId,
+    role,
+    subscription: subscription?.id
+      ? {
+          id: subscription.id,
+          plan: subscription.plan as TenantSubscriptionPlan,
+          status: subscription.status as TenantSubscriptionStatus,
+          trialEndsAt: subscription.trial_ends_at,
+        }
+      : null,
   };
 }
