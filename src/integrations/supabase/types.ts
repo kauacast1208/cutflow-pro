@@ -507,6 +507,54 @@ export type Database = {
           },
         ]
       }
+      enterprise_leads: {
+        Row: {
+          barbers_count: number
+          city: string
+          created_at: string
+          id: string
+          main_challenge: string | null
+          monthly_revenue: string | null
+          name: string
+          notes: string | null
+          plan_interest: string
+          status: string
+          units_count: number
+          updated_at: string
+          whatsapp: string
+        }
+        Insert: {
+          barbers_count?: number
+          city: string
+          created_at?: string
+          id?: string
+          main_challenge?: string | null
+          monthly_revenue?: string | null
+          name: string
+          notes?: string | null
+          plan_interest: string
+          status?: string
+          units_count?: number
+          updated_at?: string
+          whatsapp: string
+        }
+        Update: {
+          barbers_count?: number
+          city?: string
+          created_at?: string
+          id?: string
+          main_challenge?: string | null
+          monthly_revenue?: string | null
+          name?: string
+          notes?: string | null
+          plan_interest?: string
+          status?: string
+          units_count?: number
+          updated_at?: string
+          whatsapp?: string
+        }
+        Relationships: []
+      }
       loyalty_programs: {
         Row: {
           barbershop_id: string
