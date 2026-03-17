@@ -27,7 +27,7 @@ export function FinalCTASection() {
             ferramenta profissional.
           </h2>
           <p className="text-primary-foreground/65 text-sm sm:text-base mb-7 sm:mb-8 max-w-md mx-auto leading-relaxed">
-            5 minutos para criar sua conta. 7 dias grátis. 1 cliente recuperado paga o sistema.
+            5 minutos para criar sua conta. 15 dias grátis. 1 cliente recuperado paga o sistema.
           </p>
           <Link to="/signup" className="block w-full sm:w-auto sm:inline-block">
             <Button
