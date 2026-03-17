@@ -345,7 +345,7 @@ Quero entender SLA, integrações e solução sob medida.`;
 
               <h3 className="text-xl sm:text-2xl font-bold mb-2">Obrigado!</h3>
               <p className="text-sm text-muted-foreground mb-8 max-w-xs">
-                Nossa equipe entrará em contato pelo WhatsApp em até 24h.
+                Nossa equipe entrará em contato em breve.
               </p>
 
               <div className="w-full space-y-3">
