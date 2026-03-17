@@ -277,7 +277,7 @@ export default function BillingPage() {
                           <span className="text-muted-foreground text-sm">/mês</span>
                         </div>
                         {!isCurrentActivePlan && (
-                          <p className="text-[11px] text-primary font-medium">7 dias grátis · Sem cobrança hoje</p>
+                          <p className="text-[11px] text-primary font-medium"><p className="text-[11px] text-primary font-medium">15 dias grátis · Sem cobrança hoje</p></p>
                         )}
                       </div>
 
@@ -355,7 +355,7 @@ export default function BillingPage() {
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary/60" />
-              <span>7 dias grátis</span>
+              <span>15 dias grátis</span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary/60" />

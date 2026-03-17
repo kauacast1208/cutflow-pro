@@ -27,7 +27,7 @@ export function CTASection() {
             ficar mais organizada em minutos.
           </h2>
           <p className="text-primary-foreground/65 text-sm sm:text-base mb-7 sm:mb-8 max-w-md mx-auto leading-relaxed">
-            Leva menos de 5 minutos para criar sua conta. Comece agora com 7 dias grátis.
+            Leva menos de 5 minutos para criar sua conta. Comece agora com 15 dias grátis.
           </p>
           <Link to="/signup" className="block w-full sm:w-auto sm:inline-block">
             <Button
@@ -41,7 +41,7 @@ export function CTASection() {
           <div className="mt-5 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-5 text-primary-foreground/50 text-xs">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>7 dias grátis</span>
+              <span><span>15 dias grátis</span></span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5" />

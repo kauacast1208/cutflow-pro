@@ -27,21 +27,21 @@ export function FinalCTASection() {
             ferramenta profissional.
           </h2>
           <p className="text-primary-foreground/65 text-sm sm:text-base mb-7 sm:mb-8 max-w-md mx-auto leading-relaxed">
-            5 minutos para criar sua conta. 7 dias grátis. 1 cliente recuperado paga o sistema.
+            5 minutos para criar sua conta. 15 dias grátis. 1 cliente recuperado paga o sistema.
           </p>
           <Link to="/signup" className="block w-full sm:w-auto sm:inline-block">
             <Button
               size="lg"
               className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-bold text-[15px] px-8 sm:px-10 h-14 shadow-lg rounded-xl w-full sm:w-auto"
             >
-              Começar teste grátis — 7 dias
+              Começar teste grátis — 15 dias
               <ArrowRight className="ml-2 h-4.5 w-4.5" />
             </Button>
           </Link>
           <div className="mt-5 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-5 text-primary-foreground/50 text-xs">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>7 dias grátis</span>
+              <span>15 dias grátis</span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5" />
