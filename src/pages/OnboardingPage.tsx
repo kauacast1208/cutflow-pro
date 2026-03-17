@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTenant } from "@/hooks/useTenant";
 import { useToast } from "@/hooks/use-toast";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { buildBarbershopInsert, getBarbershopErrorMessage, onboardingBarbershopSchema } from "@/lib/barbershop";
 import { formatPhone } from "@/lib/format";
 import { ensureCurrentUserSetup } from "@/lib/tenant";
@@ -34,6 +34,77 @@ const STEPS = [
   { id: "service", label: "Primeiro serviço", icon: Scissors },
   { id: "ready", label: "Pronto!", icon: Rocket },
 ];
+
+// ── Extracted components (stable references, no remounts) ──
+
+function StepIndicator({ currentStep, progress }: { currentStep: number; progress: number }) {
+  return (
+    <div className="w-full max-w-md mx-auto mb-6 sm:mb-8 px-2 sm:px-0">
+      <div className="flex items-center justify-between mb-3">
+        {STEPS.map((step, i) => {
+          const isDone = i < currentStep;
+          const isActive = i === currentStep;
+          const Icon = step.icon;
+          return (
+            <div key={step.id} className="flex flex-col items-center relative z-10 min-w-0">
+              <div
+                className={`flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full transition-[background-color,box-shadow,color] duration-200 ${
+                  isDone
+                    ? "bg-primary text-primary-foreground"
+                    : isActive
+                      ? "bg-primary/15 text-primary ring-2 ring-primary/30 ring-offset-2 ring-offset-background"
+                      : "bg-muted text-muted-foreground/40"
+                }`}
+              >
+                {isDone ? <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+              </div>
+              <span className={`text-[9px] sm:text-[10px] font-medium mt-1.5 text-center leading-tight w-[56px] sm:w-[64px] truncate ${
+                isDone ? "text-primary" : isActive ? "text-foreground" : "text-muted-foreground/40"
+              }`}>
+                {step.label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <Progress value={progress} className="h-1.5" />
+    </div>
+  );
+}
+
+function ErrorBanner({ error }: { error: string | null }) {
+  return (
+    <div className="min-h-[52px] mb-5">
+      <div
+        className={`rounded-xl border px-4 py-3 text-sm flex items-start gap-3 transition-all duration-200 ${
+          error
+            ? "border-destructive/30 bg-destructive/10 text-destructive opacity-100"
+            : "border-transparent bg-transparent text-transparent opacity-0 pointer-events-none select-none"
+        }`}
+        aria-live="polite"
+      >
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+        <span className="whitespace-pre-line">{error || "\u00A0"}</span>
+      </div>
+    </div>
+  );
+}
+
+function StepCard({ children, title, subtitle, error }: { children: React.ReactNode; title: string; subtitle: string; error: string | null }) {
+  return (
+    <div className="w-full max-w-md mx-auto">
+      <div className="text-center mb-5 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight mb-1.5">{title}</h1>
+        <p className="text-sm text-muted-foreground">{subtitle}</p>
+      </div>
+
+      <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-8 shadow-xl shadow-black/5 flex flex-col">
+        <ErrorBanner error={error} />
+        <div className="flex-1">{children}</div>
+      </div>
+    </div>
+  );
+}
 
 export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -69,7 +140,7 @@ export default function OnboardingPage() {
   const { refresh, setBarbershop } = useTenant();
   const { toast } = useToast();
 
-  // Debounced slug/preview to avoid expensive live updates while typing
+  // Debounced slug/preview
   const deferredBarbershopName = useDeferredValue(barbershopName);
   const [debouncedName, setDebouncedName] = useState("");
   useEffect(() => {
@@ -177,7 +248,6 @@ export default function OnboardingPage() {
     if (!error) return "Erro desconhecido";
     if (typeof error === "object" && error !== null) {
       const e = error as Record<string, unknown>;
-      // Supabase error shape
       if (typeof e.message === "string") {
         const msg = e.message;
         if (typeof e.code === "string") return `[${e.code}] ${msg}`;
@@ -192,7 +262,6 @@ export default function OnboardingPage() {
   const handleStepError = (stepName: string, error: unknown, fallback: string) => {
     onboardingLog(stepName, "fail", error);
     const raw = extractErrorMessage(error);
-    // Show step name + real error for debugging; keep it concise
     const userMessage = `${fallback}\n\nEtapa: ${stepName}\nDetalhe: ${raw}`;
     setFormError(userMessage);
     toast({ title: `Erro: ${stepName}`, description: raw, variant: "destructive" });
@@ -211,12 +280,10 @@ export default function OnboardingPage() {
 
     setLoading(true);
     try {
-      // Step 1a: Bootstrap user profile & role
       onboardingLog("bootstrap_user", "start");
       await ensureCurrentUserSetup(user.user_metadata?.full_name || user.email?.split("@")[0] || null);
       onboardingLog("bootstrap_user", "ok");
 
-      // Step 1b: Generate unique slug
       onboardingLog("generate_slug", "start");
       let finalSlug = slugify(parsed.data.name) || `barbearia-${Math.random().toString(36).slice(2, 7)}`;
       const { data: existing } = await supabase
@@ -224,7 +291,6 @@ export default function OnboardingPage() {
       if (existing) finalSlug = `${finalSlug}-${Math.random().toString(36).slice(2, 5)}`;
       onboardingLog("generate_slug", "ok", { slug: finalSlug });
 
-      // Step 1c: Insert barbershop
       onboardingLog("create_barbershop", "start");
       const payload = buildBarbershopInsert(parsed.data, user.id, finalSlug);
       const { data: created, error } = await supabase
@@ -233,7 +299,6 @@ export default function OnboardingPage() {
       onboardingLog("create_barbershop", "ok", { id: created?.id });
 
       if (created) {
-        // Step 1d: Upload logo (optional, non-blocking)
         if (logoFile) {
           onboardingLog("upload_logo", "start");
           const logoUrl = await uploadLogoToStorage(created.id);
@@ -249,7 +314,6 @@ export default function OnboardingPage() {
         setCreatedBarbershopId(created.id);
       }
 
-      // Step 1e: Refresh tenant context
       onboardingLog("resolve_tenant", "start");
       await refresh();
       onboardingLog("resolve_tenant", "ok");
@@ -262,7 +326,7 @@ export default function OnboardingPage() {
     }
   };
 
-  // ── Step 2: Create first barber (professional) ──
+  // ── Step 2: Create first barber ──
   const handleCreateBarber = async () => {
     if (!createdBarbershopId) return;
     if (!barberName.trim()) {
@@ -320,74 +384,8 @@ export default function OnboardingPage() {
   const skipToNext = () => { clearError(); setCurrentStep((s) => Math.min(s + 1, 4)); };
   const goToDashboard = () => navigate("/dashboard");
 
-  // ── Step indicator ──
-  const StepIndicator = () => (
-    <div className="w-full max-w-md mx-auto mb-8">
-      <div className="flex items-center justify-between mb-3">
-        {STEPS.map((step, i) => {
-          const isDone = i < currentStep;
-          const isActive = i === currentStep;
-          const Icon = step.icon;
-          return (
-            <div key={step.id} className="flex flex-col items-center relative z-10 min-w-0">
-              <div
-                className={`flex h-9 w-9 items-center justify-center rounded-full transition-[background-color,box-shadow,color] duration-200 ${
-                  isDone
-                    ? "bg-primary text-primary-foreground"
-                    : isActive
-                      ? "bg-primary/15 text-primary ring-2 ring-primary/30 ring-offset-2 ring-offset-background"
-                      : "bg-muted text-muted-foreground/40"
-                }`}
-              >
-                {isDone ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
-              </div>
-              <span className={`text-[10px] font-medium mt-1.5 text-center leading-tight w-[64px] truncate ${
-                isDone ? "text-primary" : isActive ? "text-foreground" : "text-muted-foreground/40"
-              }`}>
-                {step.label}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-      <Progress value={progress} className="h-1.5" />
-    </div>
-  );
-
-  // ── Error banner ──
-  const ErrorBanner = () => (
-    <div className="min-h-[52px] mb-5">
-      <div
-        className={`rounded-xl border px-4 py-3 text-sm flex items-start gap-3 transition-all duration-200 ${
-          formError
-            ? "border-destructive/30 bg-destructive/10 text-destructive opacity-100"
-            : "border-transparent bg-transparent text-transparent opacity-0 pointer-events-none select-none"
-        }`}
-        aria-live="polite"
-      >
-        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-        <span className="whitespace-pre-line">{formError || "\u00A0"}</span>
-      </div>
-    </div>
-  );
-
-  // ── Card wrapper — stable container to prevent layout shift ──
-  const StepCard = ({ children, title, subtitle }: { children: React.ReactNode; title: string; subtitle: string }) => (
-    <div className="w-full max-w-md mx-auto">
-      <div className="text-center mb-6">
-        <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight mb-1.5">{title}</h1>
-        <p className="text-sm text-muted-foreground">{subtitle}</p>
-      </div>
-
-      <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-8 shadow-xl shadow-black/5 min-h-[520px] sm:min-h-[540px] flex flex-col">
-        <ErrorBanner />
-        <div className="flex-1">{children}</div>
-      </div>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 sm:p-6 relative">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 relative pt-8 sm:pt-6">
       {/* Background effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-30%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-primary/[0.03] blur-[150px]" />
@@ -396,355 +394,356 @@ export default function OnboardingPage() {
 
       <div className="relative z-10 w-full max-w-lg">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-6">
+        <div className="flex items-center justify-center gap-2 mb-5 sm:mb-6">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary shadow-sm shadow-primary/20">
             <Scissors className="h-4 w-4 text-primary-foreground" />
           </div>
           <span className="text-lg font-bold tracking-tight">CutFlow</span>
         </div>
 
-        <StepIndicator />
+        <StepIndicator currentStep={currentStep} progress={progress} />
 
-        <AnimatePresence mode="wait">
-          {/* ─────────── STEP 1: Barbershop ─────────── */}
-          {currentStep === 1 && (
-            <StepCard title="Configure sua barbearia" subtitle="Informações básicas da sua página de agendamento">
-              <div className="space-y-5">
-                {/* Logo upload */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Logo da barbearia</Label>
-                  <div className="flex items-start gap-4 min-h-[92px]">
-                    <button
-                      type="button"
-                      onClick={() => logoInputRef.current?.click()}
-                      className="relative h-16 w-16 sm:h-[72px] sm:w-[72px] rounded-2xl border-2 border-dashed border-border/60 bg-muted/30 flex items-center justify-center overflow-hidden shrink-0 transition-[border-color,background-color] duration-200 hover:border-primary/30 hover:bg-muted/50"
-                    >
-                      {logoPreview ? (
-                        <img src={logoPreview} alt="Logo preview" className="h-full w-full object-cover rounded-2xl" />
-                      ) : (
-                        <ImageIcon className="h-6 w-6 text-muted-foreground/30" />
-                      )}
-                    </button>
-                    <input
-                      ref={logoInputRef}
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp"
-                      className="hidden"
-                      onChange={handleLogoSelect}
-                    />
-                    <div className="flex-1 min-w-0 min-h-[72px] flex flex-col justify-between">
-                      <div className="flex items-center gap-2 min-h-[32px]">
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          className="rounded-xl gap-1.5 text-xs h-8"
-                          onClick={() => logoInputRef.current?.click()}
-                        >
-                          <Upload className="h-3.5 w-3.5" />
-                          {logoPreview ? "Trocar" : "Enviar logo"}
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          className={`rounded-xl text-xs h-8 text-destructive hover:text-destructive px-2 transition-opacity ${
-                            logoPreview ? "opacity-100" : "opacity-0 pointer-events-none"
-                          }`}
-                          onClick={removeLogo}
-                          aria-hidden={!logoPreview}
-                          tabIndex={logoPreview ? 0 : -1}
-                        >
-                          <X className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                      <div className="min-h-[16px] pt-1">
-                        <p className="text-[11px] text-muted-foreground/50">PNG, JPG ou WebP · Máx. 2MB</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="name" className="text-sm font-medium">
-                    Nome da barbearia <span className="text-destructive">*</span>
-                  </Label>
-                   <Input
-                    id="name"
-                    placeholder="Ex: Barbearia Premium"
-                    value={barbershopName}
-                    onChange={(e) => { setBarbershopName(e.target.value); clearError(); }}
-                    className="h-12"
-                  />
-                  <div className="min-h-[18px] pt-1" aria-live="polite">
-                    <p className={`text-[11px] text-muted-foreground/50 flex items-center gap-1 transition-opacity duration-200 ${slugPreviewText ? "opacity-100" : "opacity-0"}`}>
-                      <Globe className="h-3 w-3 shrink-0" />
-                      <span className="truncate">{slugPreviewText || "cutflow.app/b/seu-slug"}</span>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="phone" className="text-sm font-medium">Telefone</Label>
-                  <Input
-                    id="phone"
-                    placeholder="(11) 99999-0000"
-                    value={phone}
-                    onChange={(e) => { setPhone(formatPhone(e.target.value)); clearError(); }}
-                    className="h-12"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="address" className="text-sm font-medium">Endereço</Label>
-                  <Input
-                    id="address"
-                    placeholder="Rua das Palmeiras, 123 — Centro"
-                    value={address}
-                    onChange={(e) => { setAddress(e.target.value); clearError(); }}
-                    className="h-12"
-                  />
-                  <div className="min-h-[40px] flex items-start">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="rounded-xl gap-1.5 text-xs h-8 text-muted-foreground hover:text-foreground"
-                      onClick={handleUseLocation}
-                      disabled={geoLoading}
-                    >
-                      {geoLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Navigation className="h-3.5 w-3.5" />}
-                      {geoLoading ? "Localizando..." : "Usar minha localização"}
-                    </Button>
-                  </div>
-                </div>
-
-                <Button
-                  onClick={handleCreateBarbershop}
-                  disabled={loading || !barbershopName.trim()}
-                  className="w-full h-12 text-sm font-semibold rounded-xl gap-2 shadow-md shadow-primary/10"
-                >
-                  {loading ? (
-                    <><Loader2 className="h-4 w-4 animate-spin" /> {uploadingLogo ? "Enviando logo..." : "Criando..."}</>
-                  ) : (
-                    <><Sparkles className="h-4 w-4" /> Criar minha barbearia <ArrowRight className="h-4 w-4" /></>
-                  )}
-                </Button>
-              </div>
-            </StepCard>
-          )}
-
-          {/* ─────────── STEP 2: Barber ─────────── */}
-          {currentStep === 2 && (
-            <StepCard title="Adicione seu primeiro barbeiro" subtitle="Quem vai atender seus clientes?">
-              <div className="space-y-5">
-                <div className="space-y-1.5">
-                  <Label htmlFor="barber-name" className="text-sm font-medium">
-                    Nome do barbeiro <span className="text-destructive">*</span>
-                  </Label>
-                   <Input
-                    id="barber-name"
-                    placeholder="Ex: Carlos Silva"
-                    value={barberName}
-                    onChange={(e) => { setBarberName(e.target.value); clearError(); }}
-                    className="h-12"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="barber-role" className="text-sm font-medium">Função</Label>
-                  <Input
-                    id="barber-role"
-                    placeholder="Ex: Barbeiro, Barbeiro Senior"
-                    value={barberRole}
-                    onChange={(e) => setBarberRole(e.target.value)}
-                    className="h-12"
-                  />
-                </div>
-
-                <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={skipToNext}
-                    className="flex-1 h-12 rounded-xl text-sm font-medium"
+        {/* ─────────── STEP 1: Barbershop ─────────── */}
+        {currentStep === 1 && (
+          <StepCard title="Configure sua barbearia" subtitle="Informações básicas da sua página de agendamento" error={formError}>
+            <div className="space-y-4 sm:space-y-5">
+              {/* Logo upload */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Logo da barbearia</Label>
+                <div className="flex items-start gap-4 min-h-[72px]">
+                  <button
+                    type="button"
+                    onClick={() => logoInputRef.current?.click()}
+                    className="relative h-16 w-16 sm:h-[72px] sm:w-[72px] rounded-2xl border-2 border-dashed border-border/60 bg-muted/30 flex items-center justify-center overflow-hidden shrink-0 transition-[border-color,background-color] duration-200 hover:border-primary/30 hover:bg-muted/50"
                   >
-                    Configurar depois
-                  </Button>
-                  <Button
-                    onClick={handleCreateBarber}
-                    disabled={loading || !barberName.trim()}
-                    className="flex-1 h-12 rounded-xl text-sm font-semibold gap-2 shadow-md shadow-primary/10"
-                  >
-                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Adicionar</>}
-                  </Button>
-                </div>
-              </div>
-            </StepCard>
-          )}
-
-          {/* ─────────── STEP 3: Service ─────────── */}
-          {currentStep === 3 && (
-            <StepCard title="Adicione seu primeiro serviço" subtitle="Seus clientes verão isso ao agendar">
-              <div className="space-y-5">
-                <div className="space-y-1.5">
-                  <Label htmlFor="svc-name" className="text-sm font-medium">
-                    Nome do serviço <span className="text-destructive">*</span>
-                  </Label>
-                   <Input
-                    id="svc-name"
-                    placeholder="Ex: Corte masculino"
-                    value={serviceName}
-                    onChange={(e) => { setServiceName(e.target.value); clearError(); }}
-                    className="h-12"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="svc-price" className="text-sm font-medium flex items-center gap-1.5">
-                      <DollarSign className="h-3.5 w-3.5 text-muted-foreground" /> Preço (R$)
-                    </Label>
-                    <Input
-                      id="svc-price"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="45.00"
-                      value={servicePrice}
-                      onChange={(e) => setServicePrice(e.target.value)}
-                      className="h-12"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="svc-dur" className="text-sm font-medium flex items-center gap-1.5">
-                      <Clock className="h-3.5 w-3.5 text-muted-foreground" /> Duração (min)
-                    </Label>
-                    <Input
-                      id="svc-dur"
-                      type="number"
-                      min="5"
-                      step="5"
-                      placeholder="30"
-                      value={serviceDuration}
-                      onChange={(e) => setServiceDuration(e.target.value)}
-                      className="h-12"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={skipToNext}
-                    className="flex-1 h-12 rounded-xl text-sm font-medium"
-                  >
-                    Configurar depois
-                  </Button>
-                  <Button
-                    onClick={handleCreateService}
-                    disabled={loading || !serviceName.trim()}
-                    className="flex-1 h-12 rounded-xl text-sm font-semibold gap-2 shadow-md shadow-primary/10"
-                  >
-                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Salvar</>}
-                  </Button>
-                </div>
-              </div>
-            </StepCard>
-          )}
-
-          {/* ─────────── STEP 4: Ready ─────────── */}
-          {currentStep === 4 && (
-            <motion.div
-              key="ready"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full max-w-md mx-auto text-center"
-            >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", delay: 0.15, stiffness: 180, damping: 14 }}
-                className="mx-auto mb-6 relative"
-              >
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <motion.div
-                    animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.08, 0.3] }}
-                    transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                    className="w-28 h-28 rounded-full bg-primary/20 blur-xl"
-                  />
-                </div>
-                <div className="relative flex h-20 w-20 mx-auto items-center justify-center rounded-2xl bg-primary/10 border border-primary/20">
-                  {logoPreview ? (
-                    <img src={logoPreview} alt="Logo" className="h-14 w-14 rounded-xl object-cover" />
-                  ) : (
-                    <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/25">
-                      <PartyPopper className="h-7 w-7 text-primary-foreground" />
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-
-              <motion.h1
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2"
-              >
-                Tudo pronto! 🎉
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="text-muted-foreground text-sm mb-8"
-              >
-                <span className="font-semibold text-foreground">{barbershopName}</span> está configurada e pronta para receber agendamentos.
-              </motion.p>
-
-              {/* Summary */}
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-5 mb-8 text-left max-w-xs mx-auto space-y-3"
-              >
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Resumo da configuração</p>
-                {[
-                  { label: "Conta criada", done: true },
-                  { label: "Barbearia configurada", done: true },
-                  { label: "Barbeiro cadastrado", done: !!barberName },
-                  { label: "Serviço cadastrado", done: !!serviceName },
-                ].map((item) => (
-                  <div key={item.label} className="flex items-center gap-2.5">
-                    {item.done ? (
-                      <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                    {logoPreview ? (
+                      <img src={logoPreview} alt="Logo preview" className="h-full w-full object-cover rounded-2xl" />
                     ) : (
-                      <div className="h-4 w-4 rounded-full border border-border/60 shrink-0" />
+                      <ImageIcon className="h-6 w-6 text-muted-foreground/30" />
                     )}
-                    <span className={`text-sm ${item.done ? "text-foreground" : "text-muted-foreground/60"}`}>
-                      {item.label}
-                    </span>
+                  </button>
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={handleLogoSelect}
+                  />
+                  <div className="flex-1 min-w-0 min-h-[72px] flex flex-col justify-between">
+                    <div className="flex items-center gap-2 min-h-[32px]">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="rounded-xl gap-1.5 text-xs h-8"
+                        onClick={() => logoInputRef.current?.click()}
+                      >
+                        <Upload className="h-3.5 w-3.5" />
+                        {logoPreview ? "Trocar" : "Enviar logo"}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className={`rounded-xl text-xs h-8 text-destructive hover:text-destructive px-2 transition-opacity ${
+                          logoPreview ? "opacity-100" : "opacity-0 pointer-events-none"
+                        }`}
+                        onClick={removeLogo}
+                        aria-hidden={!logoPreview}
+                        tabIndex={logoPreview ? 0 : -1}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                    <div className="min-h-[16px] pt-1">
+                      <p className="text-[11px] text-muted-foreground/50">PNG, JPG ou WebP · Máx. 2MB</p>
+                    </div>
                   </div>
-                ))}
-              </motion.div>
+                </div>
+              </div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
+              <div className="space-y-1.5">
+                <Label htmlFor="name" className="text-sm font-medium">
+                  Nome da barbearia <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="name"
+                  placeholder="Ex: Barbearia Premium"
+                  value={barbershopName}
+                  onChange={(e) => { setBarbershopName(e.target.value); clearError(); }}
+                  className="h-12 text-base"
+                />
+                <div className="min-h-[18px] pt-1" aria-live="polite">
+                  <p className={`text-[11px] text-muted-foreground/50 flex items-center gap-1 transition-opacity duration-200 ${slugPreviewText ? "opacity-100" : "opacity-0"}`}>
+                    <Globe className="h-3 w-3 shrink-0" />
+                    <span className="truncate">{slugPreviewText || "cutflow.app/b/seu-slug"}</span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="phone" className="text-sm font-medium">Telefone</Label>
+                <Input
+                  id="phone"
+                  placeholder="(11) 99999-0000"
+                  value={phone}
+                  onChange={(e) => { setPhone(formatPhone(e.target.value)); clearError(); }}
+                  className="h-12 text-base"
+                  inputMode="tel"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="address" className="text-sm font-medium">Endereço</Label>
+                <Input
+                  id="address"
+                  placeholder="Rua das Palmeiras, 123 — Centro"
+                  value={address}
+                  onChange={(e) => { setAddress(e.target.value); clearError(); }}
+                  className="h-12 text-base"
+                />
+                <div className="min-h-[40px] flex items-start">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-xl gap-1.5 text-xs h-8 text-muted-foreground hover:text-foreground"
+                    onClick={handleUseLocation}
+                    disabled={geoLoading}
+                  >
+                    {geoLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Navigation className="h-3.5 w-3.5" />}
+                    {geoLoading ? "Localizando..." : "Usar minha localização"}
+                  </Button>
+                </div>
+              </div>
+
+              <Button
+                onClick={handleCreateBarbershop}
+                disabled={loading || !barbershopName.trim()}
+                className="w-full h-12 sm:h-14 text-sm font-semibold rounded-xl gap-2 shadow-md shadow-primary/10"
               >
+                {loading ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" /> {uploadingLogo ? "Enviando logo..." : "Criando..."}</>
+                ) : (
+                  <><Sparkles className="h-4 w-4" /> Criar minha barbearia <ArrowRight className="h-4 w-4" /></>
+                )}
+              </Button>
+            </div>
+          </StepCard>
+        )}
+
+        {/* ─────────── STEP 2: Barber ─────────── */}
+        {currentStep === 2 && (
+          <StepCard title="Adicione seu primeiro barbeiro" subtitle="Quem vai atender seus clientes?" error={formError}>
+            <div className="space-y-4 sm:space-y-5">
+              <div className="space-y-1.5">
+                <Label htmlFor="barber-name" className="text-sm font-medium">
+                  Nome do barbeiro <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="barber-name"
+                  placeholder="Ex: Carlos Silva"
+                  value={barberName}
+                  onChange={(e) => { setBarberName(e.target.value); clearError(); }}
+                  className="h-12 text-base"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="barber-role" className="text-sm font-medium">Função</Label>
+                <Input
+                  id="barber-role"
+                  placeholder="Ex: Barbeiro, Barbeiro Senior"
+                  value={barberRole}
+                  onChange={(e) => setBarberRole(e.target.value)}
+                  className="h-12 text-base"
+                />
+              </div>
+
+              <div className="flex gap-3">
                 <Button
-                  size="lg"
-                  onClick={goToDashboard}
-                  className="w-full max-w-xs h-12 text-sm font-semibold rounded-xl gap-2 shadow-md shadow-primary/10"
+                  variant="outline"
+                  onClick={skipToNext}
+                  className="flex-1 h-12 sm:h-14 rounded-xl text-sm font-medium"
                 >
-                  Acessar meu painel <ArrowRight className="h-4 w-4" />
+                  Configurar depois
                 </Button>
-              </motion.div>
+                <Button
+                  onClick={handleCreateBarber}
+                  disabled={loading || !barberName.trim()}
+                  className="flex-1 h-12 sm:h-14 rounded-xl text-sm font-semibold gap-2 shadow-md shadow-primary/10"
+                >
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Adicionar</>}
+                </Button>
+              </div>
+            </div>
+          </StepCard>
+        )}
+
+        {/* ─────────── STEP 3: Service ─────────── */}
+        {currentStep === 3 && (
+          <StepCard title="Adicione seu primeiro serviço" subtitle="Seus clientes verão isso ao agendar" error={formError}>
+            <div className="space-y-4 sm:space-y-5">
+              <div className="space-y-1.5">
+                <Label htmlFor="svc-name" className="text-sm font-medium">
+                  Nome do serviço <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="svc-name"
+                  placeholder="Ex: Corte masculino"
+                  value={serviceName}
+                  onChange={(e) => { setServiceName(e.target.value); clearError(); }}
+                  className="h-12 text-base"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="svc-price" className="text-sm font-medium flex items-center gap-1.5">
+                    <DollarSign className="h-3.5 w-3.5 text-muted-foreground" /> Preço (R$)
+                  </Label>
+                  <Input
+                    id="svc-price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="45.00"
+                    value={servicePrice}
+                    onChange={(e) => setServicePrice(e.target.value)}
+                    className="h-12 text-base"
+                    inputMode="decimal"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="svc-dur" className="text-sm font-medium flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5 text-muted-foreground" /> Duração (min)
+                  </Label>
+                  <Input
+                    id="svc-dur"
+                    type="number"
+                    min="5"
+                    step="5"
+                    placeholder="30"
+                    value={serviceDuration}
+                    onChange={(e) => setServiceDuration(e.target.value)}
+                    className="h-12 text-base"
+                    inputMode="numeric"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={skipToNext}
+                  className="flex-1 h-12 sm:h-14 rounded-xl text-sm font-medium"
+                >
+                  Configurar depois
+                </Button>
+                <Button
+                  onClick={handleCreateService}
+                  disabled={loading || !serviceName.trim()}
+                  className="flex-1 h-12 sm:h-14 rounded-xl text-sm font-semibold gap-2 shadow-md shadow-primary/10"
+                >
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Salvar</>}
+                </Button>
+              </div>
+            </div>
+          </StepCard>
+        )}
+
+        {/* ─────────── STEP 4: Ready ─────────── */}
+        {currentStep === 4 && (
+          <motion.div
+            key="ready"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full max-w-md mx-auto text-center"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", delay: 0.15, stiffness: 180, damping: 14 }}
+              className="mx-auto mb-6 relative"
+            >
+              <div className="absolute inset-0 flex items-center justify-center">
+                <motion.div
+                  animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.08, 0.3] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                  className="w-28 h-28 rounded-full bg-primary/20 blur-xl"
+                />
+              </div>
+              <div className="relative flex h-20 w-20 mx-auto items-center justify-center rounded-2xl bg-primary/10 border border-primary/20">
+                {logoPreview ? (
+                  <img src={logoPreview} alt="Logo" className="h-14 w-14 rounded-xl object-cover" />
+                ) : (
+                  <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/25">
+                    <PartyPopper className="h-7 w-7 text-primary-foreground" />
+                  </div>
+                )}
+              </div>
             </motion.div>
-          )}
-        </AnimatePresence>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2"
+            >
+              Tudo pronto! 🎉
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="text-muted-foreground text-sm mb-8"
+            >
+              <span className="font-semibold text-foreground">{barbershopName}</span> está configurada e pronta para receber agendamentos.
+            </motion.p>
+
+            {/* Summary */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-5 mb-8 text-left max-w-xs mx-auto space-y-3"
+            >
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Resumo da configuração</p>
+              {[
+                { label: "Conta criada", done: true },
+                { label: "Barbearia configurada", done: true },
+                { label: "Barbeiro cadastrado", done: !!barberName },
+                { label: "Serviço cadastrado", done: !!serviceName },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center gap-2.5">
+                  {item.done ? (
+                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                  ) : (
+                    <div className="h-4 w-4 rounded-full border border-border/60 shrink-0" />
+                  )}
+                  <span className={`text-sm ${item.done ? "text-foreground" : "text-muted-foreground/60"}`}>
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+            >
+              <Button
+                size="lg"
+                onClick={goToDashboard}
+                className="w-full max-w-xs h-12 sm:h-14 text-sm font-semibold rounded-xl gap-2 shadow-md shadow-primary/10"
+              >
+                Acessar meu painel <ArrowRight className="h-4 w-4" />
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
       </div>
     </div>
   );
