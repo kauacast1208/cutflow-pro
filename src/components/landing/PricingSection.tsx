@@ -479,6 +479,7 @@ function FranchiseCard({ plan }: { plan: PlanDef }) {
           {plan.cta}
         </Button>
       </a>
+      <p className="text-center text-[10px] text-muted-foreground mt-2.5">Plano sob medida para operações maiores</p>
     </motion.div>
   );
 }
