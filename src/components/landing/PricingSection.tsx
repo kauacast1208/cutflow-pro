@@ -306,7 +306,7 @@ export function PricingSection() {
         {/* Trust row */}
         <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 mt-8 sm:mt-10 text-xs sm:text-[13px] text-muted-foreground">
           <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-primary/60" /><span>Pagamento seguro via Stripe</span></div>
-          <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary/60" /><span>7 dias grátis</span></div>
+          <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary/60" /><span>15 dias grátis</span></div>
           <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary/60" /><span>Sem taxa escondida</span></div>
           <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary/60" /><span>Cancele quando quiser</span></div>
         </motion.div>
