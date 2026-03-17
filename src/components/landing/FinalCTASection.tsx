@@ -34,7 +34,7 @@ export function FinalCTASection() {
               size="lg"
               className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-bold text-[15px] px-8 sm:px-10 h-14 shadow-lg rounded-xl w-full sm:w-auto"
             >
-              Começar teste grátis — 7 dias
+              Começar teste grátis — 15 dias
               <ArrowRight className="ml-2 h-4.5 w-4.5" />
             </Button>
           </Link>
