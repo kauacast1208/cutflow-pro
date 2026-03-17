@@ -39,9 +39,10 @@ interface EnterpriseLeadModalProps {
 const challenges = [
   { value: "agenda", label: "Organizar agenda" },
   { value: "faltas", label: "Reduzir faltas" },
-  { value: "financeiro", label: "Gestão financeira" },
+  { value: "financeiro", label: "Controlar financeiro" },
   { value: "multiunidade", label: "Gestão multiunidade" },
-  { value: "marketing", label: "Marketing" },
+  { value: "marketing", label: "Marketing e retenção" },
+  { value: "integracoes", label: "Integrações e operação customizada" },
   { value: "outro", label: "Outro" },
 ];
 
