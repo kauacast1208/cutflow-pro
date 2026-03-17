@@ -590,12 +590,11 @@ export default function OnboardingPage() {
                   <Label htmlFor="svc-name" className="text-sm font-medium">
                     Nome do serviço <span className="text-destructive">*</span>
                   </Label>
-                  <Input
+                   <Input
                     id="svc-name"
                     placeholder="Ex: Corte masculino"
                     value={serviceName}
                     onChange={(e) => { setServiceName(e.target.value); clearError(); }}
-                    autoFocus
                     className="h-12"
                   />
                 </div>
