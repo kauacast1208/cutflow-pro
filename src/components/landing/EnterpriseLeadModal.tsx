@@ -290,7 +290,7 @@ Quero entender SLA, integrações e solução sob medida.`;
                 {/* Challenge */}
                 <div className="space-y-1.5">
                   <Label htmlFor="lead-challenge" className="text-xs font-medium">
-                    Qual seu maior desafio?
+                    Qual seu principal desafio hoje?
                   </Label>
                   <Select
                     value={form.main_challenge}
