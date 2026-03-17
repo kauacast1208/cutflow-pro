@@ -69,7 +69,13 @@ export default function OnboardingPage() {
   const { refresh, setBarbershop } = useTenant();
   const { toast } = useToast();
 
-  const slug = useMemo(() => slugify(barbershopName), [barbershopName]);
+  // Debounced slug to avoid reflow on every keystroke
+  const [debouncedName, setDebouncedName] = useState("");
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedName(barbershopName), 300);
+    return () => clearTimeout(t);
+  }, [barbershopName]);
+  const slug = useMemo(() => slugify(debouncedName), [debouncedName]);
   const progress = Math.round((currentStep / (STEPS.length - 1)) * 100);
 
   const clearError = useCallback(() => setFormError(null), []);
