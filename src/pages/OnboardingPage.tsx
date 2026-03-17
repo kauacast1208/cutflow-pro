@@ -359,11 +359,11 @@ export default function OnboardingPage() {
                 {/* Logo upload */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Logo da barbearia</Label>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-start gap-4 min-h-[92px]">
                     <button
                       type="button"
                       onClick={() => logoInputRef.current?.click()}
-                      className="relative h-16 w-16 sm:h-[72px] sm:w-[72px] rounded-2xl border-2 border-dashed border-border/60 bg-muted/30 flex items-center justify-center overflow-hidden shrink-0 transition-colors hover:border-primary/30 hover:bg-muted/50 active:scale-95"
+                      className="relative h-16 w-16 sm:h-[72px] sm:w-[72px] rounded-2xl border-2 border-dashed border-border/60 bg-muted/30 flex items-center justify-center overflow-hidden shrink-0 transition-[border-color,background-color] duration-200 hover:border-primary/30 hover:bg-muted/50"
                     >
                       {logoPreview ? (
                         <img src={logoPreview} alt="Logo preview" className="h-full w-full object-cover rounded-2xl" />
@@ -378,8 +378,8 @@ export default function OnboardingPage() {
                       className="hidden"
                       onChange={handleLogoSelect}
                     />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
+                    <div className="flex-1 min-w-0 min-h-[72px] flex flex-col justify-between">
+                      <div className="flex items-center gap-2 min-h-[32px]">
                         <Button
                           type="button"
                           size="sm"
@@ -390,19 +390,23 @@ export default function OnboardingPage() {
                           <Upload className="h-3.5 w-3.5" />
                           {logoPreview ? "Trocar" : "Enviar logo"}
                         </Button>
-                        {logoPreview && (
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            className="rounded-xl text-xs h-8 text-destructive hover:text-destructive px-2"
-                            onClick={removeLogo}
-                          >
-                            <X className="h-3.5 w-3.5" />
-                          </Button>
-                        )}
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className={`rounded-xl text-xs h-8 text-destructive hover:text-destructive px-2 transition-opacity ${
+                            logoPreview ? "opacity-100" : "opacity-0 pointer-events-none"
+                          }`}
+                          onClick={removeLogo}
+                          aria-hidden={!logoPreview}
+                          tabIndex={logoPreview ? 0 : -1}
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
-                      <p className="text-[11px] text-muted-foreground/50 mt-1">PNG, JPG ou WebP · Máx. 2MB</p>
+                      <div className="min-h-[16px] pt-1">
+                        <p className="text-[11px] text-muted-foreground/50">PNG, JPG ou WebP · Máx. 2MB</p>
+                      </div>
                     </div>
                   </div>
                 </div>
