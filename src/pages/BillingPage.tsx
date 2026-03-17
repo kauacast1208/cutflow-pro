@@ -277,7 +277,7 @@ export default function BillingPage() {
                           <span className="text-muted-foreground text-sm">/mês</span>
                         </div>
                         {!isCurrentActivePlan && (
-                          <p className="text-[11px] text-primary font-medium">7 dias grátis · Sem cobrança hoje</p>
+                          <p className="text-[11px] text-primary font-medium"><p className="text-[11px] text-primary font-medium">15 dias grátis · Sem cobrança hoje</p></p>
                         )}
                       </div>
 
