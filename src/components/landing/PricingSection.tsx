@@ -500,7 +500,7 @@ function FranchiseCard({ plan, onOpenLeadModal }: { plan: PlanDef; onOpenLeadMod
 }
 
 /* ── Enterprise card ── */
-function EnterpriseCard({ plan }: { plan: PlanDef }) {
+function EnterpriseCard({ plan, onOpenLeadModal }: { plan: PlanDef; onOpenLeadModal: (slug: string, label: string) => void }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -537,17 +537,14 @@ function EnterpriseCard({ plan }: { plan: PlanDef }) {
         </div>
       </div>
 
-      <a
-        href={`https://wa.me/${plan.externalWhatsApp!.phone}?text=${encodeURIComponent(plan.externalWhatsApp!.message)}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block mt-auto w-full"
+      <Button
+        variant="outline"
+        className="w-full rounded-xl gap-2 h-11 text-sm mt-auto"
+        onClick={() => onOpenLeadModal(plan.slug, plan.label)}
       >
-        <Button variant="outline" className="w-full rounded-xl gap-2 h-11 text-sm">
-          <MessageSquare className="h-4 w-4" />
-          {plan.cta}
-        </Button>
-      </a>
+        <MessageSquare className="h-4 w-4" />
+        {plan.cta}
+      </Button>
       <p className="text-center text-[10px] text-muted-foreground mt-2.5">Vamos montar a solução ideal para sua operação</p>
     </motion.div>
   );
