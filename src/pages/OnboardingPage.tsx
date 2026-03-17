@@ -423,13 +423,11 @@ export default function OnboardingPage() {
                     autoFocus
                     className="h-12"
                   />
-                  {/* Reserved height for slug helper — prevents layout shift */}
-                  <div className="h-4">
-                    {barbershopName.trim() && slug ? (
-                      <p className="text-[11px] text-muted-foreground/50 flex items-center gap-1 transition-opacity duration-200">
-                        <Globe className="h-3 w-3" /> cutflow.app/b/{slug}
-                      </p>
-                    ) : null}
+                  <div className="min-h-[18px] pt-1" aria-live="polite">
+                    <p className={`text-[11px] text-muted-foreground/50 flex items-center gap-1 transition-opacity duration-200 ${slugPreviewText ? "opacity-100" : "opacity-0"}`}>
+                      <Globe className="h-3 w-3 shrink-0" />
+                      <span className="truncate">{slugPreviewText || "cutflow.app/b/seu-slug"}</span>
+                    </p>
                   </div>
                 </div>
 
