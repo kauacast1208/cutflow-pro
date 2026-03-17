@@ -469,12 +469,11 @@ export default function OnboardingPage() {
                   <Label htmlFor="name" className="text-sm font-medium">
                     Nome da barbearia <span className="text-destructive">*</span>
                   </Label>
-                  <Input
+                   <Input
                     id="name"
                     placeholder="Ex: Barbearia Premium"
                     value={barbershopName}
                     onChange={(e) => { setBarbershopName(e.target.value); clearError(); }}
-                    autoFocus
                     className="h-12"
                   />
                   <div className="min-h-[18px] pt-1" aria-live="polite">
@@ -543,12 +542,11 @@ export default function OnboardingPage() {
                   <Label htmlFor="barber-name" className="text-sm font-medium">
                     Nome do barbeiro <span className="text-destructive">*</span>
                   </Label>
-                  <Input
+                   <Input
                     id="barber-name"
                     placeholder="Ex: Carlos Silva"
                     value={barberName}
                     onChange={(e) => { setBarberName(e.target.value); clearError(); }}
-                    autoFocus
                     className="h-12"
                   />
                 </div>
@@ -592,12 +590,11 @@ export default function OnboardingPage() {
                   <Label htmlFor="svc-name" className="text-sm font-medium">
                     Nome do serviço <span className="text-destructive">*</span>
                   </Label>
-                  <Input
+                   <Input
                     id="svc-name"
                     placeholder="Ex: Corte masculino"
                     value={serviceName}
                     onChange={(e) => { setServiceName(e.target.value); clearError(); }}
-                    autoFocus
                     className="h-12"
                   />
                 </div>
