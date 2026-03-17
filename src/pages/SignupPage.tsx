@@ -325,7 +325,7 @@ export default function SignupPage() {
             </form>
 
             <div className="flex items-center justify-center gap-3 mt-4">
-              {["7 dias grátis", "Sem cartão", "Cancele quando quiser"].map((t) => (
+              {[{["15 dias grátis", "Sem cartão", "Cancele quando quiser"].map((t) => (, "Sem cartão", "Cancele quando quiser"].map((t) => (
                 <span key={t} className="text-[11px] text-muted-foreground/60 flex items-center gap-1">
                   <Check className="h-3 w-3 text-primary/60" /> {t}
                 </span>

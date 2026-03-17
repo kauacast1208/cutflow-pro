@@ -118,7 +118,7 @@ export function NoShowCostSection() {
               <div className="text-center">
                 <Link to="/signup">
                   <Button size="lg" className="rounded-xl h-12 px-8 font-bold text-sm gap-2">
-                    Começar teste grátis — 7 dias
+                    Começar teste grátis — 15 dias
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>

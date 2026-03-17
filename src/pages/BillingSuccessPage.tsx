@@ -23,7 +23,7 @@ export default function BillingSuccessPage() {
 
         <h1 className="text-2xl sm:text-3xl font-bold mb-3">Assinatura ativada! 🎉</h1>
         <p className="text-muted-foreground mb-2">
-          Seu plano foi ativado com sucesso. Seus 7 dias de teste gratuito
+          Seu plano foi ativado com sucesso. Seu plano foi ativado com sucesso. Seus 15 dias de teste gratuito
           já começaram — nenhuma cobrança será feita hoje.
         </p>
         <p className="text-sm text-muted-foreground mb-8">

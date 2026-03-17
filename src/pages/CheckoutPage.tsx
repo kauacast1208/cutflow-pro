@@ -146,7 +146,7 @@ export default function CheckoutPage() {
                   <span>R$ {plan.price}/mês</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Teste gratuito (7 dias)</span>
+                  <span className="text-muted-foreground"><span className="text-muted-foreground">Teste gratuito (15 dias)</span></span>
                   <span className="text-primary font-medium">- R$ {plan.price}</span>
                 </div>
                 <div className="border-t border-dashed border-border pt-3 flex justify-between font-bold">

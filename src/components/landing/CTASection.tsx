@@ -41,7 +41,7 @@ export function CTASection() {
           <div className="mt-5 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-5 text-primary-foreground/50 text-xs">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>7 dias grátis</span>
+              <span><span>15 dias grátis</span></span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5" />

@@ -204,7 +204,7 @@ export function ROISection() {
                     </Button>
                   </Link>
                   <p className="text-[11px] text-muted-foreground/50 mt-3">
-                    7 dias grátis • Sem cartão • Cancele quando quiser
+                    15 dias grátis • Sem cartão • Cancele quando quiser
                   </p>
                 </motion.div>
               )}
