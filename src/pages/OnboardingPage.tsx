@@ -334,13 +334,14 @@ export default function OnboardingPage() {
       exit={{ opacity: 0, x: -30 }}
       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
       className="w-full max-w-md mx-auto"
+      layout={false}
     >
       <div className="text-center mb-6">
         <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight mb-1.5">{title}</h1>
         <p className="text-sm text-muted-foreground">{subtitle}</p>
       </div>
 
-      <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-8 shadow-xl shadow-black/5">
+      <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-8 shadow-xl shadow-black/5 min-h-[420px]">
         <ErrorBanner />
         {children}
       </div>
