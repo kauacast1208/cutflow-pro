@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
+import { EnterpriseLeadModal } from "./EnterpriseLeadModal";
 import { Button } from "@/components/ui/button";
 import {
   Check,
@@ -209,7 +210,15 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 
 export function PricingSection() {
   const [billing, setBilling] = useState<Billing>("monthly");
+  const [leadModal, setLeadModal] = useState<{ open: boolean; planSlug: string; planLabel: string }>({
+    open: false,
+    planSlug: "",
+    planLabel: "",
+  });
 
+  const openLeadModal = useCallback((slug: string, label: string) => {
+    setLeadModal({ open: true, planSlug: slug, planLabel: label });
+  }, []);
   return (
     <section id="pricing" className="section-padding bg-secondary/30">
       <div className="max-w-7xl mx-auto">
@@ -286,9 +295,18 @@ export function PricingSection() {
 
         {/* Franchise + Enterprise — premium row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[960px] mx-auto mt-8 sm:mt-10">
-          <FranchiseCard plan={plans[3]} />
-          <EnterpriseCard plan={plans[4]} />
+          <FranchiseCard plan={plans[3]} onOpenLeadModal={openLeadModal} />
+          <EnterpriseCard plan={plans[4]} onOpenLeadModal={openLeadModal} />
         </div>
+
+        {/* Lead capture modal */}
+        <EnterpriseLeadModal
+          open={leadModal.open}
+          onOpenChange={(v) => setLeadModal((prev) => ({ ...prev, open: v }))}
+          planLabel={leadModal.planLabel}
+          planSlug={leadModal.planSlug}
+          whatsAppPhone="5553999481954"
+        />
 
         {/* Included in all */}
         <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.25 }} className="max-w-3xl mx-auto mt-14 sm:mt-16 text-center">
@@ -425,7 +443,7 @@ function ProCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
 }
 
 /* ── Franchise card ── */
-function FranchiseCard({ plan }: { plan: PlanDef }) {
+function FranchiseCard({ plan, onOpenLeadModal }: { plan: PlanDef; onOpenLeadModal: (slug: string, label: string) => void }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -468,24 +486,21 @@ function FranchiseCard({ plan }: { plan: PlanDef }) {
         </div>
       </div>
 
-      <a
-        href={`https://wa.me/${plan.externalWhatsApp!.phone}?text=${encodeURIComponent(plan.externalWhatsApp!.message)}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block mt-auto w-full"
+      <Button
+        variant="outline"
+        className="w-full rounded-xl gap-2 h-11 text-sm border-primary/20 hover:bg-primary/5 mt-auto"
+        onClick={() => onOpenLeadModal(plan.slug, plan.label)}
       >
-        <Button variant="outline" className="w-full rounded-xl gap-2 h-11 text-sm border-primary/20 hover:bg-primary/5">
-          <MessageSquare className="h-4 w-4" />
-          {plan.cta}
-        </Button>
-      </a>
+        <MessageSquare className="h-4 w-4" />
+        {plan.cta}
+      </Button>
       <p className="text-center text-[10px] text-muted-foreground mt-2.5">Plano sob medida para operações maiores</p>
     </motion.div>
   );
 }
 
 /* ── Enterprise card ── */
-function EnterpriseCard({ plan }: { plan: PlanDef }) {
+function EnterpriseCard({ plan, onOpenLeadModal }: { plan: PlanDef; onOpenLeadModal: (slug: string, label: string) => void }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -522,17 +537,14 @@ function EnterpriseCard({ plan }: { plan: PlanDef }) {
         </div>
       </div>
 
-      <a
-        href={`https://wa.me/${plan.externalWhatsApp!.phone}?text=${encodeURIComponent(plan.externalWhatsApp!.message)}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block mt-auto w-full"
+      <Button
+        variant="outline"
+        className="w-full rounded-xl gap-2 h-11 text-sm mt-auto"
+        onClick={() => onOpenLeadModal(plan.slug, plan.label)}
       >
-        <Button variant="outline" className="w-full rounded-xl gap-2 h-11 text-sm">
-          <MessageSquare className="h-4 w-4" />
-          {plan.cta}
-        </Button>
-      </a>
+        <MessageSquare className="h-4 w-4" />
+        {plan.cta}
+      </Button>
       <p className="text-center text-[10px] text-muted-foreground mt-2.5">Vamos montar a solução ideal para sua operação</p>
     </motion.div>
   );
