@@ -210,7 +210,15 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 
 export function PricingSection() {
   const [billing, setBilling] = useState<Billing>("monthly");
+  const [leadModal, setLeadModal] = useState<{ open: boolean; planSlug: string; planLabel: string }>({
+    open: false,
+    planSlug: "",
+    planLabel: "",
+  });
 
+  const openLeadModal = useCallback((slug: string, label: string) => {
+    setLeadModal({ open: true, planSlug: slug, planLabel: label });
+  }, []);
   return (
     <section id="pricing" className="section-padding bg-secondary/30">
       <div className="max-w-7xl mx-auto">
