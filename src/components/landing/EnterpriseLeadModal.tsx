@@ -345,6 +345,7 @@ Quero entender SLA, integrações e solução sob medida.`;
                 <p className="text-center text-[10px] text-muted-foreground">
                   Seus dados estão seguros. Sem spam, prometemos.
                 </p>
+              </form>
             </motion.div>
           ) : (
             <motion.div
