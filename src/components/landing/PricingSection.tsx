@@ -295,9 +295,18 @@ export function PricingSection() {
 
         {/* Franchise + Enterprise — premium row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[960px] mx-auto mt-8 sm:mt-10">
-          <FranchiseCard plan={plans[3]} />
-          <EnterpriseCard plan={plans[4]} />
+          <FranchiseCard plan={plans[3]} onOpenLeadModal={openLeadModal} />
+          <EnterpriseCard plan={plans[4]} onOpenLeadModal={openLeadModal} />
         </div>
+
+        {/* Lead capture modal */}
+        <EnterpriseLeadModal
+          open={leadModal.open}
+          onOpenChange={(v) => setLeadModal((prev) => ({ ...prev, open: v }))}
+          planLabel={leadModal.planLabel}
+          planSlug={leadModal.planSlug}
+          whatsAppPhone="5553999481954"
+        />
 
         {/* Included in all */}
         <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.25 }} className="max-w-3xl mx-auto mt-14 sm:mt-16 text-center">
