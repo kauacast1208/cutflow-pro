@@ -39,9 +39,10 @@ interface EnterpriseLeadModalProps {
 const challenges = [
   { value: "agenda", label: "Organizar agenda" },
   { value: "faltas", label: "Reduzir faltas" },
-  { value: "financeiro", label: "Gestão financeira" },
+  { value: "financeiro", label: "Controlar financeiro" },
   { value: "multiunidade", label: "Gestão multiunidade" },
-  { value: "marketing", label: "Marketing" },
+  { value: "marketing", label: "Marketing e retenção" },
+  { value: "integracoes", label: "Integrações e operação customizada" },
   { value: "outro", label: "Outro" },
 ];
 
@@ -118,15 +119,24 @@ export function EnterpriseLeadModal({
     }
   };
 
-  const whatsAppMessage = `Olá! Tenho interesse no plano *${planLabel}* do CutFlow.
+  const challengeLabel = challenges.find((c) => c.value === form.main_challenge)?.label || form.main_challenge;
 
-📋 Nome: ${form.name}
-🏙️ Cidade: ${form.city}
-💈 Barbeiros: ${form.barbers_count || "—"}
-📍 Unidades: ${form.units_count || "—"}
-${form.main_challenge ? `🎯 Desafio: ${challenges.find((c) => c.value === form.main_challenge)?.label || form.main_challenge}` : ""}
+  const whatsAppMessage = isFranquias
+    ? `Olá! Tenho interesse no plano *Franquias* do CutFlow.
 
-Gostaria de conversar com um especialista.`;
+Nome: ${form.name}
+Cidade: ${form.city}
+Barbeiros: ${form.barbers_count || "—"}
+Unidades: ${form.units_count || "—"}
+${challengeLabel ? `Principal desafio: ${challengeLabel}` : ""}`
+    : `Olá! Tenho interesse no plano *Enterprise* do CutFlow.
+
+Nome: ${form.name}
+Cidade: ${form.city}
+Barbeiros: ${form.barbers_count || "—"}
+Unidades: ${form.units_count || "—"}
+${challengeLabel ? `Principal desafio: ${challengeLabel}` : ""}
+Quero entender SLA, integrações e solução sob medida.`;
 
   const whatsAppUrl = `https://wa.me/${whatsAppPhone}?text=${encodeURIComponent(whatsAppMessage)}`;
 
@@ -169,7 +179,7 @@ Gostaria de conversar com um especialista.`;
                   Vamos montar a solução ideal para sua operação
                 </DialogTitle>
                 <DialogDescription className="text-sm text-muted-foreground mt-1.5">
-                  Nos conte um pouco sobre sua barbearia.
+                  Nos conte um pouco sobre sua barbearia para recomendarmos o melhor formato.
                 </DialogDescription>
               </DialogHeader>
 
@@ -280,7 +290,7 @@ Gostaria de conversar com um especialista.`;
                 {/* Challenge */}
                 <div className="space-y-1.5">
                   <Label htmlFor="lead-challenge" className="text-xs font-medium">
-                    Qual seu maior desafio?
+                    Qual seu principal desafio hoje?
                   </Label>
                   <Select
                     value={form.main_challenge}
@@ -316,6 +326,22 @@ Gostaria de conversar com um especialista.`;
                   )}
                 </Button>
 
+                <a
+                  href={whatsAppUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full"
+                >
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full rounded-xl h-10 text-xs text-muted-foreground gap-1.5 hover:text-foreground"
+                  >
+                    <MessageSquare className="h-3.5 w-3.5" />
+                    Falar direto no WhatsApp
+                  </Button>
+                </a>
+
                 <p className="text-center text-[10px] text-muted-foreground">
                   Seus dados estão seguros. Sem spam, prometemos.
                 </p>
@@ -335,7 +361,7 @@ Gostaria de conversar com um especialista.`;
 
               <h3 className="text-xl sm:text-2xl font-bold mb-2">Obrigado!</h3>
               <p className="text-sm text-muted-foreground mb-8 max-w-xs">
-                Nossa equipe entrará em contato pelo WhatsApp em até 24h.
+                Nossa equipe entrará em contato em breve.
               </p>
 
               <div className="w-full space-y-3">
