@@ -451,17 +451,19 @@ export default function OnboardingPage() {
                     onChange={(e) => { setAddress(e.target.value); clearError(); }}
                     className="h-12"
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="rounded-xl gap-1.5 text-xs h-8 text-muted-foreground hover:text-foreground"
-                    onClick={handleUseLocation}
-                    disabled={geoLoading}
-                  >
-                    {geoLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Navigation className="h-3.5 w-3.5" />}
-                    {geoLoading ? "Localizando..." : "Usar minha localização"}
-                  </Button>
+                  <div className="min-h-[40px] flex items-start">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-xl gap-1.5 text-xs h-8 text-muted-foreground hover:text-foreground"
+                      onClick={handleUseLocation}
+                      disabled={geoLoading}
+                    >
+                      {geoLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Navigation className="h-3.5 w-3.5" />}
+                      {geoLoading ? "Localizando..." : "Usar minha localização"}
+                    </Button>
+                  </div>
                 </div>
 
                 <Button
