@@ -105,7 +105,7 @@ const plans: PlanDef[] = [
       { text: "Exportação de dados" },
       { text: "Analytics avançado" },
     ],
-    cta: "Começar Business",
+    cta: "Começar teste grátis",
     ctaStyle: "outline",
     link: "/checkout?plan=premium",
   },
