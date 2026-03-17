@@ -3,7 +3,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import App from "./App.tsx";
 import "./index.css";
 
-// Production-safe Supabase config debug — deploy refresh
+// Supabase config debug
 const sbUrl = import.meta.env.VITE_SUPABASE_URL ?? "(missing)";
 const sbKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "(missing)";
 console.info("[Boot] SUPABASE_URL:", sbUrl);
