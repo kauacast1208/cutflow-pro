@@ -58,7 +58,7 @@ const plans: PlanDef[] = [
       { text: "Relatórios básicos" },
       { text: "Página de agendamento" },
     ],
-    cta: "Começar grátis",
+    cta: "Começar teste grátis",
     ctaStyle: "outline",
     link: "/checkout?plan=starter",
   },
