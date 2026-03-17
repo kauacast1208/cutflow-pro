@@ -9,7 +9,7 @@ import { GoogleIcon } from "@/components/signup/GoogleIcon";
 import { mapLoginError, mapOAuthError } from "@/lib/authErrors";
 import { cn } from "@/lib/utils";
 import { startGoogleOAuthFlow } from "@/lib/oauth";
-import { ensureCurrentUserSetup, isMasterRole } from "@/lib/tenant";
+import { bootstrapCurrentUserProfile, fetchUserRole, isMasterRole } from "@/lib/tenant";
 
 function AuthError({ message }: { message: string }) {
   if (!message) return null;
@@ -62,12 +62,17 @@ export default function LoginPage() {
 
         let resolvedRole: string | null = null;
         try {
-          const setup = await ensureCurrentUserSetup(
+          await bootstrapCurrentUserProfile(
             data.session.user.user_metadata?.full_name || data.session.user.email || null,
           );
-          resolvedRole = setup.role;
         } catch (setupError) {
-          console.warn("[Login] Setup warning:", setupError);
+          console.warn("[Login] Profile bootstrap warning:", setupError);
+        }
+
+        try {
+          resolvedRole = await fetchUserRole(data.session.user.id);
+        } catch (roleError) {
+          console.warn("[Login] Role lookup warning:", roleError);
         }
 
         toast({ title: "Bem-vindo de volta!", description: "Login realizado com sucesso." });

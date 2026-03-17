@@ -9,7 +9,7 @@ import {
 } from "react";
 import { useAuth } from "./useAuth";
 import {
-  ensureCurrentUserSetup,
+  bootstrapCurrentUserProfile,
   fetchTenantSnapshot,
   type TenantBarbershop,
   type TenantProfile,
@@ -81,7 +81,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     setTenantLoading(true);
 
     try {
-      await ensureCurrentUserSetup(user.user_metadata?.full_name || user.email || null);
+      await bootstrapCurrentUserProfile(user.user_metadata?.full_name || user.email || null);
       const snapshot = await fetchTenantSnapshot(user.id);
 
       setProfile(snapshot.profile);

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { mapSessionRestoreError } from "@/lib/authErrors";
 import { Loader2, Scissors } from "lucide-react";
-import { ensureCurrentUserSetup, fetchTenantSnapshot, isMasterRole } from "@/lib/tenant";
+import { bootstrapCurrentUserProfile, fetchTenantSnapshot, isMasterRole } from "@/lib/tenant";
 
 export default function AuthCallbackPage() {
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ export default function AuthCallbackPage() {
         data: { user },
       } = await supabase.auth.getUser();
 
-      await ensureCurrentUserSetup(user?.user_metadata?.full_name || user?.email || null);
+      await bootstrapCurrentUserProfile(user?.user_metadata?.full_name || user?.email || null);
       const snapshot = await fetchTenantSnapshot(userId);
 
       if (isMasterRole(snapshot.rawRole)) {

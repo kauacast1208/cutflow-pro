@@ -109,7 +109,7 @@ export default function AgendaPage() {
       apptQuery,
       supabase.from("blocked_times").select("*").eq("barbershop_id", barbershop.id).eq("recurring", false).gte("date", start).lte("date", end),
       supabase.from("blocked_times").select("*").eq("barbershop_id", barbershop.id).eq("recurring", true),
-      supabase.from("professionals").select("*").eq("barbershop_id", barbershop.id).eq("active", true),
+      supabase.from("professionals").select("*").eq("barbershop_id", barbershop.id).eq("is_active", true),
       supabase.from("services").select("*").eq("barbershop_id", barbershop.id).eq("active", true),
     ]);
     setAppointments(appRes.data || []);

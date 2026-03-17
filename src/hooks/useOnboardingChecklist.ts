@@ -40,7 +40,7 @@ export function useOnboardingChecklist() {
         .from("professionals")
         .select("id", { count: "exact" })
         .eq("barbershop_id", barbershop.id)
-        .eq("active", true),
+        .eq("is_active", true),
       supabase
         .from("professional_availability")
         .select("id", { count: "exact" })

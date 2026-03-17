@@ -981,7 +981,7 @@ export type Database = {
       }
       professionals: {
         Row: {
-          active: boolean
+          is_active: boolean
           avatar_url: string | null
           barbershop_id: string
           created_at: string
@@ -996,7 +996,7 @@ export type Database = {
           work_start: string | null
         }
         Insert: {
-          active?: boolean
+          is_active?: boolean
           avatar_url?: string | null
           barbershop_id: string
           created_at?: string
@@ -1011,7 +1011,7 @@ export type Database = {
           work_start?: string | null
         }
         Update: {
-          active?: boolean
+          is_active?: boolean
           avatar_url?: string | null
           barbershop_id?: string
           created_at?: string
@@ -1461,7 +1461,7 @@ export type Database = {
       }
       professionals_public: {
         Row: {
-          active: boolean | null
+          is_active: boolean | null
           avatar_url: string | null
           barbershop_id: string | null
           created_at: string | null
@@ -1475,7 +1475,7 @@ export type Database = {
           work_start: string | null
         }
         Insert: {
-          active?: boolean | null
+          is_active?: boolean | null
           avatar_url?: string | null
           barbershop_id?: string | null
           created_at?: string | null
@@ -1489,7 +1489,7 @@ export type Database = {
           work_start?: string | null
         }
         Update: {
-          active?: boolean | null
+          is_active?: boolean | null
           avatar_url?: string | null
           barbershop_id?: string | null
           created_at?: string | null

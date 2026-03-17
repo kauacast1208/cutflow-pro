@@ -10,7 +10,7 @@ import { GoogleIcon } from "@/components/signup/GoogleIcon";
 import { mapOAuthError, mapSignupError } from "@/lib/authErrors";
 import { cn } from "@/lib/utils";
 import { startGoogleOAuthFlow } from "@/lib/oauth";
-import { ensureCurrentUserSetup } from "@/lib/tenant";
+import { bootstrapCurrentUserProfile } from "@/lib/tenant";
 
 function AuthError({ message }: { message: string }) {
   if (!message) return null;
@@ -92,7 +92,7 @@ export default function SignupPage() {
 
       if (data.session) {
         try {
-          await ensureCurrentUserSetup(fullName.trim());
+          await bootstrapCurrentUserProfile(fullName.trim());
         } catch (setupError) {
           const rawMessage = setupError instanceof Error ? setupError.message : "profile_setup_failed_after_signup";
           console.error("[Signup] Setup finalize error:", rawMessage);

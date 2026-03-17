@@ -96,11 +96,11 @@ export default function PublicBookingPage() {
 
       setBarbershop(shop);
 
-      const proIds = (await (supabase as any).from("professionals_public").select("id").eq("barbershop_id", shop.id).eq("active", true)).data?.map((p: any) => p.id) || [];
+      const proIds = (await (supabase as any).from("professionals_public").select("id").eq("barbershop_id", shop.id).eq("is_active", true)).data?.map((p: any) => p.id) || [];
 
       const [servRes, proRes, availRes] = await Promise.all([
         supabase.from("services").select("*").eq("barbershop_id", shop.id).eq("active", true).order("sort_order"),
-        (supabase as any).from("professionals_public").select("*").eq("barbershop_id", shop.id).eq("active", true),
+        (supabase as any).from("professionals_public").select("*").eq("barbershop_id", shop.id).eq("is_active", true),
         supabase.from("professional_availability").select("*").in("professional_id", proIds),
       ]);
 
