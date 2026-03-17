@@ -419,7 +419,7 @@ function ProCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
           <ArrowRight className="h-4 w-4 ml-1" />
         </Button>
       </Link>
-      <p className="text-center text-[11px] text-muted-foreground mt-3">Sem cartão · Cancele quando quiser</p>
+      <p className="text-center text-[11px] text-muted-foreground mt-3">15 dias grátis · Sem cartão · Cancele quando quiser</p>
     </div>
   );
 }
