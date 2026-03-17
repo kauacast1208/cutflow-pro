@@ -469,12 +469,11 @@ export default function OnboardingPage() {
                   <Label htmlFor="name" className="text-sm font-medium">
                     Nome da barbearia <span className="text-destructive">*</span>
                   </Label>
-                  <Input
+                   <Input
                     id="name"
                     placeholder="Ex: Barbearia Premium"
                     value={barbershopName}
                     onChange={(e) => { setBarbershopName(e.target.value); clearError(); }}
-                    autoFocus
                     className="h-12"
                   />
                   <div className="min-h-[18px] pt-1" aria-live="polite">
