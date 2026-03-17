@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useRef, useEffect } from "react";
+import { useMemo, useState, useCallback, useRef, useEffect, useDeferredValue } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,13 +69,15 @@ export default function OnboardingPage() {
   const { refresh, setBarbershop } = useTenant();
   const { toast } = useToast();
 
-  // Debounced slug to avoid reflow on every keystroke
+  // Debounced slug/preview to avoid expensive live updates while typing
+  const deferredBarbershopName = useDeferredValue(barbershopName);
   const [debouncedName, setDebouncedName] = useState("");
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedName(barbershopName), 300);
-    return () => clearTimeout(t);
-  }, [barbershopName]);
+    const t = window.setTimeout(() => setDebouncedName(deferredBarbershopName), 220);
+    return () => window.clearTimeout(t);
+  }, [deferredBarbershopName]);
   const slug = useMemo(() => slugify(debouncedName), [debouncedName]);
+  const slugPreviewText = useMemo(() => (slug ? `cutflow.app/b/${slug}` : ""), [slug]);
   const progress = Math.round((currentStep / (STEPS.length - 1)) * 100);
 
   const clearError = useCallback(() => setFormError(null), []);
@@ -274,27 +276,17 @@ export default function OnboardingPage() {
           const Icon = step.icon;
           return (
             <div key={step.id} className="flex flex-col items-center relative z-10 min-w-0">
-              <motion.div
-                initial={false}
-                animate={{
-                  scale: isActive ? 1 : 0.85,
-                  backgroundColor: isDone
-                    ? "hsl(var(--primary))"
+              <div
+                className={`flex h-9 w-9 items-center justify-center rounded-full transition-[background-color,box-shadow,color] duration-200 ${
+                  isDone
+                    ? "bg-primary text-primary-foreground"
                     : isActive
-                      ? "hsl(var(--primary) / 0.15)"
-                      : "hsl(var(--muted))",
-                }}
-                transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                className={`flex h-9 w-9 items-center justify-center rounded-full ${
-                  isActive ? "ring-2 ring-primary/30 ring-offset-2 ring-offset-background" : ""
+                      ? "bg-primary/15 text-primary ring-2 ring-primary/30 ring-offset-2 ring-offset-background"
+                      : "bg-muted text-muted-foreground/40"
                 }`}
               >
-                {isDone ? (
-                  <Check className="h-4 w-4 text-primary-foreground" />
-                ) : (
-                  <Icon className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground/40"}`} />
-                )}
-              </motion.div>
+                {isDone ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+              </div>
               <span className={`text-[10px] font-medium mt-1.5 text-center leading-tight w-[64px] truncate ${
                 isDone ? "text-primary" : isActive ? "text-foreground" : "text-muted-foreground/40"
               }`}>
@@ -325,27 +317,19 @@ export default function OnboardingPage() {
     </div>
   );
 
-  // ── Card wrapper — fixed min-height to prevent layout shift ──
+  // ── Card wrapper — stable container to prevent layout shift ──
   const StepCard = ({ children, title, subtitle }: { children: React.ReactNode; title: string; subtitle: string }) => (
-    <motion.div
-      key={currentStep}
-      initial={{ opacity: 0, x: 30 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -30 }}
-      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      className="w-full max-w-md mx-auto"
-      layout={false}
-    >
+    <div className="w-full max-w-md mx-auto">
       <div className="text-center mb-6">
         <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight mb-1.5">{title}</h1>
         <p className="text-sm text-muted-foreground">{subtitle}</p>
       </div>
 
-      <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-8 shadow-xl shadow-black/5 min-h-[420px]">
+      <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-8 shadow-xl shadow-black/5 min-h-[520px] sm:min-h-[540px] flex flex-col">
         <ErrorBanner />
-        {children}
+        <div className="flex-1">{children}</div>
       </div>
-    </motion.div>
+    </div>
   );
 
   return (
@@ -375,11 +359,11 @@ export default function OnboardingPage() {
                 {/* Logo upload */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Logo da barbearia</Label>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-start gap-4 min-h-[92px]">
                     <button
                       type="button"
                       onClick={() => logoInputRef.current?.click()}
-                      className="relative h-16 w-16 sm:h-[72px] sm:w-[72px] rounded-2xl border-2 border-dashed border-border/60 bg-muted/30 flex items-center justify-center overflow-hidden shrink-0 transition-colors hover:border-primary/30 hover:bg-muted/50 active:scale-95"
+                      className="relative h-16 w-16 sm:h-[72px] sm:w-[72px] rounded-2xl border-2 border-dashed border-border/60 bg-muted/30 flex items-center justify-center overflow-hidden shrink-0 transition-[border-color,background-color] duration-200 hover:border-primary/30 hover:bg-muted/50"
                     >
                       {logoPreview ? (
                         <img src={logoPreview} alt="Logo preview" className="h-full w-full object-cover rounded-2xl" />
@@ -394,8 +378,8 @@ export default function OnboardingPage() {
                       className="hidden"
                       onChange={handleLogoSelect}
                     />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
+                    <div className="flex-1 min-w-0 min-h-[72px] flex flex-col justify-between">
+                      <div className="flex items-center gap-2 min-h-[32px]">
                         <Button
                           type="button"
                           size="sm"
@@ -406,19 +390,23 @@ export default function OnboardingPage() {
                           <Upload className="h-3.5 w-3.5" />
                           {logoPreview ? "Trocar" : "Enviar logo"}
                         </Button>
-                        {logoPreview && (
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            className="rounded-xl text-xs h-8 text-destructive hover:text-destructive px-2"
-                            onClick={removeLogo}
-                          >
-                            <X className="h-3.5 w-3.5" />
-                          </Button>
-                        )}
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className={`rounded-xl text-xs h-8 text-destructive hover:text-destructive px-2 transition-opacity ${
+                            logoPreview ? "opacity-100" : "opacity-0 pointer-events-none"
+                          }`}
+                          onClick={removeLogo}
+                          aria-hidden={!logoPreview}
+                          tabIndex={logoPreview ? 0 : -1}
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
-                      <p className="text-[11px] text-muted-foreground/50 mt-1">PNG, JPG ou WebP · Máx. 2MB</p>
+                      <div className="min-h-[16px] pt-1">
+                        <p className="text-[11px] text-muted-foreground/50">PNG, JPG ou WebP · Máx. 2MB</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -435,13 +423,11 @@ export default function OnboardingPage() {
                     autoFocus
                     className="h-12"
                   />
-                  {/* Reserved height for slug helper — prevents layout shift */}
-                  <div className="h-4">
-                    {barbershopName.trim() && slug ? (
-                      <p className="text-[11px] text-muted-foreground/50 flex items-center gap-1 transition-opacity duration-200">
-                        <Globe className="h-3 w-3" /> cutflow.app/b/{slug}
-                      </p>
-                    ) : null}
+                  <div className="min-h-[18px] pt-1" aria-live="polite">
+                    <p className={`text-[11px] text-muted-foreground/50 flex items-center gap-1 transition-opacity duration-200 ${slugPreviewText ? "opacity-100" : "opacity-0"}`}>
+                      <Globe className="h-3 w-3 shrink-0" />
+                      <span className="truncate">{slugPreviewText || "cutflow.app/b/seu-slug"}</span>
+                    </p>
                   </div>
                 </div>
 
@@ -465,17 +451,19 @@ export default function OnboardingPage() {
                     onChange={(e) => { setAddress(e.target.value); clearError(); }}
                     className="h-12"
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="rounded-xl gap-1.5 text-xs h-8 text-muted-foreground hover:text-foreground"
-                    onClick={handleUseLocation}
-                    disabled={geoLoading}
-                  >
-                    {geoLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Navigation className="h-3.5 w-3.5" />}
-                    {geoLoading ? "Localizando..." : "Usar minha localização"}
-                  </Button>
+                  <div className="min-h-[40px] flex items-start">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-xl gap-1.5 text-xs h-8 text-muted-foreground hover:text-foreground"
+                      onClick={handleUseLocation}
+                      disabled={geoLoading}
+                    >
+                      {geoLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Navigation className="h-3.5 w-3.5" />}
+                      {geoLoading ? "Localizando..." : "Usar minha localização"}
+                    </Button>
+                  </div>
                 </div>
 
                 <Button
