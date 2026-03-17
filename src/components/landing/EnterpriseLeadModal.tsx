@@ -179,7 +179,7 @@ Quero entender SLA, integrações e solução sob medida.`;
                   Vamos montar a solução ideal para sua operação
                 </DialogTitle>
                 <DialogDescription className="text-sm text-muted-foreground mt-1.5">
-                  Nos conte um pouco sobre sua barbearia.
+                  Nos conte um pouco sobre sua barbearia para recomendarmos o melhor formato.
                 </DialogDescription>
               </DialogHeader>
 
