@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import {
-  Scissors, ArrowRight, ArrowLeft, Loader2, MapPin, Phone, Store,
+  Scissors, ArrowRight, Loader2, Store,
   AlertCircle, CheckCircle2, Sparkles, Globe, DollarSign, Clock,
   UserPlus, Rocket, PartyPopper, Check, Upload, ImageIcon, Navigation, X,
 } from "lucide-react";
@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { buildBarbershopInsert, getBarbershopErrorMessage, onboardingBarbershopSchema } from "@/lib/barbershop";
 import { formatPhone } from "@/lib/format";
-import { ensureCurrentUserSetup, isNoRowsError } from "@/lib/tenant";
+import { ensureCurrentUserSetup } from "@/lib/tenant";
 import { Progress } from "@/components/ui/progress";
 
 function slugify(text: string) {
@@ -30,8 +30,8 @@ function slugify(text: string) {
 const STEPS = [
   { id: "account", label: "Conta criada", icon: CheckCircle2 },
   { id: "barbershop", label: "Sua barbearia", icon: Store },
+  { id: "barber", label: "Primeiro barbeiro", icon: UserPlus },
   { id: "service", label: "Primeiro serviço", icon: Scissors },
-  { id: "client", label: "Primeiro cliente", icon: UserPlus },
   { id: "ready", label: "Pronto!", icon: Rocket },
 ];
 
@@ -55,14 +55,14 @@ export default function OnboardingPage() {
   // Geolocation
   const [geoLoading, setGeoLoading] = useState(false);
 
-  // Step 2: Service
+  // Step 2: Barber (professional)
+  const [barberName, setBarberName] = useState("");
+  const [barberRole, setBarberRole] = useState("Barbeiro");
+
+  // Step 3: Service
   const [serviceName, setServiceName] = useState("");
   const [servicePrice, setServicePrice] = useState("");
   const [serviceDuration, setServiceDuration] = useState("30");
-
-  // Step 3: Client
-  const [clientName, setClientName] = useState("");
-  const [clientPhone, setClientPhone] = useState("");
 
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -78,7 +78,6 @@ export default function OnboardingPage() {
   const handleLogoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     if (!file.type.startsWith("image/")) {
       toast({ title: "Formato inválido", description: "Envie PNG, JPG ou WebP.", variant: "destructive" });
       return;
@@ -87,7 +86,6 @@ export default function OnboardingPage() {
       toast({ title: "Arquivo muito grande", description: "Máximo 2MB.", variant: "destructive" });
       return;
     }
-
     setLogoFile(file);
     const reader = new FileReader();
     reader.onload = (ev) => setLogoPreview(ev.target?.result as string);
@@ -95,10 +93,7 @@ export default function OnboardingPage() {
     if (logoInputRef.current) logoInputRef.current.value = "";
   };
 
-  const removeLogo = () => {
-    setLogoFile(null);
-    setLogoPreview(null);
-  };
+  const removeLogo = () => { setLogoFile(null); setLogoPreview(null); };
 
   const uploadLogoToStorage = async (barbershopId: string): Promise<string | null> => {
     if (!logoFile) return null;
@@ -137,17 +132,9 @@ export default function OnboardingPage() {
           );
           if (res.ok) {
             const data = await res.json();
-            const display = data.display_name || `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
-            // Build a cleaner address from parts
             const addr = data.address || {};
-            const parts = [
-              addr.road,
-              addr.house_number,
-              addr.suburb || addr.neighbourhood,
-              addr.city || addr.town || addr.village,
-              addr.state,
-            ].filter(Boolean);
-            setAddress(parts.length > 0 ? parts.join(", ") : display);
+            const parts = [addr.road, addr.house_number, addr.suburb || addr.neighbourhood, addr.city || addr.town || addr.village, addr.state].filter(Boolean);
+            setAddress(parts.length > 0 ? parts.join(", ") : data.display_name || `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
             clearError();
           }
         } catch {
@@ -172,13 +159,8 @@ export default function OnboardingPage() {
   const handleCreateBarbershop = async () => {
     if (!user) return;
     clearError();
-    console.info("[Onboarding] Step 1 START — creating barbershop", { userId: user.id, name: barbershopName });
 
-    const parsed = onboardingBarbershopSchema.safeParse({
-      name: barbershopName,
-      phone,
-      address,
-    });
+    const parsed = onboardingBarbershopSchema.safeParse({ name: barbershopName, phone, address });
     if (!parsed.success) {
       setFormError(parsed.error.issues[0]?.message || "Revise os campos.");
       return;
@@ -186,9 +168,7 @@ export default function OnboardingPage() {
 
     setLoading(true);
     try {
-      console.info("[Onboarding] Ensuring user setup...");
       await ensureCurrentUserSetup(user.user_metadata?.full_name || user.email?.split("@")[0] || null);
-      console.info("[Onboarding] User setup OK");
 
       let finalSlug = slugify(parsed.data.name) || `barbearia-${Math.random().toString(36).slice(2, 7)}`;
       const { data: existing } = await supabase
@@ -196,13 +176,11 @@ export default function OnboardingPage() {
       if (existing) finalSlug = `${finalSlug}-${Math.random().toString(36).slice(2, 5)}`;
 
       const payload = buildBarbershopInsert(parsed.data, user.id, finalSlug);
-      console.info("[Onboarding] Inserting barbershop with slug:", finalSlug);
       const { data: created, error } = await supabase
         .from("barbershops").insert(payload).select("*").maybeSingle();
 
       if (error) throw error;
       if (created) {
-        // Upload logo if selected
         if (logoFile) {
           const logoUrl = await uploadLogoToStorage(created.id);
           if (logoUrl) {
@@ -212,13 +190,11 @@ export default function OnboardingPage() {
         }
         setBarbershop(created);
         setCreatedBarbershopId(created.id);
-        console.info("[Onboarding] Step 1 DONE — barbershop created:", created.id);
       }
       await refresh();
       setCurrentStep(2);
     } catch (error) {
       const message = getBarbershopErrorMessage(error, "Não foi possível criar sua barbearia.");
-      console.error("[Onboarding] Step 1 FAILED", { userId: user.id, error });
       setFormError(message);
       toast({ title: "Erro", description: message, variant: "destructive" });
     } finally {
@@ -226,7 +202,33 @@ export default function OnboardingPage() {
     }
   };
 
-  // ── Step 2: Create first service ──
+  // ── Step 2: Create first barber (professional) ──
+  const handleCreateBarber = async () => {
+    if (!createdBarbershopId) return;
+    if (!barberName.trim()) {
+      setFormError("Informe o nome do barbeiro.");
+      return;
+    }
+    clearError();
+    setLoading(true);
+    try {
+      const { error } = await supabase.from("professionals").insert({
+        barbershop_id: createdBarbershopId,
+        name: barberName.trim(),
+        role: barberRole.trim() || "Barbeiro",
+        active: true,
+      });
+      if (error) throw error;
+      setCurrentStep(3);
+    } catch (error) {
+      console.error("[Onboarding] Barber creation failed", error);
+      setFormError("Não foi possível cadastrar o barbeiro. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Step 3: Create first service ──
   const handleCreateService = async () => {
     if (!createdBarbershopId) return;
     if (!serviceName.trim()) {
@@ -235,7 +237,6 @@ export default function OnboardingPage() {
     }
     clearError();
     setLoading(true);
-    console.info("[Onboarding] Step 2 START — creating service", { barbershopId: createdBarbershopId, name: serviceName });
     try {
       const { error } = await supabase.from("services").insert({
         barbershop_id: createdBarbershopId,
@@ -245,52 +246,19 @@ export default function OnboardingPage() {
         active: true,
       });
       if (error) throw error;
-      console.info("[Onboarding] Step 2 DONE — service created");
-      setCurrentStep(3);
+      setCurrentStep(4);
     } catch (error) {
-      console.error("[Onboarding] Step 2 FAILED", error);
+      console.error("[Onboarding] Service creation failed", error);
       setFormError("Não foi possível criar o serviço. Tente novamente.");
     } finally {
       setLoading(false);
     }
   };
 
-  // ── Step 3: Create first client ──
-  const handleCreateClient = async () => {
-    if (!createdBarbershopId) return;
-    if (!clientName.trim()) {
-      setFormError("Informe o nome do cliente.");
-      return;
-    }
-    clearError();
-    setLoading(true);
-    console.info("[Onboarding] Step 3 START — creating client", { barbershopId: createdBarbershopId, name: clientName });
-    try {
-      const { error } = await supabase.from("clients").insert({
-        barbershop_id: createdBarbershopId,
-        name: clientName.trim(),
-        phone: clientPhone.trim() || null,
-      });
-      if (error) throw error;
-      console.info("[Onboarding] Step 3 DONE — client created");
-      setCurrentStep(4);
-    } catch (error) {
-      console.error("[Onboarding] Step 3 FAILED", error);
-      setFormError("Não foi possível cadastrar o cliente. Tente novamente.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ── Skip handlers ──
-  const skipToNext = () => {
-    clearError();
-    setCurrentStep((s) => Math.min(s + 1, 4));
-  };
-
+  const skipToNext = () => { clearError(); setCurrentStep((s) => Math.min(s + 1, 4)); };
   const goToDashboard = () => navigate("/dashboard");
 
-  // ── Step indicator component ──
+  // ── Step indicator ──
   const StepIndicator = () => (
     <div className="w-full max-w-md mx-auto mb-8">
       <div className="flex items-center justify-between mb-3">
@@ -299,7 +267,7 @@ export default function OnboardingPage() {
           const isActive = i === currentStep;
           const Icon = step.icon;
           return (
-            <div key={step.id} className="flex flex-col items-center relative z-10">
+            <div key={step.id} className="flex flex-col items-center relative z-10 min-w-0">
               <motion.div
                 initial={false}
                 animate={{
@@ -311,7 +279,7 @@ export default function OnboardingPage() {
                       : "hsl(var(--muted))",
                 }}
                 transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                className={`flex h-9 w-9 items-center justify-center rounded-full transition-all ${
+                className={`flex h-9 w-9 items-center justify-center rounded-full ${
                   isActive ? "ring-2 ring-primary/30 ring-offset-2 ring-offset-background" : ""
                 }`}
               >
@@ -321,7 +289,7 @@ export default function OnboardingPage() {
                   <Icon className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground/40"}`} />
                 )}
               </motion.div>
-              <span className={`text-[10px] font-medium mt-1.5 text-center leading-tight max-w-[60px] ${
+              <span className={`text-[10px] font-medium mt-1.5 text-center leading-tight w-[64px] truncate ${
                 isDone ? "text-primary" : isActive ? "text-foreground" : "text-muted-foreground/40"
               }`}>
                 {step.label}
@@ -335,27 +303,35 @@ export default function OnboardingPage() {
   );
 
   // ── Error banner ──
-  const ErrorBanner = () =>
-    formError ? (
-      <motion.div
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -8 }}
-        className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-3 mb-6"
-      >
-        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-        <span>{formError}</span>
-      </motion.div>
-    ) : null;
+  const ErrorBanner = () => (
+    <div className="min-h-[0px]">
+      <AnimatePresence>
+        {formError && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-3 mb-5">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>{formError}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 
-  // ── Card wrapper ──
+  // ── Card wrapper — fixed min-height to prevent layout shift ──
   const StepCard = ({ children, title, subtitle }: { children: React.ReactNode; title: string; subtitle: string }) => (
     <motion.div
       key={currentStep}
-      initial={{ opacity: 0, x: 40 }}
+      initial={{ opacity: 0, x: 30 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -40 }}
-      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      exit={{ opacity: 0, x: -30 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
       className="w-full max-w-md mx-auto"
     >
       <div className="text-center mb-6">
@@ -364,9 +340,7 @@ export default function OnboardingPage() {
       </div>
 
       <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-8 shadow-xl shadow-black/5">
-        <AnimatePresence>
-          <ErrorBanner />
-        </AnimatePresence>
+        <ErrorBanner />
         {children}
       </div>
     </motion.div>
@@ -459,11 +433,14 @@ export default function OnboardingPage() {
                     autoFocus
                     className="h-12"
                   />
-                  {barbershopName.trim() && slug && (
-                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[11px] text-muted-foreground/50 flex items-center gap-1">
-                      <Globe className="h-3 w-3" /> cutflow.app/b/{slug}
-                    </motion.p>
-                  )}
+                  {/* Reserved height for slug helper — prevents layout shift */}
+                  <div className="h-4">
+                    {barbershopName.trim() && slug ? (
+                      <p className="text-[11px] text-muted-foreground/50 flex items-center gap-1 animate-fade-in">
+                        <Globe className="h-3 w-3" /> cutflow.app/b/{slug}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">
@@ -490,15 +467,11 @@ export default function OnboardingPage() {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="rounded-xl gap-1.5 text-xs h-8 text-muted-foreground hover:text-foreground -mt-0.5"
+                    className="rounded-xl gap-1.5 text-xs h-8 text-muted-foreground hover:text-foreground"
                     onClick={handleUseLocation}
                     disabled={geoLoading}
                   >
-                    {geoLoading ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Navigation className="h-3.5 w-3.5" />
-                    )}
+                    {geoLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Navigation className="h-3.5 w-3.5" />}
                     {geoLoading ? "Localizando..." : "Usar minha localização"}
                   </Button>
                 </div>
@@ -518,8 +491,57 @@ export default function OnboardingPage() {
             </StepCard>
           )}
 
-          {/* ─────────── STEP 2: Service ─────────── */}
+          {/* ─────────── STEP 2: Barber ─────────── */}
           {currentStep === 2 && (
+            <StepCard title="Adicione seu primeiro barbeiro" subtitle="Quem vai atender seus clientes?">
+              <div className="space-y-5">
+                <div className="space-y-1.5">
+                  <Label htmlFor="barber-name" className="text-sm font-medium">
+                    Nome do barbeiro <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="barber-name"
+                    placeholder="Ex: Carlos Silva"
+                    value={barberName}
+                    onChange={(e) => { setBarberName(e.target.value); clearError(); }}
+                    autoFocus
+                    className="h-12"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="barber-role" className="text-sm font-medium">Função</Label>
+                  <Input
+                    id="barber-role"
+                    placeholder="Ex: Barbeiro, Barbeiro Senior"
+                    value={barberRole}
+                    onChange={(e) => setBarberRole(e.target.value)}
+                    className="h-12"
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={skipToNext}
+                    className="flex-1 h-12 rounded-xl text-sm font-medium"
+                  >
+                    Configurar depois
+                  </Button>
+                  <Button
+                    onClick={handleCreateBarber}
+                    disabled={loading || !barberName.trim()}
+                    className="flex-1 h-12 rounded-xl text-sm font-semibold gap-2 shadow-md shadow-primary/10"
+                  >
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Adicionar</>}
+                  </Button>
+                </div>
+              </div>
+            </StepCard>
+          )}
+
+          {/* ─────────── STEP 3: Service ─────────── */}
+          {currentStep === 3 && (
             <StepCard title="Adicione seu primeiro serviço" subtitle="Seus clientes verão isso ao agendar">
               <div className="space-y-5">
                 <div className="space-y-1.5">
@@ -575,60 +597,11 @@ export default function OnboardingPage() {
                     onClick={skipToNext}
                     className="flex-1 h-12 rounded-xl text-sm font-medium"
                   >
-                    Pular por agora
+                    Configurar depois
                   </Button>
                   <Button
                     onClick={handleCreateService}
                     disabled={loading || !serviceName.trim()}
-                    className="flex-1 h-12 rounded-xl text-sm font-semibold gap-2 shadow-md shadow-primary/10"
-                  >
-                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Salvar</>}
-                  </Button>
-                </div>
-              </div>
-            </StepCard>
-          )}
-
-          {/* ─────────── STEP 3: Client ─────────── */}
-          {currentStep === 3 && (
-            <StepCard title="Cadastre seu primeiro cliente" subtitle="Você pode importar mais clientes depois">
-              <div className="space-y-5">
-                <div className="space-y-1.5">
-                  <Label htmlFor="cli-name" className="text-sm font-medium">
-                    Nome do cliente <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="cli-name"
-                    placeholder="Ex: João Silva"
-                    value={clientName}
-                    onChange={(e) => { setClientName(e.target.value); clearError(); }}
-                    autoFocus
-                    className="h-12"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="cli-phone" className="text-sm font-medium">Telefone do cliente</Label>
-                  <Input
-                    id="cli-phone"
-                    placeholder="(11) 99999-0000"
-                    value={clientPhone}
-                    onChange={(e) => setClientPhone(formatPhone(e.target.value))}
-                    className="h-12"
-                  />
-                </div>
-
-                <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={skipToNext}
-                    className="flex-1 h-12 rounded-xl text-sm font-medium"
-                  >
-                    Pular por agora
-                  </Button>
-                  <Button
-                    onClick={handleCreateClient}
-                    disabled={loading || !clientName.trim()}
                     className="flex-1 h-12 rounded-xl text-sm font-semibold gap-2 shadow-md shadow-primary/10"
                   >
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Salvar</>}
@@ -699,8 +672,8 @@ export default function OnboardingPage() {
                 {[
                   { label: "Conta criada", done: true },
                   { label: "Barbearia configurada", done: true },
+                  { label: "Barbeiro cadastrado", done: !!barberName },
                   { label: "Serviço cadastrado", done: !!serviceName },
-                  { label: "Cliente cadastrado", done: !!clientName },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center gap-2.5">
                     {item.done ? (
