@@ -310,23 +310,18 @@ export default function OnboardingPage() {
 
   // ── Error banner ──
   const ErrorBanner = () => (
-    <div className="min-h-[0px]">
-      <AnimatePresence>
-        {formError && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-3 mb-5">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>{formError}</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <div className="min-h-[52px] mb-5">
+      <div
+        className={`rounded-xl border px-4 py-3 text-sm flex items-start gap-3 transition-all duration-200 ${
+          formError
+            ? "border-destructive/30 bg-destructive/10 text-destructive opacity-100"
+            : "border-transparent bg-transparent text-transparent opacity-0 pointer-events-none select-none"
+        }`}
+        aria-live="polite"
+      >
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+        <span>{formError || "\u00A0"}</span>
+      </div>
     </div>
   );
 
