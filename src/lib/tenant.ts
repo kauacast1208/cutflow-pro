@@ -24,6 +24,19 @@ export interface TenantBarbershop {
   logo_url: string | null;
   phone: string | null;
   address: string | null;
+  address_complement: string | null;
+  description: string | null;
+  instagram: string | null;
+  whatsapp: string | null;
+  opening_time: string;
+  closing_time: string;
+  slot_interval_minutes: number;
+  buffer_minutes: number;
+  min_advance_hours: number;
+  allow_online_cancellation: boolean;
+  allow_online_reschedule: boolean;
+  cancellation_limit_hours: number;
+  auto_confirm: boolean;
 }
 
 export interface DirectTenantContext {
