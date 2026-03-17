@@ -159,7 +159,7 @@ export async function fetchTenantSnapshot(userId: string): Promise<TenantSnapsho
 
   if (barbershopId) {
     const [shopResult, roleResult] = await Promise.allSettled([
-      supabase.from("barbershops").select("id, name, slug, owner_id, logo_url, phone, address").eq("id", barbershopId).maybeSingle(),
+      supabase.from("barbershops").select("*").eq("id", barbershopId).maybeSingle(),
       findUserRoleForBarbershop(userId, barbershopId),
     ]);
 
