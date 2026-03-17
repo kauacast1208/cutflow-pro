@@ -366,7 +366,7 @@ export default function OnboardingPage() {
         aria-live="polite"
       >
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-        <span>{formError || "\u00A0"}</span>
+        <span className="whitespace-pre-line">{formError || "\u00A0"}</span>
       </div>
     </div>
   );
