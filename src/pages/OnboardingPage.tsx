@@ -276,27 +276,17 @@ export default function OnboardingPage() {
           const Icon = step.icon;
           return (
             <div key={step.id} className="flex flex-col items-center relative z-10 min-w-0">
-              <motion.div
-                initial={false}
-                animate={{
-                  scale: isActive ? 1 : 0.85,
-                  backgroundColor: isDone
-                    ? "hsl(var(--primary))"
+              <div
+                className={`flex h-9 w-9 items-center justify-center rounded-full transition-[background-color,box-shadow,color] duration-200 ${
+                  isDone
+                    ? "bg-primary text-primary-foreground"
                     : isActive
-                      ? "hsl(var(--primary) / 0.15)"
-                      : "hsl(var(--muted))",
-                }}
-                transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                className={`flex h-9 w-9 items-center justify-center rounded-full ${
-                  isActive ? "ring-2 ring-primary/30 ring-offset-2 ring-offset-background" : ""
+                      ? "bg-primary/15 text-primary ring-2 ring-primary/30 ring-offset-2 ring-offset-background"
+                      : "bg-muted text-muted-foreground/40"
                 }`}
               >
-                {isDone ? (
-                  <Check className="h-4 w-4 text-primary-foreground" />
-                ) : (
-                  <Icon className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground/40"}`} />
-                )}
-              </motion.div>
+                {isDone ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+              </div>
               <span className={`text-[10px] font-medium mt-1.5 text-center leading-tight w-[64px] truncate ${
                 isDone ? "text-primary" : isActive ? "text-foreground" : "text-muted-foreground/40"
               }`}>
