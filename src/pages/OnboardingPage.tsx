@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Scissors, ArrowRight, ArrowLeft, Loader2, MapPin, Phone, Store,
   AlertCircle, CheckCircle2, Sparkles, Globe, DollarSign, Clock,
-  UserPlus, Rocket, PartyPopper, Check,
+  UserPlus, Rocket, PartyPopper, Check, Upload, ImageIcon, Navigation, X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -36,7 +36,7 @@ const STEPS = [
 ];
 
 export default function OnboardingPage() {
-  const [currentStep, setCurrentStep] = useState(1); // 0=account(done), 1=barbershop, 2=service, 3=client, 4=ready
+  const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -45,6 +45,15 @@ export default function OnboardingPage() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [createdBarbershopId, setCreatedBarbershopId] = useState<string | null>(null);
+
+  // Logo upload
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  // Geolocation
+  const [geoLoading, setGeoLoading] = useState(false);
 
   // Step 2: Service
   const [serviceName, setServiceName] = useState("");
@@ -64,6 +73,100 @@ export default function OnboardingPage() {
   const progress = Math.round((currentStep / (STEPS.length - 1)) * 100);
 
   const clearError = useCallback(() => setFormError(null), []);
+
+  // ── Logo handlers ──
+  const handleLogoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Formato inválido", description: "Envie PNG, JPG ou WebP.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "Arquivo muito grande", description: "Máximo 2MB.", variant: "destructive" });
+      return;
+    }
+
+    setLogoFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setLogoPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+    if (logoInputRef.current) logoInputRef.current.value = "";
+  };
+
+  const removeLogo = () => {
+    setLogoFile(null);
+    setLogoPreview(null);
+  };
+
+  const uploadLogoToStorage = async (barbershopId: string): Promise<string | null> => {
+    if (!logoFile) return null;
+    setUploadingLogo(true);
+    try {
+      const ext = logoFile.name.split(".").pop() || "png";
+      const path = `${barbershopId}/logo.${ext}`;
+      const { error } = await supabase.storage
+        .from("logos")
+        .upload(path, logoFile, { upsert: true, contentType: logoFile.type });
+      if (error) throw error;
+      const { data: urlData } = supabase.storage.from("logos").getPublicUrl(path);
+      return `${urlData.publicUrl}?t=${Date.now()}`;
+    } catch (err) {
+      console.error("[Onboarding] Logo upload failed", err);
+      return null;
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  // ── Geolocation ──
+  const handleUseLocation = async () => {
+    if (!navigator.geolocation) {
+      toast({ title: "Geolocalização indisponível", description: "Seu navegador não suporta geolocalização.", variant: "destructive" });
+      return;
+    }
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&accept-language=pt-BR`,
+            { headers: { "User-Agent": "CutFlow/1.0" } }
+          );
+          if (res.ok) {
+            const data = await res.json();
+            const display = data.display_name || `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+            // Build a cleaner address from parts
+            const addr = data.address || {};
+            const parts = [
+              addr.road,
+              addr.house_number,
+              addr.suburb || addr.neighbourhood,
+              addr.city || addr.town || addr.village,
+              addr.state,
+            ].filter(Boolean);
+            setAddress(parts.length > 0 ? parts.join(", ") : display);
+            clearError();
+          }
+        } catch {
+          setAddress(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
+        } finally {
+          setGeoLoading(false);
+        }
+      },
+      (err) => {
+        setGeoLoading(false);
+        toast({
+          title: "Erro de localização",
+          description: err.code === 1 ? "Permissão negada. Habilite a localização no navegador." : "Não foi possível obter sua localização.",
+          variant: "destructive",
+        });
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
 
   // ── Step 1: Create barbershop ──
   const handleCreateBarbershop = async () => {
@@ -99,6 +202,14 @@ export default function OnboardingPage() {
 
       if (error) throw error;
       if (created) {
+        // Upload logo if selected
+        if (logoFile) {
+          const logoUrl = await uploadLogoToStorage(created.id);
+          if (logoUrl) {
+            await supabase.from("barbershops").update({ logo_url: logoUrl }).eq("id", created.id);
+            created.logo_url = logoUrl;
+          }
+        }
         setBarbershop(created);
         setCreatedBarbershopId(created.id);
         console.info("[Onboarding] Step 1 DONE — barbershop created:", created.id);
@@ -252,7 +363,7 @@ export default function OnboardingPage() {
         <p className="text-sm text-muted-foreground">{subtitle}</p>
       </div>
 
-      <div className="rounded-2xl border border-border/80 bg-card p-6 sm:p-8 shadow-xl shadow-black/5">
+      <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-8 shadow-xl shadow-black/5">
         <AnimatePresence>
           <ErrorBanner />
         </AnimatePresence>
@@ -285,6 +396,57 @@ export default function OnboardingPage() {
           {currentStep === 1 && (
             <StepCard title="Configure sua barbearia" subtitle="Informações básicas da sua página de agendamento">
               <div className="space-y-5">
+                {/* Logo upload */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Logo da barbearia</Label>
+                  <div className="flex items-center gap-4">
+                    <button
+                      type="button"
+                      onClick={() => logoInputRef.current?.click()}
+                      className="relative h-16 w-16 sm:h-[72px] sm:w-[72px] rounded-2xl border-2 border-dashed border-border/60 bg-muted/30 flex items-center justify-center overflow-hidden shrink-0 transition-colors hover:border-primary/30 hover:bg-muted/50 active:scale-95"
+                    >
+                      {logoPreview ? (
+                        <img src={logoPreview} alt="Logo preview" className="h-full w-full object-cover rounded-2xl" />
+                      ) : (
+                        <ImageIcon className="h-6 w-6 text-muted-foreground/30" />
+                      )}
+                    </button>
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      className="hidden"
+                      onChange={handleLogoSelect}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl gap-1.5 text-xs h-8"
+                          onClick={() => logoInputRef.current?.click()}
+                        >
+                          <Upload className="h-3.5 w-3.5" />
+                          {logoPreview ? "Trocar" : "Enviar logo"}
+                        </Button>
+                        {logoPreview && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            className="rounded-xl text-xs h-8 text-destructive hover:text-destructive px-2"
+                            onClick={removeLogo}
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground/50 mt-1">PNG, JPG ou WebP · Máx. 2MB</p>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-1.5">
                   <Label htmlFor="name" className="text-sm font-medium">
                     Nome da barbearia <span className="text-destructive">*</span>
@@ -295,7 +457,7 @@ export default function OnboardingPage() {
                     value={barbershopName}
                     onChange={(e) => { setBarbershopName(e.target.value); clearError(); }}
                     autoFocus
-                    className="h-11"
+                    className="h-12"
                   />
                   {barbershopName.trim() && slug && (
                     <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[11px] text-muted-foreground/50 flex items-center gap-1">
@@ -311,7 +473,7 @@ export default function OnboardingPage() {
                     placeholder="(11) 99999-0000"
                     value={phone}
                     onChange={(e) => { setPhone(formatPhone(e.target.value)); clearError(); }}
-                    className="h-11"
+                    className="h-12"
                   />
                 </div>
 
@@ -322,8 +484,23 @@ export default function OnboardingPage() {
                     placeholder="Rua das Palmeiras, 123 — Centro"
                     value={address}
                     onChange={(e) => { setAddress(e.target.value); clearError(); }}
-                    className="h-11"
+                    className="h-12"
                   />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-xl gap-1.5 text-xs h-8 text-muted-foreground hover:text-foreground -mt-0.5"
+                    onClick={handleUseLocation}
+                    disabled={geoLoading}
+                  >
+                    {geoLoading ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Navigation className="h-3.5 w-3.5" />
+                    )}
+                    {geoLoading ? "Localizando..." : "Usar minha localização"}
+                  </Button>
                 </div>
 
                 <Button
@@ -332,7 +509,7 @@ export default function OnboardingPage() {
                   className="w-full h-12 text-sm font-semibold rounded-xl gap-2 shadow-md shadow-primary/10"
                 >
                   {loading ? (
-                    <><Loader2 className="h-4 w-4 animate-spin" /> Criando...</>
+                    <><Loader2 className="h-4 w-4 animate-spin" /> {uploadingLogo ? "Enviando logo..." : "Criando..."}</>
                   ) : (
                     <><Sparkles className="h-4 w-4" /> Criar minha barbearia <ArrowRight className="h-4 w-4" /></>
                   )}
@@ -355,7 +532,7 @@ export default function OnboardingPage() {
                     value={serviceName}
                     onChange={(e) => { setServiceName(e.target.value); clearError(); }}
                     autoFocus
-                    className="h-11"
+                    className="h-12"
                   />
                 </div>
 
@@ -372,7 +549,7 @@ export default function OnboardingPage() {
                       placeholder="45.00"
                       value={servicePrice}
                       onChange={(e) => setServicePrice(e.target.value)}
-                      className="h-11"
+                      className="h-12"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -387,7 +564,7 @@ export default function OnboardingPage() {
                       placeholder="30"
                       value={serviceDuration}
                       onChange={(e) => setServiceDuration(e.target.value)}
-                      className="h-11"
+                      className="h-12"
                     />
                   </div>
                 </div>
@@ -426,7 +603,7 @@ export default function OnboardingPage() {
                     value={clientName}
                     onChange={(e) => { setClientName(e.target.value); clearError(); }}
                     autoFocus
-                    className="h-11"
+                    className="h-12"
                   />
                 </div>
 
@@ -437,7 +614,7 @@ export default function OnboardingPage() {
                     placeholder="(11) 99999-0000"
                     value={clientPhone}
                     onChange={(e) => setClientPhone(formatPhone(e.target.value))}
-                    className="h-11"
+                    className="h-12"
                   />
                 </div>
 
@@ -484,9 +661,13 @@ export default function OnboardingPage() {
                   />
                 </div>
                 <div className="relative flex h-20 w-20 mx-auto items-center justify-center rounded-2xl bg-primary/10 border border-primary/20">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/25">
-                    <PartyPopper className="h-7 w-7 text-primary-foreground" />
-                  </div>
+                  {logoPreview ? (
+                    <img src={logoPreview} alt="Logo" className="h-14 w-14 rounded-xl object-cover" />
+                  ) : (
+                    <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/25">
+                      <PartyPopper className="h-7 w-7 text-primary-foreground" />
+                    </div>
+                  )}
                 </div>
               </motion.div>
 
