@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useBarbershop } from "./useBarbershop";
 import { useAuth } from "./useAuth";
-import { isNoRowsError } from "@/lib/tenant";
+import { isNoRowsError } from "@/lib/supabaseErrors";
 
 export type SubscriptionStatus = "trial" | "active" | "past_due" | "cancelled" | "expired";
 export type SubscriptionPlan = "starter" | "pro" | "premium" | "franquias";

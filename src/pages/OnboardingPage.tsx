@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { getAuthenticatedUser, resolveUserFullName, upsertProfileForUser } from "@/lib/profile";
 import { formatSupabaseError } from "@/lib/supabaseErrors";
+import { ensureCurrentUserSetup } from "@/lib/tenant";
 import { resolveTenantContextDirect } from "@/lib/tenant";
 
 function slugify(text: string) {
@@ -115,18 +116,30 @@ export default function OnboardingPage() {
       slug,
     });
 
-    const { data, error } = await supabase.rpc("create_initial_barbershop", {
-      _address: address || null,
-      _address_complement: addressComplement || null,
-      _name: barbershopName,
-      _phone: phone || null,
-      _slug: slug,
-    });
+    const { data, error } = await supabase
+      .from("barbershops")
+      .insert({
+        name: barbershopName,
+        slug: slug,
+        owner_id: user.id,
+        phone: phone || null,
+        address: address || null,
+        address_complement: addressComplement || null,
+      })
+      .select("id, slug")
+      .single();
 
     if (error) {
       const description = formatSupabaseError(error);
       failStep("create_barbershop", description, error);
       return;
+    }
+
+    // Bootstrap user role after barbershop creation
+    try {
+      await ensureCurrentUserSetup(user.user_metadata?.full_name || user.email || null);
+    } catch (setupErr) {
+      console.warn("[Onboarding] ensureCurrentUserSetup warning:", setupErr);
     }
 
     console.info("[Onboarding] step=create_barbershop complete", {
