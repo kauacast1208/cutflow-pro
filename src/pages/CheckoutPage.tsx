@@ -98,8 +98,9 @@ export default function CheckoutPage() {
               <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3.5">Escolha seu plano</h3>
 
               <div className="space-y-2 mb-5">
-                {(Object.entries(STRIPE_PLANS) as [StripePlanKey, typeof STRIPE_PLANS[StripePlanKey]][]).map(
-                  ([key, p]) => {
+                {(Object.entries(STRIPE_PLANS) as [StripePlanKey, typeof STRIPE_PLANS[StripePlanKey]][])
+                  .filter(([, p]) => !!p.priceId)
+                  .map(([key, p]) => {
                     const isSelected = selectedPlan === key;
                     const isRecommended = key === "pro";
                     return (
