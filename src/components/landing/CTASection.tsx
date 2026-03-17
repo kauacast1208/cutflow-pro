@@ -27,7 +27,7 @@ export function CTASection() {
             ficar mais organizada em minutos.
           </h2>
           <p className="text-primary-foreground/65 text-sm sm:text-base mb-7 sm:mb-8 max-w-md mx-auto leading-relaxed">
-            Leva menos de 5 minutos para criar sua conta. Comece agora com 7 dias grátis.
+            Leva menos de 5 minutos para criar sua conta. Comece agora com 15 dias grátis.
           </p>
           <Link to="/signup" className="block w-full sm:w-auto sm:inline-block">
             <Button
