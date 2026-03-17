@@ -443,7 +443,7 @@ function ProCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
 }
 
 /* ── Franchise card ── */
-function FranchiseCard({ plan }: { plan: PlanDef }) {
+function FranchiseCard({ plan, onOpenLeadModal }: { plan: PlanDef; onOpenLeadModal: (slug: string, label: string) => void }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -486,17 +486,14 @@ function FranchiseCard({ plan }: { plan: PlanDef }) {
         </div>
       </div>
 
-      <a
-        href={`https://wa.me/${plan.externalWhatsApp!.phone}?text=${encodeURIComponent(plan.externalWhatsApp!.message)}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block mt-auto w-full"
+      <Button
+        variant="outline"
+        className="w-full rounded-xl gap-2 h-11 text-sm border-primary/20 hover:bg-primary/5 mt-auto"
+        onClick={() => onOpenLeadModal(plan.slug, plan.label)}
       >
-        <Button variant="outline" className="w-full rounded-xl gap-2 h-11 text-sm border-primary/20 hover:bg-primary/5">
-          <MessageSquare className="h-4 w-4" />
-          {plan.cta}
-        </Button>
-      </a>
+        <MessageSquare className="h-4 w-4" />
+        {plan.cta}
+      </Button>
       <p className="text-center text-[10px] text-muted-foreground mt-2.5">Plano sob medida para operações maiores</p>
     </motion.div>
   );
