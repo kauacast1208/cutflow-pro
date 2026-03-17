@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useRef } from "react";
+import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,7 +69,13 @@ export default function OnboardingPage() {
   const { refresh, setBarbershop } = useTenant();
   const { toast } = useToast();
 
-  const slug = useMemo(() => slugify(barbershopName), [barbershopName]);
+  // Debounced slug to avoid reflow on every keystroke
+  const [debouncedName, setDebouncedName] = useState("");
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedName(barbershopName), 300);
+    return () => clearTimeout(t);
+  }, [barbershopName]);
+  const slug = useMemo(() => slugify(debouncedName), [debouncedName]);
   const progress = Math.round((currentStep / (STEPS.length - 1)) * 100);
 
   const clearError = useCallback(() => setFormError(null), []);
@@ -304,23 +310,18 @@ export default function OnboardingPage() {
 
   // ── Error banner ──
   const ErrorBanner = () => (
-    <div className="min-h-[0px]">
-      <AnimatePresence>
-        {formError && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-3 mb-5">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>{formError}</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <div className="min-h-[52px] mb-5">
+      <div
+        className={`rounded-xl border px-4 py-3 text-sm flex items-start gap-3 transition-all duration-200 ${
+          formError
+            ? "border-destructive/30 bg-destructive/10 text-destructive opacity-100"
+            : "border-transparent bg-transparent text-transparent opacity-0 pointer-events-none select-none"
+        }`}
+        aria-live="polite"
+      >
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+        <span>{formError || "\u00A0"}</span>
+      </div>
     </div>
   );
 
@@ -333,13 +334,14 @@ export default function OnboardingPage() {
       exit={{ opacity: 0, x: -30 }}
       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
       className="w-full max-w-md mx-auto"
+      layout={false}
     >
       <div className="text-center mb-6">
         <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight mb-1.5">{title}</h1>
         <p className="text-sm text-muted-foreground">{subtitle}</p>
       </div>
 
-      <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-8 shadow-xl shadow-black/5">
+      <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-8 shadow-xl shadow-black/5 min-h-[420px]">
         <ErrorBanner />
         {children}
       </div>
@@ -436,7 +438,7 @@ export default function OnboardingPage() {
                   {/* Reserved height for slug helper — prevents layout shift */}
                   <div className="h-4">
                     {barbershopName.trim() && slug ? (
-                      <p className="text-[11px] text-muted-foreground/50 flex items-center gap-1 animate-fade-in">
+                      <p className="text-[11px] text-muted-foreground/50 flex items-center gap-1 transition-opacity duration-200">
                         <Globe className="h-3 w-3" /> cutflow.app/b/{slug}
                       </p>
                     ) : null}
