@@ -58,7 +58,7 @@ const plans: PlanDef[] = [
       { text: "Relatórios básicos" },
       { text: "Página de agendamento" },
     ],
-    cta: "Começar grátis",
+    cta: "Começar teste grátis",
     ctaStyle: "outline",
     link: "/checkout?plan=starter",
   },
@@ -105,7 +105,7 @@ const plans: PlanDef[] = [
       { text: "Exportação de dados" },
       { text: "Analytics avançado" },
     ],
-    cta: "Começar Business",
+    cta: "Começar teste grátis",
     ctaStyle: "outline",
     link: "/checkout?plan=premium",
   },
@@ -186,7 +186,7 @@ const includedInAll = [
 
 const faqs = [
   { q: "Posso cancelar a qualquer momento?", a: "Sim. Sem fidelidade, sem multa. Cancele quando quiser diretamente pelo painel." },
-  { q: "O teste gratuito precisa de cartão?", a: "Não. Você começa o trial de 7 dias sem informar dados de pagamento." },
+  { q: "O teste gratuito precisa de cartão?", a: "Não. Você começa o trial de 15 dias sem informar dados de pagamento." },
   { q: "Posso trocar de plano depois?", a: "Sim. Faça upgrade ou downgrade a qualquer momento. A cobrança é ajustada proporcionalmente." },
   { q: "O que acontece quando o trial acaba?", a: "Você escolhe um plano para continuar. Seus dados ficam salvos por 30 dias caso precise de mais tempo." },
 ];
@@ -306,7 +306,7 @@ export function PricingSection() {
         {/* Trust row */}
         <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 mt-8 sm:mt-10 text-xs sm:text-[13px] text-muted-foreground">
           <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-primary/60" /><span>Pagamento seguro via Stripe</span></div>
-          <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary/60" /><span>7 dias grátis</span></div>
+          <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary/60" /><span>15 dias grátis</span></div>
           <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary/60" /><span>Sem taxa escondida</span></div>
           <div className="flex items-center gap-2"><Check className="h-4 w-4 text-primary/60" /><span>Cancele quando quiser</span></div>
         </motion.div>
@@ -349,7 +349,7 @@ function StarterCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
         {billing === "yearly" && savings > 0 ? (
           <p className="text-[11px] text-primary mt-1 font-medium">Economia de R${savings}/ano</p>
         ) : (
-          <p className="text-[11px] text-primary mt-1 font-medium">7 dias grátis</p>
+          <p className="text-[11px] text-primary mt-1 font-medium">15 dias grátis</p>
         )}
       </div>
 
@@ -367,7 +367,7 @@ function StarterCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
           {plan.cta}
         </Button>
       </Link>
-      <p className="text-center text-[10px] text-muted-foreground mt-2.5">Cancele quando quiser</p>
+      <p className="text-center text-[10px] text-muted-foreground mt-2.5">15 dias grátis · Sem fidelidade · Cancele quando quiser</p>
     </div>
   );
 }
@@ -400,7 +400,7 @@ function ProCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
         {billing === "yearly" && savings > 0 ? (
           <p className="text-xs text-primary mt-2 font-semibold">Economia de R${savings}/ano</p>
         ) : (
-          <p className="text-xs text-primary mt-2 font-semibold">7 dias grátis · Sem cobrança hoje</p>
+          <p className="text-xs text-primary mt-2 font-semibold">15 dias grátis · Sem cobrança hoje</p>
         )}
       </div>
 
@@ -419,7 +419,7 @@ function ProCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
           <ArrowRight className="h-4 w-4 ml-1" />
         </Button>
       </Link>
-      <p className="text-center text-[11px] text-muted-foreground mt-3">Sem cartão · Cancele quando quiser</p>
+      <p className="text-center text-[11px] text-muted-foreground mt-3">15 dias grátis · Sem cartão · Cancele quando quiser</p>
     </div>
   );
 }
@@ -479,6 +479,7 @@ function FranchiseCard({ plan }: { plan: PlanDef }) {
           {plan.cta}
         </Button>
       </a>
+      <p className="text-center text-[10px] text-muted-foreground mt-2.5">Plano sob medida para operações maiores</p>
     </motion.div>
   );
 }
@@ -532,6 +533,7 @@ function EnterpriseCard({ plan }: { plan: PlanDef }) {
           {plan.cta}
         </Button>
       </a>
+      <p className="text-center text-[10px] text-muted-foreground mt-2.5">Vamos montar a solução ideal para sua operação</p>
     </motion.div>
   );
 }
