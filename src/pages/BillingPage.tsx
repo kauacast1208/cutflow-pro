@@ -208,8 +208,9 @@ export default function BillingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
-            {(Object.entries(STRIPE_PLANS) as [StripePlanKey, typeof STRIPE_PLANS[StripePlanKey]][]).map(
-              ([key, plan], i) => {
+            {(Object.entries(STRIPE_PLANS) as [StripePlanKey, typeof STRIPE_PLANS[StripePlanKey]][])
+              .filter(([, plan]) => !!plan.priceId)
+              .map(([key, plan], i) => {
                 const isCurrentTrialPlan = isTrial && currentPlan === key;
                 const isCurrentActivePlan = !isTrial && isActive && currentPlan === key;
                 const isRecommended = key === "pro";
