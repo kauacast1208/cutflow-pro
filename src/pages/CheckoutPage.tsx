@@ -85,7 +85,7 @@ export default function CheckoutPage() {
       <div className="max-w-5xl mx-auto px-4 py-8 sm:py-14">
         {/* Title */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2"><h1 className="text-2xl sm:text-3xl font-bold mb-2">Teste gratuito de 15 dias</h1></h1>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Teste gratuito de 15 dias</h1>
           <p className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto">
             Você não será cobrado hoje. O pagamento será iniciado apenas após o período de teste.
           </p>
@@ -98,8 +98,9 @@ export default function CheckoutPage() {
               <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3.5">Escolha seu plano</h3>
 
               <div className="space-y-2 mb-5">
-                {(Object.entries(STRIPE_PLANS) as [StripePlanKey, typeof STRIPE_PLANS[StripePlanKey]][]).map(
-                  ([key, p]) => {
+                {(Object.entries(STRIPE_PLANS) as [StripePlanKey, typeof STRIPE_PLANS[StripePlanKey]][])
+                  .filter(([, p]) => !!p.priceId)
+                  .map(([key, p]) => {
                     const isSelected = selectedPlan === key;
                     const isRecommended = key === "pro";
                     return (
@@ -146,7 +147,7 @@ export default function CheckoutPage() {
                   <span>R$ {plan.price}/mês</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground"><span className="text-muted-foreground">Teste gratuito (15 dias)</span></span>
+                  <span className="text-muted-foreground">Teste gratuito (15 dias)</span>
                   <span className="text-primary font-medium">- R$ {plan.price}</span>
                 </div>
                 <div className="border-t border-dashed border-border pt-3 flex justify-between font-bold">
