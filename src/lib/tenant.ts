@@ -1,9 +1,30 @@
 import { supabase } from "@/integrations/supabase/client";
-import { isMissingRelationError, isNoRowsError } from "@/lib/supabaseErrors";
+import { isNoRowsError, isMissingRelationError } from "@/lib/supabaseErrors";
 
-type TenantRole = "owner" | "admin" | "professional" | "receptionist";
+// Re-export for consumers that import from tenant
+export { isNoRowsError, isMissingRelationError } from "@/lib/supabaseErrors";
+
+export type TenantRole = "owner" | "admin" | "professional" | "receptionist";
 type TenantSubscriptionStatus = "trial" | "active" | "past_due" | "cancelled" | "expired";
 type TenantSubscriptionPlan = "starter" | "pro" | "premium";
+
+export interface TenantProfile {
+  id: string;
+  user_id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  phone: string | null;
+}
+
+export interface TenantBarbershop {
+  id: string;
+  name: string;
+  slug: string;
+  owner_id: string;
+  logo_url: string | null;
+  phone: string | null;
+  address: string | null;
+}
 
 export interface DirectTenantContext {
   onboardingRequired: boolean;
@@ -17,6 +38,15 @@ export interface DirectTenantContext {
   } | null;
 }
 
+export interface TenantSnapshot {
+  profile: TenantProfile | null;
+  barbershop: TenantBarbershop | null;
+  role: TenantRole;
+  rawRole: string | null;
+}
+
+// ─── helpers ───
+
 export async function findUserBarbershopId(userId: string) {
   const { data: owned, error: ownedError } = await supabase
     .from("barbershops")
@@ -24,13 +54,8 @@ export async function findUserBarbershopId(userId: string) {
     .eq("owner_id", userId)
     .maybeSingle();
 
-  if (ownedError && !isNoRowsError(ownedError)) {
-    throw ownedError;
-  }
-
-  if (owned?.id) {
-    return owned.id;
-  }
+  if (ownedError && !isNoRowsError(ownedError)) throw ownedError;
+  if (owned?.id) return owned.id;
 
   const { data: professional, error: professionalError } = await supabase
     .from("professionals")
@@ -39,10 +64,7 @@ export async function findUserBarbershopId(userId: string) {
     .eq("active", true)
     .maybeSingle();
 
-  if (professionalError && !isNoRowsError(professionalError)) {
-    throw professionalError;
-  }
-
+  if (professionalError && !isNoRowsError(professionalError)) throw professionalError;
   return professional?.barbershop_id ?? null;
 }
 
@@ -51,16 +73,10 @@ export async function findUserRoleForBarbershop(userId: string, barbershopId: st
     .from("user_roles")
     .select("role")
     .eq("user_id", userId)
-    .eq("barbershop_id", barbershopId)
     .maybeSingle();
 
-  if (roleError && !isMissingRelationError(roleError) && !isNoRowsError(roleError)) {
-    throw roleError;
-  }
-
-  if (roleRow?.role) {
-    return roleRow.role;
-  }
+  if (roleError && !isMissingRelationError(roleError) && !isNoRowsError(roleError)) throw roleError;
+  if (roleRow?.role) return roleRow.role;
 
   const { data: owned, error: ownedError } = await supabase
     .from("barbershops")
@@ -69,13 +85,8 @@ export async function findUserRoleForBarbershop(userId: string, barbershopId: st
     .eq("owner_id", userId)
     .maybeSingle();
 
-  if (ownedError && !isNoRowsError(ownedError)) {
-    throw ownedError;
-  }
-
-  if (owned?.id) {
-    return "owner";
-  }
+  if (ownedError && !isNoRowsError(ownedError)) throw ownedError;
+  if (owned?.id) return "owner";
 
   const { data: professional, error: professionalError } = await supabase
     .from("professionals")
@@ -85,23 +96,78 @@ export async function findUserRoleForBarbershop(userId: string, barbershopId: st
     .eq("active", true)
     .maybeSingle();
 
-  if (professionalError && !isNoRowsError(professionalError)) {
-    throw professionalError;
+  if (professionalError && !isNoRowsError(professionalError)) throw professionalError;
+  return professional?.id ? "professional" : null;
+}
+
+// ─── core functions ───
+
+export async function ensureCurrentUserSetup(fullName?: string | null): Promise<{ role: string | null }> {
+  try {
+    const { data, error } = await supabase.rpc("ensure_current_user_setup", {
+      _full_name: fullName ?? undefined,
+    });
+    if (error) throw error;
+    const row = Array.isArray(data) ? data[0] : data;
+    return { role: row?.user_role ?? null };
+  } catch (err) {
+    console.warn("[tenant] ensureCurrentUserSetup error:", err);
+    return { role: null };
+  }
+}
+
+export function isMasterRole(role: string | null | undefined): boolean {
+  return role === "master";
+}
+
+export async function fetchUserRole(userId: string): Promise<string | null> {
+  const { data, error } = await supabase.rpc("get_user_role", { _user_id: userId });
+  if (error) throw error;
+  return (data as string) ?? null;
+}
+
+export async function fetchTenantSnapshot(userId: string): Promise<TenantSnapshot> {
+  const [profileResult, barbershopResult] = await Promise.allSettled([
+    supabase.from("profiles").select("*").eq("user_id", userId).maybeSingle(),
+    findUserBarbershopId(userId),
+  ]);
+
+  const profile: TenantProfile | null =
+    profileResult.status === "fulfilled" && profileResult.value.data
+      ? (profileResult.value.data as TenantProfile)
+      : null;
+
+  const barbershopId =
+    barbershopResult.status === "fulfilled" ? barbershopResult.value : null;
+
+  let barbershop: TenantBarbershop | null = null;
+  let rawRole: string | null = null;
+  let role: TenantRole = "owner";
+
+  if (barbershopId) {
+    const [shopResult, roleResult] = await Promise.allSettled([
+      supabase.from("barbershops").select("id, name, slug, owner_id, logo_url, phone, address").eq("id", barbershopId).maybeSingle(),
+      findUserRoleForBarbershop(userId, barbershopId),
+    ]);
+
+    if (shopResult.status === "fulfilled" && shopResult.value.data) {
+      barbershop = shopResult.value.data as TenantBarbershop;
+    }
+
+    if (roleResult.status === "fulfilled" && roleResult.value) {
+      rawRole = roleResult.value;
+      role = rawRole as TenantRole;
+    }
   }
 
-  return professional?.id ? "professional" : null;
+  return { profile, barbershop, role, rawRole };
 }
 
 export async function resolveTenantContextDirect(userId: string): Promise<DirectTenantContext> {
   const barbershopId = await findUserBarbershopId(userId);
 
   if (!barbershopId) {
-    return {
-      onboardingRequired: true,
-      barbershopId: null,
-      role: null,
-      subscription: null,
-    };
+    return { onboardingRequired: true, barbershopId: null, role: null, subscription: null };
   }
 
   const role = (await findUserRoleForBarbershop(userId, barbershopId)) as TenantRole | null;

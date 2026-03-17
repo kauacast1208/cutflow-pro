@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { getAuthenticatedUser, resolveUserFullName, upsertProfileForUser } from "@/lib/profile";
 import { formatSupabaseError } from "@/lib/supabaseErrors";
+import { ensureCurrentUserSetup } from "@/lib/tenant";
 import { resolveTenantContextDirect } from "@/lib/tenant";
 
 function slugify(text: string) {
