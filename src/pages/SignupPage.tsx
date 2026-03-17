@@ -169,7 +169,7 @@ export default function SignupPage() {
           <div className="bg-background rounded-2xl border border-border/50 shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_6px_24px_-4px_rgb(0_0_0/0.06)] p-8">
             <h1 className="text-[22px] font-bold tracking-tight mb-1">Crie sua conta</h1>
             <p className="text-muted-foreground text-sm mb-6">
-              Teste grátis por 7 dias. Sem compromisso.
+              Teste grátis por 15 dias. Sem compromisso.
             </p>
 
             {/* Google */}
