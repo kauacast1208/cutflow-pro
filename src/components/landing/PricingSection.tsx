@@ -367,7 +367,7 @@ function StarterCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
           {plan.cta}
         </Button>
       </Link>
-      <p className="text-center text-[10px] text-muted-foreground mt-2.5">Cancele quando quiser</p>
+      <p className="text-center text-[10px] text-muted-foreground mt-2.5">15 dias grátis · Sem fidelidade · Cancele quando quiser</p>
     </div>
   );
 }
