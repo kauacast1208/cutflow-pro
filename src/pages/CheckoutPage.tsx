@@ -85,7 +85,7 @@ export default function CheckoutPage() {
       <div className="max-w-5xl mx-auto px-4 py-8 sm:py-14">
         {/* Title */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Teste gratuito de 7 dias</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2"><h1 className="text-2xl sm:text-3xl font-bold mb-2">Teste gratuito de 15 dias</h1></h1>
           <p className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto">
             Você não será cobrado hoje. O pagamento será iniciado apenas após o período de teste.
           </p>
