@@ -69,13 +69,15 @@ export default function OnboardingPage() {
   const { refresh, setBarbershop } = useTenant();
   const { toast } = useToast();
 
-  // Debounced slug to avoid reflow on every keystroke
+  // Debounced slug/preview to avoid expensive live updates while typing
+  const deferredBarbershopName = useDeferredValue(barbershopName);
   const [debouncedName, setDebouncedName] = useState("");
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedName(barbershopName), 300);
-    return () => clearTimeout(t);
-  }, [barbershopName]);
+    const t = window.setTimeout(() => setDebouncedName(deferredBarbershopName), 220);
+    return () => window.clearTimeout(t);
+  }, [deferredBarbershopName]);
   const slug = useMemo(() => slugify(debouncedName), [debouncedName]);
+  const slugPreviewText = useMemo(() => (slug ? `cutflow.app/b/${slug}` : ""), [slug]);
   const progress = Math.round((currentStep / (STEPS.length - 1)) * 100);
 
   const clearError = useCallback(() => setFormError(null), []);
