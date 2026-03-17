@@ -119,15 +119,24 @@ export function EnterpriseLeadModal({
     }
   };
 
-  const whatsAppMessage = `Olá! Tenho interesse no plano *${planLabel}* do CutFlow.
+  const challengeLabel = challenges.find((c) => c.value === form.main_challenge)?.label || form.main_challenge;
 
-📋 Nome: ${form.name}
-🏙️ Cidade: ${form.city}
-💈 Barbeiros: ${form.barbers_count || "—"}
-📍 Unidades: ${form.units_count || "—"}
-${form.main_challenge ? `🎯 Desafio: ${challenges.find((c) => c.value === form.main_challenge)?.label || form.main_challenge}` : ""}
+  const whatsAppMessage = isFranquias
+    ? `Olá! Tenho interesse no plano *Franquias* do CutFlow.
 
-Gostaria de conversar com um especialista.`;
+Nome: ${form.name}
+Cidade: ${form.city}
+Barbeiros: ${form.barbers_count || "—"}
+Unidades: ${form.units_count || "—"}
+${challengeLabel ? `Principal desafio: ${challengeLabel}` : ""}`
+    : `Olá! Tenho interesse no plano *Enterprise* do CutFlow.
+
+Nome: ${form.name}
+Cidade: ${form.city}
+Barbeiros: ${form.barbers_count || "—"}
+Unidades: ${form.units_count || "—"}
+${challengeLabel ? `Principal desafio: ${challengeLabel}` : ""}
+Quero entender SLA, integrações e solução sob medida.`;
 
   const whatsAppUrl = `https://wa.me/${whatsAppPhone}?text=${encodeURIComponent(whatsAppMessage)}`;
 
