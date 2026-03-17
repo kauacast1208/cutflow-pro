@@ -400,7 +400,7 @@ function ProCard({ plan, billing }: { plan: PlanDef; billing: Billing }) {
         {billing === "yearly" && savings > 0 ? (
           <p className="text-xs text-primary mt-2 font-semibold">Economia de R${savings}/ano</p>
         ) : (
-          <p className="text-xs text-primary mt-2 font-semibold">7 dias grátis · Sem cobrança hoje</p>
+          <p className="text-xs text-primary mt-2 font-semibold">15 dias grátis · Sem cobrança hoje</p>
         )}
       </div>
 
