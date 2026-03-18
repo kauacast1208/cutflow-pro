@@ -36,6 +36,7 @@ interface UsePlanPermissionsReturn {
   getUpgradeMessage: (feature: PlanFeature) => string;
   getLimitMessage: (resource: PlanResource) => string;
   loading: boolean;
+  isTrial: boolean;
 }
 
 export function usePlanPermissions(): UsePlanPermissionsReturn {
