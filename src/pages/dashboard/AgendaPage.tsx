@@ -488,11 +488,11 @@ export default function AgendaPage() {
                 const slotBlocks = getBlocksForSlot(dateStr, h);
 
                 return (
-                  <div key={hour} className="flex">
-                    <div className="w-14 shrink-0 py-3 pr-2 text-right">
-                      <span className="text-[11px] font-medium text-muted-foreground/60">{hour}</span>
+                  <div key={hour} className="flex group/row hover:bg-accent/10 transition-colors">
+                    <div className="w-16 shrink-0 py-3 pr-3 text-right">
+                      <span className="text-xs font-bold text-muted-foreground/70 tabular-nums">{hour}</span>
                     </div>
-                    <div className={`flex-1 py-2 px-2 min-h-[56px] border-l border-border/30 ${
+                    <div className={`flex-1 py-2 px-2.5 min-h-[60px] border-l border-border/50 ${
                       slotBlocks.length > 0 && slotAppts.length === 0
                         ? (slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "bg-amber-500/5" :
                           (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "bg-blue-500/5" :
