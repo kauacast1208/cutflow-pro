@@ -68,7 +68,7 @@ export default function AdminSidebar() {
   const { subscription, isTrial, daysRemaining } = useSubscription();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { can, showUpgrade } = usePlanPermissions();
+  const { can, showUpgrade, loading } = usePlanPermissions();
 
   const bookingUrl = barbershop
     ? `${window.location.origin}/b/${barbershop.slug}`
