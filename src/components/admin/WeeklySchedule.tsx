@@ -102,7 +102,7 @@ export default function WeeklySchedule({ appointments = [], onSlotClick }: Weekl
 
           {/* Time slots */}
           {hours.map((hour) => (
-            <div key={hour} className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border/40 last:border-b-0">
+            <div key={hour} className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border/50 last:border-b-0">
               <div className="p-2.5 text-xs text-muted-foreground font-bold text-right pr-3 tabular-nums">
                 {hour}
               </div>
