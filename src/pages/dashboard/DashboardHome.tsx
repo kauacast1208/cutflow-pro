@@ -573,7 +573,77 @@ export default function DashboardHome() {
         </motion.div>
       </div>
 
-      {/* ── REVENUE AREA CHART ── */}
+      {/* ── ACTIVITY TIMELINE ── */}
+      <motion.div {...fadeUp(5.5)}>
+        <SectionCard>
+          <SectionTitle icon={Clock}>Atividade recente</SectionTitle>
+          {loading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full rounded-xl" />)}
+            </div>
+          ) : (() => {
+            const recentEvents = periodAppts
+              .sort((a, b) => new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime())
+              .slice(0, 8)
+              .map(a => {
+                const statusMap: Record<string, { label: string; icon: React.ElementType; color: string; bg: string }> = {
+                  scheduled: { label: "Novo agendamento", icon: Calendar, color: "text-primary", bg: "bg-primary/10" },
+                  confirmed: { label: "Confirmado", icon: TrendingUp, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10" },
+                  completed: { label: "Concluído", icon: Trophy, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10" },
+                  cancelled: { label: "Cancelamento", icon: AlertTriangle, color: "text-destructive", bg: "bg-destructive/10" },
+                  rescheduled: { label: "Remarcação", icon: Clock, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500/10" },
+                };
+                const cfg = statusMap[a.status] || statusMap.scheduled;
+                const ts = a.updated_at || a.created_at;
+                let timeLabel = "";
+                try {
+                  const d = new Date(ts);
+                  const now = new Date();
+                  const diffMs = now.getTime() - d.getTime();
+                  const diffMin = Math.floor(diffMs / 60000);
+                  if (diffMin < 1) timeLabel = "agora";
+                  else if (diffMin < 60) timeLabel = `${diffMin}min atrás`;
+                  else if (diffMin < 1440) timeLabel = `${Math.floor(diffMin / 60)}h atrás`;
+                  else timeLabel = `${Math.floor(diffMin / 1440)}d atrás`;
+                } catch { timeLabel = ""; }
+                return { ...a, cfg, timeLabel };
+              });
+
+            return recentEvents.length === 0 ? (
+              <EmptyState icon={Clock} title="Sem atividade recente" description="Novos agendamentos e eventos aparecerão aqui" />
+            ) : (
+              <div className="space-y-1.5 max-h-[320px] overflow-y-auto">
+                {recentEvents.map((ev) => {
+                  const EvIcon = ev.cfg.icon;
+                  return (
+                    <div key={`${ev.id}-${ev.status}`}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/30 transition-colors cursor-pointer"
+                      onClick={() => navigate("/dashboard/agenda")}
+                    >
+                      <div className={`h-7 w-7 rounded-lg ${ev.cfg.bg} flex items-center justify-center shrink-0`}>
+                        <EvIcon className={`h-3.5 w-3.5 ${ev.cfg.color}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-foreground truncate">
+                          {ev.cfg.label} · {ev.client_name}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground/60 truncate">
+                          {ev.services?.name}{ev.professionals?.name ? ` · ${ev.professionals.name}` : ""}
+                        </p>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground/40 font-medium shrink-0 tabular-nums">
+                        {ev.timeLabel}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </SectionCard>
+      </motion.div>
+
+
       <motion.div {...fadeUp(6)}>
         <SectionCard>
           <div className="flex items-center justify-between mb-5">
