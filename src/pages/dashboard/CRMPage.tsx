@@ -336,18 +336,18 @@ export default function CRMPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-3 gap-3">
-                <div className="text-center p-3 rounded-xl bg-muted/50">
-                  <div className="text-xl font-bold">{campaignsSent}</div>
-                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Campanhas enviadas</p>
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                <div className="text-center p-2.5 sm:p-3 rounded-xl bg-muted/50">
+                  <div className="text-lg sm:text-xl font-bold">{campaignsSent}</div>
+                  <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Campanhas</p>
                 </div>
-                <div className="text-center p-3 rounded-xl bg-muted/50">
-                  <div className="text-xl font-bold">{totalRecipients}</div>
-                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Destinatários</p>
+                <div className="text-center p-2.5 sm:p-3 rounded-xl bg-muted/50">
+                  <div className="text-lg sm:text-xl font-bold">{totalRecipients}</div>
+                  <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Destinatários</p>
                 </div>
-                <div className="text-center p-3 rounded-xl bg-muted/50">
-                  <div className="text-xl font-bold">{msgSent}</div>
-                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Mensagens enviadas</p>
+                <div className="text-center p-2.5 sm:p-3 rounded-xl bg-muted/50">
+                  <div className="text-lg sm:text-xl font-bold">{msgSent}</div>
+                  <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Mensagens</p>
                 </div>
               </div>
 

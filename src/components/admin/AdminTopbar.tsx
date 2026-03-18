@@ -47,7 +47,7 @@ export default function AdminTopbar() {
   return (
     <header className="h-14 sm:h-16 flex items-center justify-between border-b border-border/40 px-3 sm:px-6 bg-card/90 backdrop-blur-xl sticky top-0 z-10">
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-        <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors shrink-0" />
+        <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors shrink-0 h-10 w-10 sm:h-auto sm:w-auto flex items-center justify-center" />
         <div className="h-4 w-px bg-border/60 hidden sm:block" />
         <h1
           className="text-sm sm:text-lg font-semibold tracking-tight text-foreground truncate"
@@ -74,7 +74,7 @@ export default function AdminTopbar() {
       <div className="flex items-center gap-1.5 sm:gap-2">
         <NotificationPanel />
         {initials && (
-          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-[11px] font-bold text-primary shrink-0">
+          <div className="h-9 w-9 sm:h-8 sm:w-8 rounded-lg bg-primary/10 flex items-center justify-center text-[11px] font-bold text-primary shrink-0">
             {initials}
           </div>
         )}
