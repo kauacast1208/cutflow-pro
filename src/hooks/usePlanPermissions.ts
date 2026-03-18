@@ -81,10 +81,13 @@ export function usePlanPermissions(): UsePlanPermissionsReturn {
 
   const loading = subLoading || plansLoading;
 
-  // During active trial, unlock all features so users experience the full product
+  // Treat as trial-like when: explicit trial status OR no subscription yet (new barbershop)
+  const effectivelyTrial = isTrial || (!subLoading && !subscription);
+
+  // During active trial or missing subscription, unlock all features
   const can = useCallback(
-    (feature: PlanFeature) => isTrial || activePlan.features.includes(feature),
-    [activePlan, isTrial]
+    (feature: PlanFeature) => effectivelyTrial || activePlan.features.includes(feature),
+    [activePlan, effectivelyTrial]
   );
 
   const limit = useCallback(
