@@ -634,7 +634,7 @@ export default function AgendaPage() {
                 {hours.map(hour => {
                   const h = parseInt(hour);
                   return (
-                    <div key={hour} className="border-b border-border/20 last:border-b-0"
+                    <div key={hour} className="border-b border-border/40 last:border-b-0"
                       style={{ display: "grid", gridTemplateColumns: `60px repeat(${days.length}, 1fr)` }}
                     >
                       <div className="p-2 text-xs text-muted-foreground font-semibold text-right pr-3 pt-3 tabular-nums">{hour}</div>
