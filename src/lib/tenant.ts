@@ -110,6 +110,38 @@ async function safeFetchUserRole(userId: string) {
   }
 }
 
+async function safeFetchSubscription(barbershopId: string) {
+  try {
+    const { data, error } = await supabase
+      .from("subscriptions")
+      .select("id, plan, status, trial_ends_at")
+      .eq("barbershop_id", barbershopId)
+      .maybeSingle();
+
+    if (error) {
+      if (isNoRowsError(error) || isMissingRelationError(error)) {
+        return null;
+      }
+      throw error;
+    }
+
+    return data?.id
+      ? {
+          id: data.id,
+          plan: data.plan as TenantSubscriptionPlan,
+          status: data.status as TenantSubscriptionStatus,
+          trialEndsAt: data.trial_ends_at,
+        }
+      : null;
+  } catch (error) {
+    console.warn("[Tenant] step-resolve_tenant_optional_subscriptions skipped", {
+      barbershopId,
+      error,
+    });
+    return null;
+  }
+}
+
 async function findProfessionalMembership(userId: string, barbershopId?: string | null) {
   try {
     let query = supabase
@@ -184,7 +216,7 @@ export async function findUserRoleForBarbershop(userId: string, barbershopId: st
     return "owner";
   }
 
-  const directRole = await fetchUserRole(userId);
+  const directRole = await safeFetchUserRole(userId);
   if (directRole && directRole !== "master") {
     return directRole;
   }
@@ -250,6 +282,10 @@ export async function fetchTenantSnapshot(userId: string): Promise<TenantSnapsho
 }
 
 export async function resolveTenantContextDirect(userId: string): Promise<DirectTenantContext> {
+  console.info("[Tenant] step-resolve_tenant_start", {
+    userId,
+  });
+
   const owned = await findLatestOwnedBarbershop(userId);
 
   const directRole = await safeFetchUserRole(userId);
@@ -270,29 +306,20 @@ export async function resolveTenantContextDirect(userId: string): Promise<Direct
   }
 
   const role = ((owned?.id ? "owner" : null) ?? (await findUserRoleForBarbershop(userId, barbershopId)) ?? directRole ?? "owner") as TenantRole;
+  const subscription = await safeFetchSubscription(barbershopId);
 
-  const { data: subscription, error: subscriptionError } = await supabase
-    .from("subscriptions")
-    .select("id, plan, status, trial_ends_at")
-    .eq("barbershop_id", barbershopId)
-    .maybeSingle();
-
-  if (subscriptionError && !isNoRowsError(subscriptionError) && !isMissingRelationError(subscriptionError)) {
-    throw subscriptionError;
-  }
+  console.info("[Tenant] step-resolve_tenant_success", {
+    userId,
+    barbershopId,
+    role,
+    hasSubscription: Boolean(subscription?.id),
+  });
 
   return {
     onboardingRequired: false,
     barbershopId,
     role,
-    subscription: subscription?.id
-      ? {
-          id: subscription.id,
-          plan: subscription.plan as TenantSubscriptionPlan,
-          status: subscription.status as TenantSubscriptionStatus,
-          trialEndsAt: subscription.trial_ends_at,
-        }
-      : null,
+    subscription,
   };
 }
 
