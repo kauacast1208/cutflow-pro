@@ -234,15 +234,15 @@ export default function CRMPage() {
       {isEmpty && insights.length === 0 && (
         <motion.div {...anim} transition={{ delay: 0.2 }}>
           <Card className="border-border/60">
-            <CardContent className="py-12 flex flex-col items-center text-center">
-              <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-                <Users className="h-6 w-6 text-primary" />
+            <CardContent className="py-10 sm:py-12 flex flex-col items-center text-center px-5">
+              <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-3 sm:mb-4">
+                <Users className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
               </div>
-              <h3 className="text-base font-semibold mb-1.5">Comece a construir seu CRM</h3>
-              <p className="text-sm text-muted-foreground max-w-sm">
+              <h3 className="text-sm sm:text-base font-semibold mb-1.5">Comece a construir seu CRM</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground max-w-sm">
                 Cadastre seus clientes e registre agendamentos para visualizar segmentações, insights e oportunidades de retenção automaticamente.
               </p>
-              <Button className="mt-5" onClick={() => navigate("/dashboard/clients")}>
+              <Button className="mt-4 sm:mt-5 h-11 sm:h-10 min-w-[180px]" onClick={() => navigate("/dashboard/clients")}>
                 <Users className="h-4 w-4 mr-2" />
                 Cadastrar clientes
               </Button>
