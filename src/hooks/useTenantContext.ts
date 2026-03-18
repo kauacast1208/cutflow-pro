@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { formatSupabaseError } from "@/lib/supabaseErrors";
 import { resolveTenantContextDirect } from "@/lib/tenant";
 
-export type TenantRole = "owner" | "admin" | "professional" | "receptionist";
+export type TenantRole = "owner" | "admin" | "professional" | "receptionist" | "master";
 export type TenantSubscriptionStatus = "trial" | "active" | "past_due" | "cancelled" | "expired";
 export type TenantSubscriptionPlan = "starter" | "pro" | "premium";
 

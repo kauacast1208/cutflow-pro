@@ -100,7 +100,7 @@ export default function ProfessionalsPage() {
   }, [barbershop]);
 
   const openNew = () => {
-    const activePros = pros.filter((p) => p.is_active !== false).length;
+    const activePros = pros.filter((p) => p.active !== false).length;
     if (isAtLimit("professionals", activePros)) {
       showUpgrade("agenda");
       toast({ title: "Limite atingido", description: `Plano ${planLabel} permite até ${limit("professionals")} profissional(is).`, variant: "destructive" });
@@ -195,7 +195,7 @@ export default function ProfessionalsPage() {
   };
 
   const toggleActive = async (id: string, isActive: boolean) => {
-    await supabase.from("professionals").update({ is_active: !isActive }).eq("id", id); load();
+    await supabase.from("professionals").update({ active: !isActive }).eq("id", id); load();
   };
 
   const filtered = pros.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
@@ -213,7 +213,7 @@ export default function ProfessionalsPage() {
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-foreground">Profissionais</h2>
             <p className="text-sm text-muted-foreground">
-              {pros.filter(p => p.is_active !== false).length}/{limit("professionals") === Infinity ? "∞" : limit("professionals")} ativos
+              {pros.filter(p => p.active !== false).length}/{limit("professionals") === Infinity ? "∞" : limit("professionals")} ativos
             </p>
           </div>
         </div>
@@ -253,7 +253,7 @@ export default function ProfessionalsPage() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
-              className={`group rounded-2xl border border-border/60 bg-card p-5 transition-all hover:shadow-[var(--shadow-md)] cursor-pointer ${!p.is_active ? "opacity-50" : ""}`}
+              className={`group rounded-2xl border border-border/60 bg-card p-5 transition-all hover:shadow-[var(--shadow-md)] cursor-pointer ${!p.active ? "opacity-50" : ""}`}
               onClick={() => openEdit(p)}
             >
               <div className="flex items-start justify-between mb-4">
@@ -267,7 +267,7 @@ export default function ProfessionalsPage() {
                   </div>
                 </div>
                 <div onClick={(e) => e.stopPropagation()}>
-                  <Switch checked={p.is_active} onCheckedChange={() => toggleActive(p.id, p.is_active)} />
+                  <Switch checked={p.active} onCheckedChange={() => toggleActive(p.id, p.active)} />
                 </div>
               </div>
 

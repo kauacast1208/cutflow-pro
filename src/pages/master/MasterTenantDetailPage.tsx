@@ -35,7 +35,7 @@ export default function MasterTenantDetailPage() {
       const [shopRes, subRes, proRes, clientRes, apptRes] = await Promise.all([
         supabase.from("barbershops").select("*").eq("id", tenantId).maybeSingle(),
         supabase.from("subscriptions").select("*").eq("barbershop_id", tenantId).maybeSingle(),
-        supabase.from("professionals").select("id", { count: "exact", head: true }).eq("barbershop_id", tenantId).eq("is_active", true),
+        supabase.from("professionals").select("id", { count: "exact", head: true }).eq("barbershop_id", tenantId).eq("active", true),
         supabase.from("clients").select("id", { count: "exact", head: true }).eq("barbershop_id", tenantId),
         supabase.from("appointments").select("id", { count: "exact", head: true }).eq("barbershop_id", tenantId),
       ]);
