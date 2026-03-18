@@ -278,9 +278,9 @@ export function LiveDemoSection() {
           transition={{ duration: 0.6 }}
           className="relative"
         >
-          <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6 lg:gap-0">
+          <div className="flex flex-col lg:flex-row items-center lg:items-center gap-8 lg:gap-12">
             {/* Laptop mockup */}
-            <div className="flex-1 w-full lg:pr-4">
+            <div className="flex-1 w-full max-w-2xl">
               <div className="rounded-xl sm:rounded-2xl border-2 border-border/80 bg-card shadow-[var(--shadow-elevated)] overflow-hidden">
                 <div className="flex items-center gap-2 px-3 py-2 bg-muted/40 border-b border-border">
                   <div className="flex gap-1.5">
@@ -294,7 +294,7 @@ export function LiveDemoSection() {
                     </div>
                   </div>
                 </div>
-                <div className="h-[280px] sm:h-[340px] overflow-hidden">
+                <div className="h-[280px] sm:h-[360px] overflow-hidden">
                   <MiniDashboard />
                 </div>
               </div>
@@ -302,13 +302,13 @@ export function LiveDemoSection() {
               <div className="mx-auto w-[75%] h-1.5 bg-border/20 rounded-b-2xl" />
             </div>
 
-            {/* Premium 3D Phone */}
+            {/* Premium 3D Phone — larger, centered */}
             <motion.div
               initial={{ opacity: 0, y: 40, rotateY: -8 }}
               whileInView={{ opacity: 1, y: 0, rotateY: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="lg:-ml-16 lg:mt-8"
+              className="shrink-0"
             >
               <PhoneShowcase />
             </motion.div>
