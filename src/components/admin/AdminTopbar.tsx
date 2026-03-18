@@ -1,11 +1,11 @@
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Bell, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ChevronRight } from "lucide-react";
 import { useBarbershop } from "@/hooks/useBarbershop";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "react-router-dom";
+import NotificationPanel from "@/components/admin/NotificationPanel";
 
 const routeLabels: Record<string, string> = {
   "/dashboard": "Visão Geral",
