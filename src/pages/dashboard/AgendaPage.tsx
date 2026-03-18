@@ -407,24 +407,24 @@ export default function AgendaPage() {
             <div className="flex items-center gap-1.5 sm:hidden">
               <Button
                 size="sm"
-                className="gap-1.5 rounded-xl text-xs h-9"
+                className="gap-1.5 rounded-xl text-xs h-10 px-3"
                 onClick={() => {
                   setNewApptDefaults({ date: selectedDate });
                   setShowNewAppt(true);
                 }}
               >
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="h-4 w-4" />
               </Button>
               <Button
                 size="sm"
                 variant="outline"
-                className="gap-1.5 rounded-xl text-xs h-9"
+                className="gap-1.5 rounded-xl text-xs h-10 px-3"
                 onClick={() => {
                   setBlockForm(f => ({ ...f, date: format(selectedDate, "yyyy-MM-dd") }));
                   setShowBlockDialog(true);
                 }}
               >
-                <Ban className="h-3.5 w-3.5" />
+                <Ban className="h-4 w-4" />
               </Button>
             </div>
           )}
