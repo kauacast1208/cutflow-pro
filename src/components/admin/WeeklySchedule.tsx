@@ -44,7 +44,7 @@ export default function WeeklySchedule({ appointments = [], onSlotClick }: Weekl
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.15 }}
-      className="rounded-2xl border border-border bg-card overflow-hidden"
+      className="rounded-2xl border border-border/50 bg-card overflow-hidden shadow-card"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-border">
