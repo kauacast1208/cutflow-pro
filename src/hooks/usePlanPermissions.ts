@@ -103,7 +103,7 @@ export function usePlanPermissions(): UsePlanPermissionsReturn {
       if (max === Infinity || max >= 999999) return false;
       return currentCount >= max;
     },
-    [activePlan, isTrial]
+    [activePlan, effectivelyTrial]
   );
 
   const showUpgrade = useCallback((feature: PlanFeature) => {
