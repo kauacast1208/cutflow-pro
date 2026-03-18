@@ -603,8 +603,8 @@ export default function AgendaPage() {
             ) : (
               <>
                 {/* Day/Week headers */}
-                <div style={{ display: "grid", gridTemplateColumns: `60px repeat(${days.length}, 1fr)` }}
-                  className="border-b border-border/40 bg-muted/20"
+                <div style={{ display: "grid", gridTemplateColumns: `72px repeat(${days.length}, 1fr)` }}
+                  className="border-b border-border/50 bg-muted/30"
                 >
                   <div className="p-3" />
                   {days.map((d, i) => {
