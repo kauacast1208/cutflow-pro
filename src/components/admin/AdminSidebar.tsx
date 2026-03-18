@@ -104,8 +104,8 @@ export default function AdminSidebar() {
             <NavLink
               to={item.url}
               end={item.url === "/dashboard"}
-              className="hover:bg-sidebar-accent/50 transition-colors duration-150"
-              activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+              className="hover:bg-sidebar-accent/60 transition-all duration-150 rounded-lg"
+              activeClassName="bg-sidebar-accent text-sidebar-primary font-semibold shadow-sm"
             >
               <item.icon className="mr-2 h-4 w-4 shrink-0" />
               {!collapsed && <span>{item.title}</span>}
@@ -133,7 +133,7 @@ export default function AdminSidebar() {
     if (groupItems.length === 0) return null;
     return (
       <SidebarGroup key={label}>
-        <SidebarGroupLabel className="text-[11px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
+        <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-bold px-3">
           {label}
         </SidebarGroupLabel>
         <SidebarGroupContent>
@@ -144,7 +144,7 @@ export default function AdminSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-sidebar-background">
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border/60 bg-sidebar-background">
       {/* Brand */}
       <div className="flex h-16 items-center gap-3 px-4 border-b border-sidebar-border">
         {barbershop?.logo_url ? (

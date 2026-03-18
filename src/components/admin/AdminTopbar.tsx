@@ -45,7 +45,7 @@ export default function AdminTopbar() {
     .toUpperCase();
 
   return (
-    <header className="h-14 sm:h-16 flex items-center justify-between border-b border-border/60 px-3 sm:px-6 bg-card/80 backdrop-blur-xl sticky top-0 z-10">
+    <header className="h-14 sm:h-16 flex items-center justify-between border-b border-border/40 px-3 sm:px-6 bg-card/90 backdrop-blur-xl sticky top-0 z-10">
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors shrink-0" />
         <div className="h-4 w-px bg-border/60 hidden sm:block" />

@@ -575,7 +575,7 @@ export default function AgendaPage() {
                     <div key={hour} className="border-b border-border/20 last:border-b-0"
                       style={{ display: "grid", gridTemplateColumns: `60px repeat(${proColumns.length}, 1fr)` }}
                     >
-                      <div className="p-2 text-[11px] text-muted-foreground/60 text-right pr-3 pt-3 font-medium">{hour}</div>
+                      <div className="p-2 text-xs text-muted-foreground font-semibold text-right pr-3 pt-3 tabular-nums">{hour}</div>
                       {proColumns.map(pro => {
                         const dateStr = format(selectedDate, "yyyy-MM-dd");
                         const proAppts = getApptsForSlot(dateStr, h, pro.id);
@@ -634,10 +634,10 @@ export default function AgendaPage() {
                 {hours.map(hour => {
                   const h = parseInt(hour);
                   return (
-                    <div key={hour} className="border-b border-border/20 last:border-b-0"
+                    <div key={hour} className="border-b border-border/40 last:border-b-0"
                       style={{ display: "grid", gridTemplateColumns: `60px repeat(${days.length}, 1fr)` }}
                     >
-                      <div className="p-2 text-[11px] text-muted-foreground/60 text-right pr-3 pt-3 font-medium">{hour}</div>
+                      <div className="p-2 text-xs text-muted-foreground font-semibold text-right pr-3 pt-3 tabular-nums">{hour}</div>
                       {days.map((day, dayIdx) => {
                         const dateStr = format(day, "yyyy-MM-dd");
                         const slotAppts = getApptsForSlot(dateStr, h);
@@ -653,7 +653,7 @@ export default function AgendaPage() {
 
                         return (
                           <div key={dayIdx}
-                            className={`border-l border-border/20 p-1 min-h-[64px] relative transition-colors group/cell ${
+                            className={`border-l border-border/40 p-1.5 min-h-[68px] relative transition-colors duration-150 hover:bg-accent/20 group/cell ${
                               slotBlocks.length > 0
                                 ? (slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "bg-amber-500/5" :
                                   (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "bg-blue-500/5" :
