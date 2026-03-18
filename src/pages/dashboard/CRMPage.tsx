@@ -194,8 +194,10 @@ export default function CRMPage() {
     { label: "Análise de retenção", desc: "Ver previsão de retorno e clientes em risco", icon: Heart, route: "/dashboard/retention" },
   ];
 
+  const isEmpty = segments.total === 0;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
@@ -203,7 +205,9 @@ export default function CRMPage() {
           CRM
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Relacionamento inteligente com seus clientes · {segments.total} clientes cadastrados
+          {isEmpty
+            ? "Gerencie o relacionamento com seus clientes de forma inteligente"
+            : `Relacionamento inteligente com seus clientes · ${segments.total} clientes cadastrados`}
         </p>
       </div>
 
