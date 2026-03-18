@@ -150,41 +150,41 @@ function PhoneShowcase() {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       className="relative shrink-0"
-      style={{ perspective: "1400px" }}
+      style={{ perspective: "1600px" }}
     >
-      {/* Multi-layer ambient glow */}
-      <div className="absolute -inset-12 bg-[radial-gradient(ellipse_at_center,hsl(152,55%,42%,0.12),transparent_60%)] blur-3xl pointer-events-none" />
-      <div className="absolute -inset-20 bg-[radial-gradient(ellipse_at_bottom,hsl(220,50%,45%,0.06),transparent_55%)] blur-3xl pointer-events-none" />
-      <div className="absolute -inset-8 bg-[radial-gradient(circle_at_top,hsl(152,45%,50%,0.05),transparent_50%)] blur-2xl pointer-events-none" />
+      {/* Multi-layer ambient glow — much stronger */}
+      <div className="absolute -inset-24 bg-[radial-gradient(ellipse_at_center,hsl(152,55%,42%,0.18),transparent_55%)] blur-3xl pointer-events-none" />
+      <div className="absolute -inset-32 bg-[radial-gradient(ellipse_at_bottom,hsl(220,60%,50%,0.10),transparent_50%)] blur-3xl pointer-events-none" />
+      <div className="absolute -inset-16 bg-[radial-gradient(circle_at_top,hsl(152,50%,55%,0.10),transparent_45%)] blur-2xl pointer-events-none" />
 
       {/* 3D phone wrapper */}
       <motion.div
         style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
         className="relative"
       >
-        {/* Phone frame */}
-        <div className="relative w-[220px] sm:w-[260px] rounded-[2.2rem] overflow-hidden shadow-[0_30px_100px_-15px_rgba(0,0,0,0.6),0_12px_36px_-8px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.03),inset_0_1px_0_rgba(255,255,255,0.07)]">
-          {/* Titanium bezel gradient — richer depth */}
-          <div className="absolute inset-0 rounded-[2.2rem] bg-gradient-to-b from-[hsl(220,15%,22%)] via-[hsl(220,14%,14%)] to-[hsl(222,16%,8%)]" />
+        {/* Phone frame — LARGER */}
+        <div className="relative w-[280px] sm:w-[320px] lg:w-[340px] rounded-[2.6rem] overflow-hidden shadow-[0_40px_120px_-15px_rgba(0,0,0,0.7),0_16px_48px_-8px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.04),inset_0_1px_0_rgba(255,255,255,0.08)]">
+          {/* Titanium bezel gradient */}
+          <div className="absolute inset-0 rounded-[2.6rem] bg-gradient-to-b from-[hsl(220,15%,24%)] via-[hsl(220,14%,16%)] to-[hsl(222,16%,10%)]" />
 
           {/* Titanium edge highlights */}
-          <div className="absolute inset-0 rounded-[2.2rem] bg-gradient-to-r from-white/[0.04] via-transparent to-white/[0.02] pointer-events-none" />
+          <div className="absolute inset-0 rounded-[2.6rem] bg-gradient-to-r from-white/[0.05] via-transparent to-white/[0.03] pointer-events-none" />
 
-          {/* Side button reflections — enhanced */}
-          <div className="absolute top-[80px] -right-[1px] w-[2px] h-[40px] bg-gradient-to-b from-white/[0.12] via-white/[0.04] to-transparent rounded-full" />
-          <div className="absolute top-[60px] -left-[1px] w-[2px] h-[24px] bg-gradient-to-b from-white/[0.08] to-transparent rounded-full" />
-          <div className="absolute top-[95px] -left-[1px] w-[2px] h-[36px] bg-gradient-to-b from-white/[0.08] to-transparent rounded-full" />
+          {/* Side button reflections */}
+          <div className="absolute top-[90px] -right-[1px] w-[2px] h-[44px] bg-gradient-to-b from-white/[0.14] via-white/[0.05] to-transparent rounded-full" />
+          <div className="absolute top-[68px] -left-[1px] w-[2px] h-[26px] bg-gradient-to-b from-white/[0.10] to-transparent rounded-full" />
+          <div className="absolute top-[105px] -left-[1px] w-[2px] h-[40px] bg-gradient-to-b from-white/[0.10] to-transparent rounded-full" />
 
-          {/* Inner bezel ring — double layer */}
-          <div className="absolute inset-[2px] rounded-[2rem] border border-white/[0.05]" />
-          <div className="absolute inset-[3px] rounded-[1.9rem] border border-black/20" />
+          {/* Inner bezel ring */}
+          <div className="absolute inset-[2px] rounded-[2.4rem] border border-white/[0.06]" />
+          <div className="absolute inset-[3px] rounded-[2.3rem] border border-black/20" />
 
           {/* Screen */}
-          <div className="relative m-[6px] rounded-[1.8rem] overflow-hidden">
-            {/* Dynamic Island — enhanced with live indicator */}
+          <div className="relative m-[7px] rounded-[2.2rem] overflow-hidden">
+            {/* Dynamic Island */}
             <div className="absolute top-2.5 left-1/2 -translate-x-1/2 z-30">
-              <div className="w-[72px] h-[20px] bg-black rounded-full flex items-center justify-center shadow-[0_0_16px_rgba(0,0,0,0.5),0_0_0_0.5px_rgba(255,255,255,0.06)]">
-                <div className="w-[6px] h-[6px] rounded-full bg-[hsl(220,15%,15%)] ring-1 ring-[hsl(220,15%,22%)]" />
+              <div className="w-[80px] h-[22px] bg-black rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.6),0_0_0_0.5px_rgba(255,255,255,0.07)]">
+                <div className="w-[7px] h-[7px] rounded-full bg-[hsl(220,15%,15%)] ring-1 ring-[hsl(220,15%,22%)]" />
               </div>
             </div>
 
@@ -193,19 +193,18 @@ function PhoneShowcase() {
               <IPhoneLockScreen />
             </div>
 
-            {/* Screen glare — cinematic diagonal sweep */}
-            <div className="absolute inset-0 pointer-events-none rounded-[1.8rem]" style={{
-              background: "linear-gradient(125deg, rgba(255,255,255,0.05) 0%, transparent 30%, transparent 70%, rgba(255,255,255,0.015) 100%)",
+            {/* Screen glare */}
+            <div className="absolute inset-0 pointer-events-none rounded-[2.2rem]" style={{
+              background: "linear-gradient(125deg, rgba(255,255,255,0.06) 0%, transparent 30%, transparent 70%, rgba(255,255,255,0.02) 100%)",
             }} />
-            {/* Secondary edge reflection */}
-            <div className="absolute inset-0 pointer-events-none rounded-[1.8rem] border border-white/[0.03]" />
+            <div className="absolute inset-0 pointer-events-none rounded-[2.2rem] border border-white/[0.04]" />
           </div>
         </div>
 
-        {/* Surface reflection — mirror effect */}
-        <div className="absolute -bottom-10 left-4 right-4 h-20 pointer-events-none">
-          <div className="w-full h-full bg-gradient-to-b from-primary/[0.04] via-primary/[0.02] to-transparent blur-2xl" />
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+        {/* Surface reflection */}
+        <div className="absolute -bottom-12 left-4 right-4 h-24 pointer-events-none">
+          <div className="w-full h-full bg-gradient-to-b from-primary/[0.06] via-primary/[0.03] to-transparent blur-2xl" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
         </div>
       </motion.div>
     </div>
