@@ -466,7 +466,7 @@ export default function AgendaPage() {
 
       {/* Calendar Grid */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}
-        className="rounded-2xl border border-border/60 bg-card overflow-hidden"
+        className="rounded-2xl border border-border/50 bg-card overflow-hidden shadow-card"
       >
         {/* Mobile day list (for day view on small screens) */}
         {viewMode === "day" && (
