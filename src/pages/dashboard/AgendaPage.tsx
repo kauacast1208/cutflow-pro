@@ -653,7 +653,7 @@ export default function AgendaPage() {
 
                         return (
                           <div key={dayIdx}
-                            className={`border-l border-border/20 p-1 min-h-[64px] relative transition-colors group/cell ${
+                            className={`border-l border-border/40 p-1.5 min-h-[68px] relative transition-colors duration-150 hover:bg-accent/20 group/cell ${
                               slotBlocks.length > 0
                                 ? (slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "bg-amber-500/5" :
                                   (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "bg-blue-500/5" :
