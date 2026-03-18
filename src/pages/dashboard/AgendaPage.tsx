@@ -680,8 +680,8 @@ export default function AgendaPage() {
                                 style={{ top: `${timeLineTop}%` }}
                               >
                                 <div className="flex items-center">
-                                  <div className="h-2 w-2 rounded-full bg-destructive -ml-1 shrink-0" />
-                                  <div className="h-[2px] flex-1 bg-destructive/60" />
+                                  <div className="h-3 w-3 rounded-full bg-primary border-2 border-card -ml-1.5 shrink-0 shadow-sm" />
+                                  <div className="h-[2px] flex-1 bg-primary/70 shadow-[0_0_6px_hsl(var(--primary)/0.3)]" />
                                 </div>
                               </div>
                             )}
