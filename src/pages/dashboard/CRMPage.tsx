@@ -265,7 +265,7 @@ export default function CRMPage() {
               {insights.map((insight, i) => (
                 <div
                   key={i}
-                  className={`flex items-center gap-3 rounded-xl p-3 transition-colors ${
+                  className={`flex items-start sm:items-center gap-3 rounded-xl p-3 sm:p-3 transition-colors ${
                     insight.severity === "warning"
                       ? "bg-amber-500/5 border border-amber-500/10"
                       : insight.severity === "success"
@@ -273,12 +273,12 @@ export default function CRMPage() {
                       : "bg-muted/50 border border-border/50"
                   }`}
                 >
-                  <insight.icon className={`h-4 w-4 shrink-0 ${
+                  <insight.icon className={`h-4 w-4 shrink-0 mt-0.5 sm:mt-0 ${
                     insight.severity === "warning" ? "text-amber-600" : insight.severity === "success" ? "text-emerald-600" : "text-primary"
                   }`} />
-                  <span className="text-sm flex-1">{insight.text}</span>
+                  <span className="text-xs sm:text-sm flex-1">{insight.text}</span>
                   {insight.action && insight.route && (
-                    <Button variant="ghost" size="sm" className="text-xs h-7 shrink-0" onClick={() => navigate(insight.route!)}>
+                    <Button variant="ghost" size="sm" className="text-xs h-9 sm:h-7 shrink-0 px-2 sm:px-3" onClick={() => navigate(insight.route!)}>
                       {insight.action}
                       <ArrowRight className="h-3 w-3 ml-1" />
                     </Button>
