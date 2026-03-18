@@ -76,7 +76,7 @@ export default function WeeklySchedule({ appointments = [], onSlotClick }: Weekl
       <div className="overflow-x-auto">
         <div className="min-w-[700px]">
           {/* Day headers */}
-          <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border">
+          <div className="grid grid-cols-[72px_repeat(7,1fr)] border-b border-border/50">
             <div className="p-2" />
             {days.map((day) => {
               const today = isToday(day);
