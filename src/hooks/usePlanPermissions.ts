@@ -39,7 +39,7 @@ interface UsePlanPermissionsReturn {
 }
 
 export function usePlanPermissions(): UsePlanPermissionsReturn {
-  const { subscription, loading: subLoading } = useSubscription();
+  const { subscription, loading: subLoading, isTrial } = useSubscription();
   const [upgradeFeature, setUpgradeFeature] = useState<PlanFeature | null>(null);
   const [dbPlans, setDbPlans] = useState<DbPlan[]>([]);
   const [plansLoading, setPlansLoading] = useState(true);
