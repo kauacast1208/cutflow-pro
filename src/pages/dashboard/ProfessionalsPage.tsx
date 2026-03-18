@@ -267,7 +267,7 @@ export default function ProfessionalsPage() {
                   </div>
                 </div>
                 <div onClick={(e) => e.stopPropagation()}>
-                  <Switch checked={p.is_active} onCheckedChange={() => toggleActive(p.id, p.is_active)} />
+                  <Switch checked={p.active} onCheckedChange={() => toggleActive(p.id, p.active)} />
                 </div>
               </div>
 

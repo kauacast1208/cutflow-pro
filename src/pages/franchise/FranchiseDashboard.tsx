@@ -77,7 +77,7 @@ export default function FranchiseDashboard() {
             .from("professionals")
             .select("id", { count: "exact", head: true })
             .eq("barbershop_id", unit.id)
-            .eq("is_active", true),
+            .eq("active", true),
         ]);
 
         const appts = apptRes.data || [];
