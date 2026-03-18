@@ -197,14 +197,14 @@ export default function CRMPage() {
   const isEmpty = segments.total === 0;
 
   return (
-    <div className="space-y-6 max-w-full">
+    <div className="space-y-5 sm:space-y-6 max-w-full pb-20 sm:pb-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <Heart className="h-6 w-6 text-primary" />
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
+          <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
           CRM
         </h1>
-        <p className="text-muted-foreground text-sm mt-1">
+        <p className="text-muted-foreground text-xs sm:text-sm mt-1">
           {isEmpty
             ? "Gerencie o relacionamento com seus clientes de forma inteligente"
             : `Relacionamento inteligente com seus clientes · ${segments.total} clientes cadastrados`}
@@ -212,18 +212,18 @@ export default function CRMPage() {
       </div>
 
       {/* Segment Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
         {segmentCards.map((card, i) => (
           <motion.div key={card.label} {...anim} transition={{ delay: i * 0.05 }}>
             <Card className="border-border/60 bg-card hover:border-border transition-colors">
-              <CardContent className="pt-4 pb-3 px-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className={`h-9 w-9 rounded-lg ${card.bg} flex items-center justify-center`}>
-                    <card.icon className={`h-4 w-4 ${card.color}`} />
+              <CardContent className="pt-3 sm:pt-4 pb-2.5 sm:pb-3 px-3 sm:px-4">
+                <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                  <div className={`h-8 w-8 sm:h-9 sm:w-9 rounded-lg ${card.bg} flex items-center justify-center`}>
+                    <card.icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${card.color}`} />
                   </div>
                 </div>
-                <div className="text-2xl font-bold tracking-tight">{card.value}</div>
-                <p className="text-[11px] text-muted-foreground font-medium mt-1">{card.label}</p>
+                <div className="text-xl sm:text-2xl font-bold tracking-tight">{card.value}</div>
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground font-medium mt-0.5 sm:mt-1">{card.label}</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -234,15 +234,15 @@ export default function CRMPage() {
       {isEmpty && insights.length === 0 && (
         <motion.div {...anim} transition={{ delay: 0.2 }}>
           <Card className="border-border/60">
-            <CardContent className="py-12 flex flex-col items-center text-center">
-              <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-                <Users className="h-6 w-6 text-primary" />
+            <CardContent className="py-10 sm:py-12 flex flex-col items-center text-center px-5">
+              <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-3 sm:mb-4">
+                <Users className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
               </div>
-              <h3 className="text-base font-semibold mb-1.5">Comece a construir seu CRM</h3>
-              <p className="text-sm text-muted-foreground max-w-sm">
+              <h3 className="text-sm sm:text-base font-semibold mb-1.5">Comece a construir seu CRM</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground max-w-sm">
                 Cadastre seus clientes e registre agendamentos para visualizar segmentações, insights e oportunidades de retenção automaticamente.
               </p>
-              <Button className="mt-5" onClick={() => navigate("/dashboard/clients")}>
+              <Button className="mt-4 sm:mt-5 h-11 sm:h-10 min-w-[180px]" onClick={() => navigate("/dashboard/clients")}>
                 <Users className="h-4 w-4 mr-2" />
                 Cadastrar clientes
               </Button>
@@ -265,7 +265,7 @@ export default function CRMPage() {
               {insights.map((insight, i) => (
                 <div
                   key={i}
-                  className={`flex items-center gap-3 rounded-xl p-3 transition-colors ${
+                  className={`flex items-start sm:items-center gap-3 rounded-xl p-3 sm:p-3 transition-colors ${
                     insight.severity === "warning"
                       ? "bg-amber-500/5 border border-amber-500/10"
                       : insight.severity === "success"
@@ -273,12 +273,12 @@ export default function CRMPage() {
                       : "bg-muted/50 border border-border/50"
                   }`}
                 >
-                  <insight.icon className={`h-4 w-4 shrink-0 ${
+                  <insight.icon className={`h-4 w-4 shrink-0 mt-0.5 sm:mt-0 ${
                     insight.severity === "warning" ? "text-amber-600" : insight.severity === "success" ? "text-emerald-600" : "text-primary"
                   }`} />
-                  <span className="text-sm flex-1">{insight.text}</span>
+                  <span className="text-xs sm:text-sm flex-1">{insight.text}</span>
                   {insight.action && insight.route && (
-                    <Button variant="ghost" size="sm" className="text-xs h-7 shrink-0" onClick={() => navigate(insight.route!)}>
+                    <Button variant="ghost" size="sm" className="text-xs h-9 sm:h-7 shrink-0 px-2 sm:px-3" onClick={() => navigate(insight.route!)}>
                       {insight.action}
                       <ArrowRight className="h-3 w-3 ml-1" />
                     </Button>
@@ -290,12 +290,12 @@ export default function CRMPage() {
         </motion.div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         {/* Quick Actions */}
         <motion.div {...anim} transition={{ delay: 0.3 }}>
           <Card className="h-full">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                 <Zap className="h-4 w-4 text-primary" />
                 Ações rápidas
               </CardTitle>
@@ -305,14 +305,14 @@ export default function CRMPage() {
                 <button
                   key={action.label}
                   onClick={() => navigate(action.route)}
-                  className="w-full flex items-center gap-3 rounded-xl p-3 hover:bg-muted/50 border border-border/50 transition-all text-left group"
+                  className="w-full flex items-center gap-3 rounded-xl p-3 hover:bg-muted/50 border border-border/50 transition-all text-left group min-h-[56px] sm:min-h-0 active:scale-[0.98]"
                 >
                   <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/15 transition-colors">
                     <action.icon className="h-4 w-4 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{action.label}</p>
-                    <p className="text-xs text-muted-foreground truncate">{action.desc}</p>
+                    <p className="text-xs sm:text-sm font-medium">{action.label}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{action.desc}</p>
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-foreground transition-colors shrink-0" />
                 </button>
@@ -336,18 +336,18 @@ export default function CRMPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-3 gap-3">
-                <div className="text-center p-3 rounded-xl bg-muted/50">
-                  <div className="text-xl font-bold">{campaignsSent}</div>
-                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Campanhas enviadas</p>
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                <div className="text-center p-2.5 sm:p-3 rounded-xl bg-muted/50">
+                  <div className="text-lg sm:text-xl font-bold">{campaignsSent}</div>
+                  <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Campanhas</p>
                 </div>
-                <div className="text-center p-3 rounded-xl bg-muted/50">
-                  <div className="text-xl font-bold">{totalRecipients}</div>
-                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Destinatários</p>
+                <div className="text-center p-2.5 sm:p-3 rounded-xl bg-muted/50">
+                  <div className="text-lg sm:text-xl font-bold">{totalRecipients}</div>
+                  <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Destinatários</p>
                 </div>
-                <div className="text-center p-3 rounded-xl bg-muted/50">
-                  <div className="text-xl font-bold">{msgSent}</div>
-                  <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Mensagens enviadas</p>
+                <div className="text-center p-2.5 sm:p-3 rounded-xl bg-muted/50">
+                  <div className="text-lg sm:text-xl font-bold">{msgSent}</div>
+                  <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Mensagens</p>
                 </div>
               </div>
 
