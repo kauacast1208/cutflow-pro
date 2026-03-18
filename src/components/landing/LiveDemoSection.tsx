@@ -227,11 +227,14 @@ export function LiveDemoSection() {
   }, [tick]);
 
   return (
-    <section className="section-padding relative overflow-hidden">
-      {/* Cinematic background */}
-      <div className="absolute inset-0 bg-background" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_40%,hsl(152,55%,42%,0.04),transparent)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_80%_20%,hsl(260,40%,35%,0.03),transparent)]" />
+    <section className="section-padding relative overflow-hidden py-20 sm:py-28">
+      {/* Cinematic background — stronger, less muddy */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-[hsl(220,20%,6%)] to-background" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_40%,hsl(152,55%,42%,0.07),transparent)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_80%_20%,hsl(260,40%,40%,0.04),transparent)]" />
+      {/* Horizontal accent line */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border/40 to-transparent" />
 
       <div className="max-w-6xl mx-auto relative z-10">
         {/* Header */}
