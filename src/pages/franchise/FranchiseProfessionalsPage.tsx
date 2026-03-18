@@ -41,7 +41,7 @@ export default function FranchiseProfessionalsPage() {
       .from("professionals")
       .select("*")
       .in("barbershop_id", ids)
-      .eq("is_active", true)
+      .eq("active", true)
       .order("name")
       .then(({ data }) => {
         setProfessionals((data as Professional[]) || []);

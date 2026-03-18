@@ -195,7 +195,7 @@ export default function ProfessionalsPage() {
   };
 
   const toggleActive = async (id: string, isActive: boolean) => {
-    await supabase.from("professionals").update({ is_active: !isActive }).eq("id", id); load();
+    await supabase.from("professionals").update({ active: !isActive }).eq("id", id); load();
   };
 
   const filtered = pros.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
