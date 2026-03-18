@@ -253,7 +253,7 @@ export default function ProfessionalsPage() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
-              className={`group rounded-2xl border border-border/60 bg-card p-5 transition-all hover:shadow-[var(--shadow-md)] cursor-pointer ${!p.is_active ? "opacity-50" : ""}`}
+              className={`group rounded-2xl border border-border/60 bg-card p-5 transition-all hover:shadow-[var(--shadow-md)] cursor-pointer ${!p.active ? "opacity-50" : ""}`}
               onClick={() => openEdit(p)}
             >
               <div className="flex items-start justify-between mb-4">
