@@ -809,10 +809,10 @@ export default function DashboardHome() {
           <SectionTitle icon={Zap}>Ações rápidas</SectionTitle>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: "Ver agenda", icon: Calendar, bg: "bg-primary/10", color: "text-primary", action: () => navigate("/dashboard/agenda") },
-              { label: "Clientes", icon: Users, bg: "bg-chart-2/10", color: "text-chart-2", action: () => navigate("/dashboard/clients") },
-              { label: "Financeiro", icon: DollarSign, bg: "bg-chart-4/10", color: "text-chart-4", action: () => navigate("/dashboard/finance") },
-              { label: "Copiar link", icon: ExternalLink, bg: "bg-muted/60", color: "text-muted-foreground", action: copyLink },
+              { label: "Novo agendamento", icon: Plus, bg: "bg-primary/10", color: "text-primary", action: () => navigate("/dashboard/agenda") },
+              { label: "Cadastrar cliente", icon: Users, bg: "bg-blue-500/10", color: "text-blue-600 dark:text-blue-400", action: () => navigate("/dashboard/clients") },
+              { label: "Adicionar serviço", icon: Target, bg: "bg-amber-500/10", color: "text-amber-600 dark:text-amber-400", action: () => navigate("/dashboard/services") },
+              { label: "Compartilhar link", icon: ExternalLink, bg: "bg-muted/60", color: "text-muted-foreground", action: copyLink },
             ].map(item => (
               <button
                 key={item.label}
