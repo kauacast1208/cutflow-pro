@@ -260,34 +260,34 @@ export default function AgendaPage() {
     const sc = statusConfig[event.status] || statusConfig.scheduled;
     return (
       <div
-        onClick={() => setSelectedAppt(event)}
-        className={`rounded-xl border ${sc.border} ${sc.bg} p-2 cursor-pointer transition-all hover:shadow-md hover:scale-[1.01] active:scale-[0.99] overflow-hidden group`}
+        onClick={(e) => { e.stopPropagation(); setSelectedAppt(event); }}
+        className={`rounded-lg border ${sc.border} ${sc.bg} p-2 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.015] active:scale-[0.985] overflow-hidden group`}
       >
         <div className="flex items-start gap-2">
-          <div className={`h-1.5 w-1.5 rounded-full ${sc.dot} mt-1.5 shrink-0`} />
+          <div className={`h-2 w-[3px] rounded-full ${sc.dot} mt-0.5 shrink-0`} />
           <div className="flex-1 min-w-0">
-            <p className={`text-xs font-semibold truncate ${sc.color}`}>{event.client_name}</p>
+            <p className={`text-[11px] font-bold truncate ${sc.color}`}>{event.client_name}</p>
             {!compact && (
               <>
-                <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                <p className="text-[10px] text-muted-foreground/80 truncate mt-0.5">
                   {event.services?.name}
                 </p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[10px] text-muted-foreground/70 flex items-center gap-0.5">
+                <div className="flex items-center gap-2.5 mt-1.5">
+                  <span className="text-[10px] text-muted-foreground/60 flex items-center gap-0.5 font-medium tabular-nums">
                     <Clock className="h-2.5 w-2.5" />
-                    {event.start_time?.slice(0, 5)}
+                    {event.start_time?.slice(0, 5)}–{event.end_time?.slice(0, 5)}
                   </span>
-                  <span className="text-[10px] text-muted-foreground/70 flex items-center gap-0.5">
+                  <span className="text-[10px] text-muted-foreground/60 flex items-center gap-0.5">
                     <User className="h-2.5 w-2.5" />
                     {event.professionals?.name?.split(" ")[0]}
                   </span>
-                  {event.client_phone && (
-                    <span className="text-[10px] text-muted-foreground/70 flex items-center gap-0.5">
-                      <Phone className="h-2.5 w-2.5" />
-                    </span>
-                  )}
                 </div>
               </>
+            )}
+            {compact && (
+              <p className="text-[9px] text-muted-foreground/60 truncate mt-0.5 tabular-nums font-medium">
+                {event.start_time?.slice(0, 5)} · {event.services?.name?.split(" ")[0]}
+              </p>
             )}
           </div>
         </div>
