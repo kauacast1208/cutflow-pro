@@ -44,7 +44,7 @@ export default function WeeklySchedule({ appointments = [], onSlotClick }: Weekl
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.15 }}
-      className="rounded-2xl border border-border bg-card overflow-hidden"
+      className="rounded-2xl border border-border/50 bg-card overflow-hidden shadow-card"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-border">
@@ -76,16 +76,16 @@ export default function WeeklySchedule({ appointments = [], onSlotClick }: Weekl
       <div className="overflow-x-auto">
         <div className="min-w-[700px]">
           {/* Day headers */}
-          <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border">
+          <div className="grid grid-cols-[72px_repeat(7,1fr)] border-b border-border/50">
             <div className="p-2" />
             {days.map((day) => {
               const today = isToday(day);
               return (
                 <div
                   key={day.toISOString()}
-                  className={`p-2 text-center border-l border-border ${today ? "bg-accent/40" : ""}`}
+                  className={`p-2.5 text-center border-l border-border/40 ${today ? "bg-primary/[0.04]" : ""}`}
                 >
-                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-bold">
                     {format(day, "EEE", { locale: ptBR })}
                   </p>
                   <p
@@ -102,7 +102,7 @@ export default function WeeklySchedule({ appointments = [], onSlotClick }: Weekl
 
           {/* Time slots */}
           {hours.map((hour) => (
-            <div key={hour} className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border/50 last:border-b-0">
+            <div key={hour} className={`grid grid-cols-[72px_repeat(7,1fr)] border-b border-border/40 last:border-b-0 ${parseInt(hour) % 2 === 0 ? '' : 'bg-muted/[0.02]'}`}>
               <div className="p-2.5 text-xs text-muted-foreground font-bold text-right pr-3 tabular-nums">
                 {hour}
               </div>

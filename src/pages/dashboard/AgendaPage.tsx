@@ -260,34 +260,34 @@ export default function AgendaPage() {
     const sc = statusConfig[event.status] || statusConfig.scheduled;
     return (
       <div
-        onClick={() => setSelectedAppt(event)}
-        className={`rounded-xl border ${sc.border} ${sc.bg} p-2 cursor-pointer transition-all hover:shadow-md hover:scale-[1.01] active:scale-[0.99] overflow-hidden group`}
+        onClick={(e) => { e.stopPropagation(); setSelectedAppt(event); }}
+        className={`rounded-lg border ${sc.border} ${sc.bg} p-2 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.015] active:scale-[0.985] overflow-hidden group`}
       >
         <div className="flex items-start gap-2">
-          <div className={`h-1.5 w-1.5 rounded-full ${sc.dot} mt-1.5 shrink-0`} />
+          <div className={`h-2 w-[3px] rounded-full ${sc.dot} mt-0.5 shrink-0`} />
           <div className="flex-1 min-w-0">
-            <p className={`text-xs font-semibold truncate ${sc.color}`}>{event.client_name}</p>
+            <p className={`text-[11px] font-bold truncate ${sc.color}`}>{event.client_name}</p>
             {!compact && (
               <>
-                <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                <p className="text-[10px] text-muted-foreground/80 truncate mt-0.5">
                   {event.services?.name}
                 </p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[10px] text-muted-foreground/70 flex items-center gap-0.5">
+                <div className="flex items-center gap-2.5 mt-1.5">
+                  <span className="text-[10px] text-muted-foreground/60 flex items-center gap-0.5 font-medium tabular-nums">
                     <Clock className="h-2.5 w-2.5" />
-                    {event.start_time?.slice(0, 5)}
+                    {event.start_time?.slice(0, 5)}–{event.end_time?.slice(0, 5)}
                   </span>
-                  <span className="text-[10px] text-muted-foreground/70 flex items-center gap-0.5">
+                  <span className="text-[10px] text-muted-foreground/60 flex items-center gap-0.5">
                     <User className="h-2.5 w-2.5" />
                     {event.professionals?.name?.split(" ")[0]}
                   </span>
-                  {event.client_phone && (
-                    <span className="text-[10px] text-muted-foreground/70 flex items-center gap-0.5">
-                      <Phone className="h-2.5 w-2.5" />
-                    </span>
-                  )}
                 </div>
               </>
+            )}
+            {compact && (
+              <p className="text-[9px] text-muted-foreground/60 truncate mt-0.5 tabular-nums font-medium">
+                {event.start_time?.slice(0, 5)} · {event.services?.name?.split(" ")[0]}
+              </p>
             )}
           </div>
         </div>
@@ -441,13 +441,15 @@ export default function AgendaPage() {
           { label: "Horários livres", value: String(freeSlots), sub: "disponíveis", icon: Clock },
           { label: "Destaque", value: topPro?.name?.split(" ")[0] || "--", sub: topPro ? `${topPro.count} atend.` : "sem dados", icon: TrendingUp },
         ].map((s, i) => (
-          <div key={i} className="rounded-xl border border-border/60 bg-card p-3.5 hover:shadow-sm transition-shadow">
-            <div className="flex items-center justify-between mb-1">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{s.label}</p>
-              <s.icon className="h-3.5 w-3.5 text-muted-foreground/50" />
+          <div key={i} className="rounded-xl border border-border/50 bg-card p-4 hover:border-border/80 hover:shadow-md transition-all duration-200 group">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-bold">{s.label}</p>
+              <div className="h-7 w-7 rounded-lg bg-primary/8 flex items-center justify-center group-hover:bg-primary/12 transition-colors">
+                <s.icon className="h-3.5 w-3.5 text-primary/60" />
+              </div>
             </div>
-            <p className="text-lg font-bold text-foreground">{s.value}</p>
-            <p className="text-[10px] text-muted-foreground">{s.sub}</p>
+            <p className="text-xl font-extrabold text-foreground tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.value}</p>
+            <p className="text-[10px] text-muted-foreground/50 mt-0.5 font-medium">{s.sub}</p>
           </div>
         ))}
       </motion.div>
@@ -464,7 +466,7 @@ export default function AgendaPage() {
 
       {/* Calendar Grid */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}
-        className="rounded-2xl border border-border/60 bg-card overflow-hidden"
+        className="rounded-2xl border border-border/50 bg-card overflow-hidden shadow-card"
       >
         {/* Mobile day list (for day view on small screens) */}
         {viewMode === "day" && (
@@ -486,11 +488,11 @@ export default function AgendaPage() {
                 const slotBlocks = getBlocksForSlot(dateStr, h);
 
                 return (
-                  <div key={hour} className="flex">
-                    <div className="w-14 shrink-0 py-3 pr-2 text-right">
-                      <span className="text-[11px] font-medium text-muted-foreground/60">{hour}</span>
+                  <div key={hour} className="flex group/row hover:bg-accent/10 transition-colors">
+                    <div className="w-16 shrink-0 py-3 pr-3 text-right">
+                      <span className="text-xs font-bold text-muted-foreground/70 tabular-nums">{hour}</span>
                     </div>
-                    <div className={`flex-1 py-2 px-2 min-h-[56px] border-l border-border/30 ${
+                    <div className={`flex-1 py-2 px-2.5 min-h-[60px] border-l border-border/50 ${
                       slotBlocks.length > 0 && slotAppts.length === 0
                         ? (slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "bg-amber-500/5" :
                           (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "bg-blue-500/5" :
@@ -541,14 +543,14 @@ export default function AgendaPage() {
 
         {/* Desktop grid (day, week, professional views) */}
         <div className={`${viewMode === "day" ? "hidden sm:block" : ""} overflow-x-auto`}>
-          <div className="min-w-[700px]">
+          <div className="min-w-[720px]">
             {viewMode === "professional" ? (
               <>
                 {/* Professional columns header */}
-                <div className="border-b border-border/40 bg-muted/20"
-                  style={{ display: "grid", gridTemplateColumns: `60px repeat(${proColumns.length}, 1fr)` }}
+                <div className="border-b border-border/50 bg-muted/30"
+                  style={{ display: "grid", gridTemplateColumns: `72px repeat(${proColumns.length}, 1fr)` }}
                 >
-                  <div className="p-3 text-[10px] text-muted-foreground font-medium">Hora</div>
+                  <div className="p-3 text-[10px] text-muted-foreground/50 font-bold uppercase tracking-widest">Hora</div>
                   {proColumns.map(p => (
                     <div key={p.id} className="p-3 text-center border-l border-border/30">
                       <div className="flex items-center justify-center gap-2">
@@ -572,15 +574,15 @@ export default function AgendaPage() {
                 {hours.map(hour => {
                   const h = parseInt(hour);
                   return (
-                    <div key={hour} className="border-b border-border/20 last:border-b-0"
-                      style={{ display: "grid", gridTemplateColumns: `60px repeat(${proColumns.length}, 1fr)` }}
+                    <div key={hour} className="border-b border-border/30 last:border-b-0 hover:bg-accent/8 transition-colors"
+                      style={{ display: "grid", gridTemplateColumns: `72px repeat(${proColumns.length}, 1fr)` }}
                     >
-                      <div className="p-2 text-xs text-muted-foreground font-semibold text-right pr-3 pt-3 tabular-nums">{hour}</div>
+                      <div className="p-2.5 text-xs text-muted-foreground/70 font-bold text-right pr-3 pt-3 tabular-nums">{hour}</div>
                       {proColumns.map(pro => {
                         const dateStr = format(selectedDate, "yyyy-MM-dd");
                         const proAppts = getApptsForSlot(dateStr, h, pro.id);
                         return (
-                          <div key={pro.id} className="border-l border-border/20 p-1 min-h-[64px]">
+                          <div key={pro.id} className="border-l border-border/30 p-1.5 min-h-[68px] hover:bg-accent/15 transition-colors">
                             {proAppts.map(event => (
                               <AppointmentCard key={event.id} event={event} compact />
                             ))}
@@ -601,8 +603,8 @@ export default function AgendaPage() {
             ) : (
               <>
                 {/* Day/Week headers */}
-                <div style={{ display: "grid", gridTemplateColumns: `60px repeat(${days.length}, 1fr)` }}
-                  className="border-b border-border/40 bg-muted/20"
+                <div style={{ display: "grid", gridTemplateColumns: `72px repeat(${days.length}, 1fr)` }}
+                  className="border-b border-border/50 bg-muted/30"
                 >
                   <div className="p-3" />
                   {days.map((d, i) => {
@@ -611,10 +613,10 @@ export default function AgendaPage() {
                     return (
                       <div
                         key={i}
-                        className={`p-3 text-center border-l border-border/30 cursor-pointer hover:bg-accent/30 transition-colors ${isToday ? "bg-primary/5" : ""}`}
+                        className={`p-3 text-center border-l border-border/40 cursor-pointer hover:bg-accent/30 transition-colors ${isToday ? "bg-primary/5" : ""}`}
                         onClick={() => { setSelectedDate(d); setViewMode("day"); }}
                       >
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                        <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-bold">
                           {format(d, "EEE", { locale: ptBR })}
                         </span>
                         <p className={`text-sm font-bold mt-0.5 ${isToday ? "text-primary" : "text-foreground"}`}>
@@ -634,10 +636,12 @@ export default function AgendaPage() {
                 {hours.map(hour => {
                   const h = parseInt(hour);
                   return (
-                    <div key={hour} className="border-b border-border/40 last:border-b-0"
-                      style={{ display: "grid", gridTemplateColumns: `60px repeat(${days.length}, 1fr)` }}
+                    <div key={hour} className={`border-b border-border/30 last:border-b-0 ${parseInt(hour) % 2 === 0 ? '' : 'bg-muted/[0.03]'}`}
+                      style={{ display: "grid", gridTemplateColumns: `72px repeat(${days.length}, 1fr)` }}
                     >
-                      <div className="p-2 text-xs text-muted-foreground font-semibold text-right pr-3 pt-3 tabular-nums">{hour}</div>
+                      <div className="p-2.5 text-xs text-muted-foreground/70 font-bold text-right pr-4 pt-3 tabular-nums select-none">
+                        {hour}
+                      </div>
                       {days.map((day, dayIdx) => {
                         const dateStr = format(day, "yyyy-MM-dd");
                         const slotAppts = getApptsForSlot(dateStr, h);
@@ -653,13 +657,15 @@ export default function AgendaPage() {
 
                         return (
                           <div key={dayIdx}
-                            className={`border-l border-border/40 p-1.5 min-h-[68px] relative transition-colors duration-150 hover:bg-accent/20 group/cell ${
+                            className={`border-l border-border/30 p-1.5 min-h-[72px] relative transition-all duration-150 group/cell cursor-pointer ${
+                              slotAppts.length === 0 && slotBlocks.length === 0 ? 'hover:bg-primary/[0.04]' : 'hover:bg-accent/10'
+                            } ${
                               slotBlocks.length > 0
-                                ? (slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "bg-amber-500/5" :
-                                  (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "bg-blue-500/5" :
-                                  "bg-muted/10"
+                                ? (slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "bg-amber-500/[0.04]" :
+                                  (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "bg-blue-500/[0.04]" :
+                                  "bg-muted/[0.06]"
                                 : ""
-                            } ${isToday ? "bg-primary/[0.02]" : ""}`}
+                            } ${isToday ? "bg-primary/[0.025]" : ""}`}
                             onClick={() => {
                               if (slotAppts.length === 0 && slotBlocks.length === 0 && canViewFullAgenda) {
                                 setNewApptDefaults({ date: day, time: `${String(h).padStart(2, "0")}:00` });
@@ -674,8 +680,8 @@ export default function AgendaPage() {
                                 style={{ top: `${timeLineTop}%` }}
                               >
                                 <div className="flex items-center">
-                                  <div className="h-2 w-2 rounded-full bg-destructive -ml-1 shrink-0" />
-                                  <div className="h-[2px] flex-1 bg-destructive/60" />
+                                  <div className="h-3 w-3 rounded-full bg-primary border-2 border-card -ml-1.5 shrink-0 shadow-sm" />
+                                  <div className="h-[2px] flex-1 bg-primary/70 shadow-[0_0_6px_hsl(var(--primary)/0.3)]" />
                                 </div>
                               </div>
                             )}
