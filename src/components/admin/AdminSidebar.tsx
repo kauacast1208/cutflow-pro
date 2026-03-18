@@ -133,7 +133,7 @@ export default function AdminSidebar() {
     if (groupItems.length === 0) return null;
     return (
       <SidebarGroup key={label}>
-        <SidebarGroupLabel className="text-[11px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
+        <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-bold px-3">
           {label}
         </SidebarGroupLabel>
         <SidebarGroupContent>
