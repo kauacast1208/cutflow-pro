@@ -102,8 +102,8 @@ export default function WeeklySchedule({ appointments = [], onSlotClick }: Weekl
 
           {/* Time slots */}
           {hours.map((hour) => (
-            <div key={hour} className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border/50 last:border-b-0">
-              <div className="p-2 text-[11px] text-muted-foreground font-medium text-right pr-3">
+            <div key={hour} className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border/40 last:border-b-0">
+              <div className="p-2 text-xs text-muted-foreground font-semibold text-right pr-3 tabular-nums">
                 {hour}
               </div>
               {days.map((day) => {
@@ -112,15 +112,15 @@ export default function WeeklySchedule({ appointments = [], onSlotClick }: Weekl
                 return (
                   <div
                     key={day.toISOString() + hour}
-                    className={`min-h-[48px] border-l border-border/50 p-0.5 cursor-pointer hover:bg-accent/20 transition-colors duration-100 ${
-                      today ? "bg-accent/10" : ""
+                    className={`min-h-[52px] border-l border-border/40 p-1 cursor-pointer hover:bg-accent/30 transition-colors duration-100 ${
+                      today ? "bg-accent/15" : ""
                     }`}
                     onClick={() => onSlotClick?.(format(day, "yyyy-MM-dd"), hour)}
                   >
                     {dayAppts.map((appt) => (
                       <div
                         key={appt.id}
-                        className={`rounded-lg border px-2 py-1 text-[11px] leading-tight mb-0.5 ${
+                        className={`rounded-lg border px-2 py-1.5 text-[11px] leading-tight mb-0.5 ${
                           statusColors[appt.status] || statusColors.scheduled
                         }`}
                       >

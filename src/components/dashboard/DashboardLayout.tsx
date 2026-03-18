@@ -26,7 +26,7 @@ export default function DashboardLayout() {
         <AdminSidebar />
         <div className="flex-1 flex flex-col">
           <AdminTopbar />
-          <main className="flex-1 p-4 sm:p-6 bg-background overflow-auto">
+          <main className="flex-1 p-3 sm:p-5 lg:p-6 bg-background overflow-auto max-w-[1600px]">
             <Outlet />
           </main>
         </div>

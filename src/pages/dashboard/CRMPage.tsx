@@ -194,8 +194,10 @@ export default function CRMPage() {
     { label: "Análise de retenção", desc: "Ver previsão de retorno e clientes em risco", icon: Heart, route: "/dashboard/retention" },
   ];
 
+  const isEmpty = segments.total === 0;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
@@ -203,7 +205,9 @@ export default function CRMPage() {
           CRM
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Relacionamento inteligente com seus clientes · {segments.total} clientes cadastrados
+          {isEmpty
+            ? "Gerencie o relacionamento com seus clientes de forma inteligente"
+            : `Relacionamento inteligente com seus clientes · ${segments.total} clientes cadastrados`}
         </p>
       </div>
 
@@ -211,20 +215,41 @@ export default function CRMPage() {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {segmentCards.map((card, i) => (
           <motion.div key={card.label} {...anim} transition={{ delay: i * 0.05 }}>
-            <Card className="border-border/50">
+            <Card className="border-border/60 bg-card hover:border-border transition-colors">
               <CardContent className="pt-4 pb-3 px-4">
                 <div className="flex items-center justify-between mb-2">
-                  <div className={`h-8 w-8 rounded-lg ${card.bg} flex items-center justify-center`}>
+                  <div className={`h-9 w-9 rounded-lg ${card.bg} flex items-center justify-center`}>
                     <card.icon className={`h-4 w-4 ${card.color}`} />
                   </div>
                 </div>
                 <div className="text-2xl font-bold tracking-tight">{card.value}</div>
-                <p className="text-[11px] text-muted-foreground font-medium mt-0.5">{card.label}</p>
+                <p className="text-[11px] text-muted-foreground font-medium mt-1">{card.label}</p>
               </CardContent>
             </Card>
           </motion.div>
         ))}
       </div>
+
+      {/* Empty state for new users */}
+      {isEmpty && insights.length === 0 && (
+        <motion.div {...anim} transition={{ delay: 0.2 }}>
+          <Card className="border-border/60">
+            <CardContent className="py-12 flex flex-col items-center text-center">
+              <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+                <Users className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-base font-semibold mb-1.5">Comece a construir seu CRM</h3>
+              <p className="text-sm text-muted-foreground max-w-sm">
+                Cadastre seus clientes e registre agendamentos para visualizar segmentações, insights e oportunidades de retenção automaticamente.
+              </p>
+              <Button className="mt-5" onClick={() => navigate("/dashboard/clients")}>
+                <Users className="h-4 w-4 mr-2" />
+                Cadastrar clientes
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Smart Insights */}
       {insights.length > 0 && (
