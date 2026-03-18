@@ -574,10 +574,10 @@ export default function AgendaPage() {
                 {hours.map(hour => {
                   const h = parseInt(hour);
                   return (
-                    <div key={hour} className="border-b border-border/20 last:border-b-0"
-                      style={{ display: "grid", gridTemplateColumns: `60px repeat(${proColumns.length}, 1fr)` }}
+                    <div key={hour} className="border-b border-border/30 last:border-b-0 hover:bg-accent/8 transition-colors"
+                      style={{ display: "grid", gridTemplateColumns: `72px repeat(${proColumns.length}, 1fr)` }}
                     >
-                      <div className="p-2 text-xs text-muted-foreground font-semibold text-right pr-3 pt-3 tabular-nums">{hour}</div>
+                      <div className="p-2.5 text-xs text-muted-foreground/70 font-bold text-right pr-3 pt-3 tabular-nums">{hour}</div>
                       {proColumns.map(pro => {
                         const dateStr = format(selectedDate, "yyyy-MM-dd");
                         const proAppts = getApptsForSlot(dateStr, h, pro.id);
