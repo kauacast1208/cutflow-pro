@@ -39,7 +39,7 @@ interface UsePlanPermissionsReturn {
 }
 
 export function usePlanPermissions(): UsePlanPermissionsReturn {
-  const { subscription, loading: subLoading } = useSubscription();
+  const { subscription, loading: subLoading, isTrial } = useSubscription();
   const [upgradeFeature, setUpgradeFeature] = useState<PlanFeature | null>(null);
   const [dbPlans, setDbPlans] = useState<DbPlan[]>([]);
   const [plansLoading, setPlansLoading] = useState(true);
@@ -80,9 +80,10 @@ export function usePlanPermissions(): UsePlanPermissionsReturn {
 
   const loading = subLoading || plansLoading;
 
+  // During active trial, unlock all features so users experience the full product
   const can = useCallback(
-    (feature: PlanFeature) => activePlan.features.includes(feature),
-    [activePlan]
+    (feature: PlanFeature) => isTrial || activePlan.features.includes(feature),
+    [activePlan, isTrial]
   );
 
   const limit = useCallback(
