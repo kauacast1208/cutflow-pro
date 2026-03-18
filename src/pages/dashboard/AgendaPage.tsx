@@ -637,7 +637,7 @@ export default function AgendaPage() {
                     <div key={hour} className="border-b border-border/20 last:border-b-0"
                       style={{ display: "grid", gridTemplateColumns: `60px repeat(${days.length}, 1fr)` }}
                     >
-                      <div className="p-2 text-[11px] text-muted-foreground/60 text-right pr-3 pt-3 font-medium">{hour}</div>
+                      <div className="p-2 text-xs text-muted-foreground font-semibold text-right pr-3 pt-3 tabular-nums">{hour}</div>
                       {days.map((day, dayIdx) => {
                         const dateStr = format(day, "yyyy-MM-dd");
                         const slotAppts = getApptsForSlot(dateStr, h);
