@@ -613,7 +613,7 @@ export default function AgendaPage() {
                     return (
                       <div
                         key={i}
-                        className={`p-3 text-center border-l border-border/30 cursor-pointer hover:bg-accent/30 transition-colors ${isToday ? "bg-primary/5" : ""}`}
+                        className={`p-3 text-center border-l border-border/40 cursor-pointer hover:bg-accent/30 transition-colors ${isToday ? "bg-primary/5" : ""}`}
                         onClick={() => { setSelectedDate(d); setViewMode("day"); }}
                       >
                         <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
