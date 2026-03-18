@@ -36,6 +36,7 @@ interface UsePlanPermissionsReturn {
   getUpgradeMessage: (feature: PlanFeature) => string;
   getLimitMessage: (resource: PlanResource) => string;
   loading: boolean;
+  isTrial: boolean;
 }
 
 export function usePlanPermissions(): UsePlanPermissionsReturn {
@@ -93,11 +94,13 @@ export function usePlanPermissions(): UsePlanPermissionsReturn {
 
   const isAtLimit = useCallback(
     (resource: PlanResource, currentCount: number) => {
+      // During active trial, don't enforce limits in the UI
+      if (isTrial) return false;
       const max = activePlan.limits[resource];
       if (max === Infinity || max >= 999999) return false;
       return currentCount >= max;
     },
-    [activePlan]
+    [activePlan, isTrial]
   );
 
   const showUpgrade = useCallback((feature: PlanFeature) => {
@@ -140,5 +143,6 @@ export function usePlanPermissions(): UsePlanPermissionsReturn {
     getUpgradeMessage,
     getLimitMessage,
     loading,
+    isTrial,
   };
 }
