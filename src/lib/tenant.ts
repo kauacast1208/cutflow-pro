@@ -142,16 +142,23 @@ async function findProfessionalMembership(userId: string, barbershopId?: string 
   }
 }
 
-export async function findUserBarbershopId(userId: string) {
-  const { data: owned, error: ownedError } = await supabase
+async function findLatestOwnedBarbershop(userId: string) {
+  const { data, error } = await supabase
     .from("barbershops")
-    .select("id")
+    .select("*")
     .eq("owner_id", userId)
-    .maybeSingle();
+    .order("created_at", { ascending: false })
+    .limit(1);
 
-  if (ownedError && !isNoRowsError(ownedError)) {
-    throw ownedError;
+  if (error) {
+    throw error;
   }
+
+  return (data?.[0] as TenantBarbershop | null | undefined) ?? null;
+}
+
+export async function findUserBarbershopId(userId: string) {
+  const owned = await findLatestOwnedBarbershop(userId);
 
   if (owned?.id) {
     return owned.id;
@@ -189,7 +196,7 @@ export async function findUserRoleForBarbershop(userId: string, barbershopId: st
 export async function fetchTenantSnapshot(userId: string): Promise<TenantSnapshot> {
   const [profileResult, ownerBarbershopResult, roleResult] = await Promise.allSettled([
     supabase.from("profiles").select("*").eq("user_id", userId).maybeSingle(),
-    supabase.from("barbershops").select("*").eq("owner_id", userId).maybeSingle(),
+    findLatestOwnedBarbershop(userId),
     safeFetchUserRole(userId),
   ]);
 
@@ -203,10 +210,10 @@ export async function fetchTenantSnapshot(userId: string): Promise<TenantSnapsho
       ? roleResult.value
       : null;
 
-  if (ownerBarbershopResult.status === "fulfilled" && ownerBarbershopResult.value.data) {
+  if (ownerBarbershopResult.status === "fulfilled" && ownerBarbershopResult.value) {
     return {
       profile,
-      barbershop: ownerBarbershopResult.value.data as TenantBarbershop,
+      barbershop: ownerBarbershopResult.value,
       role: "owner",
       rawRole: directRole ?? "owner",
     };
@@ -243,15 +250,7 @@ export async function fetchTenantSnapshot(userId: string): Promise<TenantSnapsho
 }
 
 export async function resolveTenantContextDirect(userId: string): Promise<DirectTenantContext> {
-  const { data: owned, error: ownedError } = await supabase
-    .from("barbershops")
-    .select("id")
-    .eq("owner_id", userId)
-    .maybeSingle();
-
-  if (ownedError && !isNoRowsError(ownedError)) {
-    throw ownedError;
-  }
+  const owned = await findLatestOwnedBarbershop(userId);
 
   const directRole = await safeFetchUserRole(userId);
   let barbershopId = owned?.id ?? null;

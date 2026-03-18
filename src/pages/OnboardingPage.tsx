@@ -9,8 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { getAuthenticatedUser, resolveUserFullName, upsertProfileForUser } from "@/lib/profile";
 import { formatSupabaseError } from "@/lib/supabaseErrors";
-import { ensureCurrentUserSetup } from "@/lib/tenant";
-import { resolveTenantContextDirect } from "@/lib/tenant";
+import { bootstrapCurrentUserProfile, resolveTenantContextDirect } from "@/lib/tenant";
 
 function slugify(text: string) {
   return text
@@ -137,9 +136,9 @@ export default function OnboardingPage() {
 
     // Bootstrap user role after barbershop creation
     try {
-      await ensureCurrentUserSetup(user.user_metadata?.full_name || user.email || null);
+      await bootstrapCurrentUserProfile(user.user_metadata?.full_name || user.email || null);
     } catch (setupErr) {
-      console.warn("[Onboarding] ensureCurrentUserSetup warning:", setupErr);
+      console.warn("[Onboarding] bootstrapCurrentUserProfile warning:", setupErr);
     }
 
     console.info("[Onboarding] step=create_barbershop complete", {

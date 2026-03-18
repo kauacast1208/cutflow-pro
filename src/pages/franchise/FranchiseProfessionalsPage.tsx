@@ -11,7 +11,7 @@ interface Professional {
   name: string;
   role: string | null;
   avatar_url: string | null;
-  active: boolean;
+  is_active: boolean;
   barbershop_id: string;
   specialties: string[] | null;
 }
@@ -41,7 +41,7 @@ export default function FranchiseProfessionalsPage() {
       .from("professionals")
       .select("*")
       .in("barbershop_id", ids)
-      .eq("active", true)
+      .eq("is_active", true)
       .order("name")
       .then(({ data }) => {
         setProfessionals((data as Professional[]) || []);
