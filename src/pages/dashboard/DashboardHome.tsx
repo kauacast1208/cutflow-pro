@@ -423,10 +423,10 @@ export default function DashboardHome() {
       <OnboardingChecklist />
 
       {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
-            <h2 className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <h2 className="text-xl sm:text-[28px] font-extrabold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               {greeting}, {userName}
             </h2>
             {isTrial && daysRemaining !== null && daysRemaining > 3 && (
@@ -436,7 +436,7 @@ export default function DashboardHome() {
               </Badge>
             )}
           </div>
-          <p className="text-sm text-muted-foreground/70 mt-1">{format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground/70 mt-1">{format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <PeriodFilter />
