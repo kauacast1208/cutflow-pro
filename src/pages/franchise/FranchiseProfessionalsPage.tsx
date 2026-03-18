@@ -11,7 +11,7 @@ interface Professional {
   name: string;
   role: string | null;
   avatar_url: string | null;
-  is_active: boolean;
+  active: boolean;
   barbershop_id: string;
   specialties: string[] | null;
 }
