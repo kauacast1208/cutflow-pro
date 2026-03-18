@@ -144,7 +144,7 @@ export default function AdminSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-sidebar-background">
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border/60 bg-sidebar-background">
       {/* Brand */}
       <div className="flex h-16 items-center gap-3 px-4 border-b border-sidebar-border">
         {barbershop?.logo_url ? (
