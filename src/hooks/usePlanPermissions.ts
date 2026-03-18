@@ -81,10 +81,13 @@ export function usePlanPermissions(): UsePlanPermissionsReturn {
 
   const loading = subLoading || plansLoading;
 
-  // During active trial, unlock all features so users experience the full product
+  // Treat as trial-like when: explicit trial status OR no subscription yet (new barbershop)
+  const effectivelyTrial = isTrial || (!subLoading && !subscription);
+
+  // During active trial or missing subscription, unlock all features
   const can = useCallback(
-    (feature: PlanFeature) => isTrial || activePlan.features.includes(feature),
-    [activePlan, isTrial]
+    (feature: PlanFeature) => effectivelyTrial || activePlan.features.includes(feature),
+    [activePlan, effectivelyTrial]
   );
 
   const limit = useCallback(
@@ -94,13 +97,13 @@ export function usePlanPermissions(): UsePlanPermissionsReturn {
 
   const isAtLimit = useCallback(
     (resource: PlanResource, currentCount: number) => {
-      // During active trial, don't enforce limits in the UI
-      if (isTrial) return false;
+      // During active trial or no subscription, don't enforce limits
+      if (effectivelyTrial) return false;
       const max = activePlan.limits[resource];
       if (max === Infinity || max >= 999999) return false;
       return currentCount >= max;
     },
-    [activePlan, isTrial]
+    [activePlan, effectivelyTrial]
   );
 
   const showUpgrade = useCallback((feature: PlanFeature) => {
@@ -143,6 +146,6 @@ export function usePlanPermissions(): UsePlanPermissionsReturn {
     getUpgradeMessage,
     getLimitMessage,
     loading,
-    isTrial,
+    isTrial: effectivelyTrial,
   };
 }

@@ -68,7 +68,7 @@ export default function AdminSidebar() {
   const { subscription, isTrial, daysRemaining } = useSubscription();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { can, showUpgrade } = usePlanPermissions();
+  const { can, showUpgrade, loading } = usePlanPermissions();
 
   const bookingUrl = barbershop
     ? `${window.location.origin}/b/${barbershop.slug}`
@@ -95,7 +95,8 @@ export default function AdminSidebar() {
   const adminItems = visibleItems.filter((i) => i.group === "admin");
 
   const renderItem = (item: MenuItem) => {
-    const hasAccess = !item.feature || can(item.feature);
+    // Don't show locks while permissions are loading, or during trial
+    const hasAccess = loading || !item.feature || can(item.feature);
     return (
       <SidebarMenuItem key={item.title + item.url}>
         <SidebarMenuButton asChild>
