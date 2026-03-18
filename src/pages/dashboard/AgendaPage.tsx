@@ -636,10 +636,12 @@ export default function AgendaPage() {
                 {hours.map(hour => {
                   const h = parseInt(hour);
                   return (
-                    <div key={hour} className="border-b border-border/40 last:border-b-0"
-                      style={{ display: "grid", gridTemplateColumns: `60px repeat(${days.length}, 1fr)` }}
+                    <div key={hour} className={`border-b border-border/30 last:border-b-0 ${parseInt(hour) % 2 === 0 ? '' : 'bg-muted/[0.03]'}`}
+                      style={{ display: "grid", gridTemplateColumns: `72px repeat(${days.length}, 1fr)` }}
                     >
-                      <div className="p-2 text-xs text-muted-foreground font-semibold text-right pr-3 pt-3 tabular-nums">{hour}</div>
+                      <div className="p-2.5 text-xs text-muted-foreground/70 font-bold text-right pr-4 pt-3 tabular-nums select-none">
+                        {hour}
+                      </div>
                       {days.map((day, dayIdx) => {
                         const dateStr = format(day, "yyyy-MM-dd");
                         const slotAppts = getApptsForSlot(dateStr, h);
