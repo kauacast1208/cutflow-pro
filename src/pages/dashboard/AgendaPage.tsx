@@ -476,7 +476,7 @@ export default function AgendaPage() {
               <p className="text-sm font-semibold text-foreground capitalize">
                 {format(selectedDate, "EEEE, dd 'de' MMMM", { locale: ptBR })}
               </p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{todayAppts.length} agendamentos</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">{todayAppts.length} agendamentos</p>
             </div>
 
             {/* Mobile card list */}
@@ -489,10 +489,10 @@ export default function AgendaPage() {
 
                 return (
                   <div key={hour} className="flex group/row hover:bg-accent/10 transition-colors">
-                    <div className="w-16 shrink-0 py-3 pr-3 text-right">
-                      <span className="text-xs font-bold text-muted-foreground/70 tabular-nums">{hour}</span>
+                    <div className="w-[52px] shrink-0 py-3.5 pr-2.5 text-right">
+                      <span className="text-[11px] font-bold text-muted-foreground/70 tabular-nums">{hour}</span>
                     </div>
-                    <div className={`flex-1 py-2 px-2.5 min-h-[60px] border-l border-border/50 ${
+                    <div className={`flex-1 py-2.5 px-3 min-h-[64px] border-l border-border/50 ${
                       slotBlocks.length > 0 && slotAppts.length === 0
                         ? (slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "bg-amber-500/5" :
                           (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "bg-blue-500/5" :
@@ -506,17 +506,17 @@ export default function AgendaPage() {
                           ))}
                         </div>
                       ) : slotBlocks.length > 0 ? (
-                        <div className="flex items-center gap-2 py-2">
+                        <div className="flex items-center gap-2 py-2.5 min-h-[44px]">
                           <span className="text-xs">
                             {(slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "🍽️" :
                              (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "☕" : "🚫"}
                           </span>
-                          <span className="text-[10px] text-muted-foreground/60">
+                          <span className="text-[11px] text-muted-foreground/60">
                             {slotBlocks[0]?.reason || "Bloqueado"}
                             {slotBlocks[0]?.recurring && " · Recorrente"}
                           </span>
                           {canViewFullAgenda && (
-                            <button onClick={() => handleDeleteBlock(slotBlocks[0].id)} className="text-[10px] text-destructive/60 hover:text-destructive ml-auto">
+                            <button onClick={() => handleDeleteBlock(slotBlocks[0].id)} className="text-[11px] text-destructive/60 hover:text-destructive ml-auto min-h-[36px] min-w-[44px] flex items-center justify-end">
                               Remover
                             </button>
                           )}
