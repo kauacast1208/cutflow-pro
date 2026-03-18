@@ -72,14 +72,7 @@ export default function AdminTopbar() {
       </div>
 
       <div className="flex items-center gap-1.5 sm:gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative text-muted-foreground hover:text-foreground transition-colors h-9 w-9"
-        >
-          <Bell className="h-[18px] w-[18px]" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary ring-2 ring-card" />
-        </Button>
+        <NotificationPanel />
         {initials && (
           <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-[11px] font-bold text-primary shrink-0">
             {initials}
