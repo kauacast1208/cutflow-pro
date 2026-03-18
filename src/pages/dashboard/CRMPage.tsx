@@ -197,14 +197,14 @@ export default function CRMPage() {
   const isEmpty = segments.total === 0;
 
   return (
-    <div className="space-y-6 max-w-full">
+    <div className="space-y-5 sm:space-y-6 max-w-full pb-20 sm:pb-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <Heart className="h-6 w-6 text-primary" />
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
+          <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
           CRM
         </h1>
-        <p className="text-muted-foreground text-sm mt-1">
+        <p className="text-muted-foreground text-xs sm:text-sm mt-1">
           {isEmpty
             ? "Gerencie o relacionamento com seus clientes de forma inteligente"
             : `Relacionamento inteligente com seus clientes · ${segments.total} clientes cadastrados`}
@@ -212,18 +212,18 @@ export default function CRMPage() {
       </div>
 
       {/* Segment Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
         {segmentCards.map((card, i) => (
           <motion.div key={card.label} {...anim} transition={{ delay: i * 0.05 }}>
             <Card className="border-border/60 bg-card hover:border-border transition-colors">
-              <CardContent className="pt-4 pb-3 px-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className={`h-9 w-9 rounded-lg ${card.bg} flex items-center justify-center`}>
-                    <card.icon className={`h-4 w-4 ${card.color}`} />
+              <CardContent className="pt-3 sm:pt-4 pb-2.5 sm:pb-3 px-3 sm:px-4">
+                <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                  <div className={`h-8 w-8 sm:h-9 sm:w-9 rounded-lg ${card.bg} flex items-center justify-center`}>
+                    <card.icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${card.color}`} />
                   </div>
                 </div>
-                <div className="text-2xl font-bold tracking-tight">{card.value}</div>
-                <p className="text-[11px] text-muted-foreground font-medium mt-1">{card.label}</p>
+                <div className="text-xl sm:text-2xl font-bold tracking-tight">{card.value}</div>
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground font-medium mt-0.5 sm:mt-1">{card.label}</p>
               </CardContent>
             </Card>
           </motion.div>
