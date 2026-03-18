@@ -299,21 +299,21 @@ export default function AgendaPage() {
     <div className="space-y-5 pb-24 sm:pb-6">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col gap-4"
+        className="flex flex-col gap-3 sm:gap-4"
       >
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <CalendarDays className="h-5 w-5 text-primary" />
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <CalendarDays className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                   Agenda
                 </h2>
                 {isProfessional && <Badge variant="secondary" className="text-[10px] rounded-full">Minha agenda</Badge>}
               </div>
-              <p className="text-xs sm:text-sm text-muted-foreground">
+              <p className="text-[11px] sm:text-sm text-muted-foreground">
                 {viewMode === "day"
                   ? format(selectedDate, "EEEE, dd 'de' MMMM", { locale: ptBR })
                   : `${format(days[0], "dd MMM", { locale: ptBR })} – ${format(days[days.length - 1], "dd MMM yyyy", { locale: ptBR })}`
