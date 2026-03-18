@@ -112,7 +112,7 @@ export default function WeeklySchedule({ appointments = [], onSlotClick }: Weekl
                 return (
                   <div
                     key={day.toISOString() + hour}
-                    className={`min-h-[52px] border-l border-border/40 p-1 cursor-pointer hover:bg-accent/30 transition-colors duration-100 ${
+                    className={`min-h-[56px] border-l border-border/50 p-1.5 cursor-pointer hover:bg-accent/30 transition-colors duration-150 ${
                       today ? "bg-accent/15" : ""
                     }`}
                     onClick={() => onSlotClick?.(format(day, "yyyy-MM-dd"), hour)}
