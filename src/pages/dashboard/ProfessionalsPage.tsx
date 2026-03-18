@@ -100,7 +100,7 @@ export default function ProfessionalsPage() {
   }, [barbershop]);
 
   const openNew = () => {
-    const activePros = pros.filter((p) => p.is_active !== false).length;
+    const activePros = pros.filter((p) => p.active !== false).length;
     if (isAtLimit("professionals", activePros)) {
       showUpgrade("agenda");
       toast({ title: "Limite atingido", description: `Plano ${planLabel} permite até ${limit("professionals")} profissional(is).`, variant: "destructive" });
