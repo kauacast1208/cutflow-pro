@@ -664,7 +664,7 @@ export default function AgendaPage() {
                                 ? (slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "bg-amber-500/[0.04]" :
                                   (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "bg-blue-500/[0.04]" :
                                   "bg-muted/[0.06]"
-                            } ${isToday ? "bg-primary/[0.02]" : ""}`}
+                            } ${isToday ? "bg-primary/[0.025]" : ""}`}
                             onClick={() => {
                               if (slotAppts.length === 0 && slotBlocks.length === 0 && canViewFullAgenda) {
                                 setNewApptDefaults({ date: day, time: `${String(h).padStart(2, "0")}:00` });
