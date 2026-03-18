@@ -547,10 +547,10 @@ export default function AgendaPage() {
             {viewMode === "professional" ? (
               <>
                 {/* Professional columns header */}
-                <div className="border-b border-border/40 bg-muted/20"
-                  style={{ display: "grid", gridTemplateColumns: `60px repeat(${proColumns.length}, 1fr)` }}
+                <div className="border-b border-border/50 bg-muted/30"
+                  style={{ display: "grid", gridTemplateColumns: `72px repeat(${proColumns.length}, 1fr)` }}
                 >
-                  <div className="p-3 text-[10px] text-muted-foreground font-medium">Hora</div>
+                  <div className="p-3 text-[10px] text-muted-foreground/50 font-bold uppercase tracking-widest">Hora</div>
                   {proColumns.map(p => (
                     <div key={p.id} className="p-3 text-center border-l border-border/30">
                       <div className="flex items-center justify-center gap-2">
