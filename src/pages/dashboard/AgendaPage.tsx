@@ -543,7 +543,7 @@ export default function AgendaPage() {
 
         {/* Desktop grid (day, week, professional views) */}
         <div className={`${viewMode === "day" ? "hidden sm:block" : ""} overflow-x-auto`}>
-          <div className="min-w-[700px]">
+          <div className="min-w-[720px]">
             {viewMode === "professional" ? (
               <>
                 {/* Professional columns header */}
