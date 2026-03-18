@@ -104,8 +104,8 @@ export default function AdminSidebar() {
             <NavLink
               to={item.url}
               end={item.url === "/dashboard"}
-              className="hover:bg-sidebar-accent/50 transition-colors duration-150"
-              activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+              className="hover:bg-sidebar-accent/60 transition-all duration-150 rounded-lg"
+              activeClassName="bg-sidebar-accent text-sidebar-primary font-semibold shadow-sm"
             >
               <item.icon className="mr-2 h-4 w-4 shrink-0" />
               {!collapsed && <span>{item.title}</span>}
