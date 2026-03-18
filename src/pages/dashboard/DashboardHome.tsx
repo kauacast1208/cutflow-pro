@@ -372,31 +372,31 @@ export default function DashboardHome() {
     label: string; value: string; change?: string | null; changePositive?: boolean; icon: React.ElementType; sub?: string; idx: number; accent?: string;
   }) => (
     <motion.div {...fadeUp(idx)}
-      className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card p-5 transition-all duration-300 hover:border-border/80 hover:shadow-md"
+      className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card p-4 sm:p-5 transition-all duration-300 hover:border-border/80 hover:shadow-md"
     >
       {/* Subtle top accent line */}
       <div className={`absolute top-0 left-0 right-0 h-[2px] ${accent || "bg-primary/40"} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
 
-      <div className="relative flex items-start justify-between gap-3">
-        <div className="space-y-2 min-w-0 flex-1">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">{label}</p>
-          <p className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-foreground leading-none" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            {loading ? <Skeleton className="h-7 w-24" /> : value}
+      <div className="relative flex items-start justify-between gap-2 sm:gap-3">
+        <div className="space-y-1.5 sm:space-y-2 min-w-0 flex-1">
+          <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">{label}</p>
+          <p className="text-xl sm:text-[28px] font-extrabold tracking-tight text-foreground leading-none" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            {loading ? <Skeleton className="h-6 sm:h-7 w-20 sm:w-24" /> : value}
           </p>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             {change && (
-              <span className={`inline-flex items-center gap-0.5 text-[11px] font-semibold px-1.5 py-0.5 rounded-md ${
+              <span className={`inline-flex items-center gap-0.5 text-[10px] sm:text-[11px] font-semibold px-1.5 py-0.5 rounded-md ${
                 changePositive ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"
               }`}>
                 {changePositive ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
                 {change}
               </span>
             )}
-            {sub && <p className="text-[11px] text-muted-foreground/60">{sub}</p>}
+            {sub && <p className="text-[10px] sm:text-[11px] text-muted-foreground/60">{sub}</p>}
           </div>
         </div>
-        <div className="h-10 w-10 rounded-xl bg-primary/8 flex items-center justify-center shrink-0">
-          <Icon className="h-[18px] w-[18px] text-primary/70" />
+        <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-primary/8 flex items-center justify-center shrink-0">
+          <Icon className="h-4 w-4 sm:h-[18px] sm:w-[18px] text-primary/70" />
         </div>
       </div>
     </motion.div>
