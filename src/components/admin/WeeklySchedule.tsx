@@ -83,7 +83,7 @@ export default function WeeklySchedule({ appointments = [], onSlotClick }: Weekl
               return (
                 <div
                   key={day.toISOString()}
-                  className={`p-2 text-center border-l border-border ${today ? "bg-accent/40" : ""}`}
+                  className={`p-2.5 text-center border-l border-border/40 ${today ? "bg-primary/[0.04]" : ""}`}
                 >
                   <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
                     {format(day, "EEE", { locale: ptBR })}
