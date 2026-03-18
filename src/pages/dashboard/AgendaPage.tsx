@@ -657,12 +657,13 @@ export default function AgendaPage() {
 
                         return (
                           <div key={dayIdx}
-                            className={`border-l border-border/40 p-1.5 min-h-[68px] relative transition-colors duration-150 hover:bg-accent/20 group/cell ${
+                            className={`border-l border-border/30 p-1.5 min-h-[72px] relative transition-all duration-150 group/cell cursor-pointer ${
+                              slotAppts.length === 0 && slotBlocks.length === 0 ? 'hover:bg-primary/[0.04]' : 'hover:bg-accent/10'
+                            } ${
                               slotBlocks.length > 0
-                                ? (slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "bg-amber-500/5" :
-                                  (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "bg-blue-500/5" :
-                                  "bg-muted/10"
-                                : ""
+                                ? (slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "bg-amber-500/[0.04]" :
+                                  (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "bg-blue-500/[0.04]" :
+                                  "bg-muted/[0.06]"
                             } ${isToday ? "bg-primary/[0.02]" : ""}`}
                             onClick={() => {
                               if (slotAppts.length === 0 && slotBlocks.length === 0 && canViewFullAgenda) {
