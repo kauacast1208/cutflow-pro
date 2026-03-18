@@ -94,11 +94,13 @@ export function usePlanPermissions(): UsePlanPermissionsReturn {
 
   const isAtLimit = useCallback(
     (resource: PlanResource, currentCount: number) => {
+      // During active trial, don't enforce limits in the UI
+      if (isTrial) return false;
       const max = activePlan.limits[resource];
       if (max === Infinity || max >= 999999) return false;
       return currentCount >= max;
     },
-    [activePlan]
+    [activePlan, isTrial]
   );
 
   const showUpgrade = useCallback((feature: PlanFeature) => {
