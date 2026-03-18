@@ -148,7 +148,7 @@ async function findProfessionalMembership(userId: string, barbershopId?: string 
       .from("professionals")
       .select("id, barbershop_id")
       .eq("user_id", userId)
-      .eq("is_active", true);
+      .eq("active", true);
 
     if (barbershopId) {
       query = query.eq("barbershop_id", barbershopId);
