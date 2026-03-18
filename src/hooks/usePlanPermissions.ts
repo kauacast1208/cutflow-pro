@@ -143,5 +143,6 @@ export function usePlanPermissions(): UsePlanPermissionsReturn {
     getUpgradeMessage,
     getLimitMessage,
     loading,
+    isTrial,
   };
 }
