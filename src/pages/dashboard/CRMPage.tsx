@@ -290,12 +290,12 @@ export default function CRMPage() {
         </motion.div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         {/* Quick Actions */}
         <motion.div {...anim} transition={{ delay: 0.3 }}>
           <Card className="h-full">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                 <Zap className="h-4 w-4 text-primary" />
                 Ações rápidas
               </CardTitle>
@@ -305,14 +305,14 @@ export default function CRMPage() {
                 <button
                   key={action.label}
                   onClick={() => navigate(action.route)}
-                  className="w-full flex items-center gap-3 rounded-xl p-3 hover:bg-muted/50 border border-border/50 transition-all text-left group"
+                  className="w-full flex items-center gap-3 rounded-xl p-3 hover:bg-muted/50 border border-border/50 transition-all text-left group min-h-[56px] sm:min-h-0 active:scale-[0.98]"
                 >
                   <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/15 transition-colors">
                     <action.icon className="h-4 w-4 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{action.label}</p>
-                    <p className="text-xs text-muted-foreground truncate">{action.desc}</p>
+                    <p className="text-xs sm:text-sm font-medium">{action.label}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{action.desc}</p>
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-foreground transition-colors shrink-0" />
                 </button>
