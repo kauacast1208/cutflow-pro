@@ -582,7 +582,7 @@ export default function AgendaPage() {
                         const dateStr = format(selectedDate, "yyyy-MM-dd");
                         const proAppts = getApptsForSlot(dateStr, h, pro.id);
                         return (
-                          <div key={pro.id} className="border-l border-border/20 p-1 min-h-[64px]">
+                          <div key={pro.id} className="border-l border-border/30 p-1.5 min-h-[68px] hover:bg-accent/15 transition-colors">
                             {proAppts.map(event => (
                               <AppointmentCard key={event.id} event={event} compact />
                             ))}
