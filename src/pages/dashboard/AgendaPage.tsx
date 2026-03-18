@@ -441,13 +441,15 @@ export default function AgendaPage() {
           { label: "Horários livres", value: String(freeSlots), sub: "disponíveis", icon: Clock },
           { label: "Destaque", value: topPro?.name?.split(" ")[0] || "--", sub: topPro ? `${topPro.count} atend.` : "sem dados", icon: TrendingUp },
         ].map((s, i) => (
-          <div key={i} className="rounded-xl border border-border/60 bg-card p-3.5 hover:shadow-sm transition-shadow">
-            <div className="flex items-center justify-between mb-1">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{s.label}</p>
-              <s.icon className="h-3.5 w-3.5 text-muted-foreground/50" />
+          <div key={i} className="rounded-xl border border-border/50 bg-card p-4 hover:border-border/80 hover:shadow-md transition-all duration-200 group">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-bold">{s.label}</p>
+              <div className="h-7 w-7 rounded-lg bg-primary/8 flex items-center justify-center group-hover:bg-primary/12 transition-colors">
+                <s.icon className="h-3.5 w-3.5 text-primary/60" />
+              </div>
             </div>
-            <p className="text-lg font-bold text-foreground">{s.value}</p>
-            <p className="text-[10px] text-muted-foreground">{s.sub}</p>
+            <p className="text-xl font-extrabold text-foreground tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.value}</p>
+            <p className="text-[10px] text-muted-foreground/50 mt-0.5 font-medium">{s.sub}</p>
           </div>
         ))}
       </motion.div>
