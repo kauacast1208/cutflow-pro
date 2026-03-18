@@ -80,9 +80,10 @@ export function usePlanPermissions(): UsePlanPermissionsReturn {
 
   const loading = subLoading || plansLoading;
 
+  // During active trial, unlock all features so users experience the full product
   const can = useCallback(
-    (feature: PlanFeature) => activePlan.features.includes(feature),
-    [activePlan]
+    (feature: PlanFeature) => isTrial || activePlan.features.includes(feature),
+    [activePlan, isTrial]
   );
 
   const limit = useCallback(

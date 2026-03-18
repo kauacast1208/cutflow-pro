@@ -809,15 +809,21 @@ export default function DashboardHome() {
           <SectionTitle icon={Zap}>Ações rápidas</SectionTitle>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: "Ver agenda", icon: Calendar, color: "text-primary", action: () => navigate("/dashboard/agenda") },
-              { label: "Clientes", icon: Users, color: "text-muted-foreground", action: () => navigate("/dashboard/clients") },
-              { label: "Financeiro", icon: DollarSign, color: "text-primary", action: () => navigate("/dashboard/finance") },
-              { label: "Copiar link", icon: ExternalLink, color: "text-muted-foreground", action: copyLink },
+              { label: "Ver agenda", icon: Calendar, bg: "bg-primary/10", color: "text-primary", action: () => navigate("/dashboard/agenda") },
+              { label: "Clientes", icon: Users, bg: "bg-chart-2/10", color: "text-chart-2", action: () => navigate("/dashboard/clients") },
+              { label: "Financeiro", icon: DollarSign, bg: "bg-chart-4/10", color: "text-chart-4", action: () => navigate("/dashboard/finance") },
+              { label: "Copiar link", icon: ExternalLink, bg: "bg-muted/60", color: "text-muted-foreground", action: copyLink },
             ].map(item => (
-              <Button key={item.label} variant="outline" className="h-auto py-4 flex-col gap-2 rounded-xl text-xs border-border/50 hover:border-primary/20 hover:bg-primary/5 transition-all" onClick={item.action}>
-                <item.icon className={`h-5 w-5 ${item.color}`} />
-                <span className="font-medium">{item.label}</span>
-              </Button>
+              <button
+                key={item.label}
+                onClick={item.action}
+                className="flex flex-col items-center gap-2.5 p-4 sm:p-5 rounded-2xl border border-border/50 bg-card hover:border-primary/25 hover:shadow-md active:scale-[0.97] transition-all duration-200 cursor-pointer group"
+              >
+                <div className={`h-10 w-10 rounded-xl ${item.bg} flex items-center justify-center group-hover:scale-110 transition-transform duration-200`}>
+                  <item.icon className={`h-[18px] w-[18px] ${item.color}`} />
+                </div>
+                <span className="text-xs font-semibold text-foreground">{item.label}</span>
+              </button>
             ))}
           </div>
         </SectionCard>
