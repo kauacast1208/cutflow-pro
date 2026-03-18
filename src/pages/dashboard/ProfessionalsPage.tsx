@@ -213,7 +213,7 @@ export default function ProfessionalsPage() {
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-foreground">Profissionais</h2>
             <p className="text-sm text-muted-foreground">
-              {pros.filter(p => p.is_active !== false).length}/{limit("professionals") === Infinity ? "∞" : limit("professionals")} ativos
+              {pros.filter(p => p.active !== false).length}/{limit("professionals") === Infinity ? "∞" : limit("professionals")} ativos
             </p>
           </div>
         </div>
