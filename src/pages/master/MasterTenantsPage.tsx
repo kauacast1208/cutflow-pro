@@ -69,7 +69,7 @@ export default function MasterTenantsPage() {
         .from("professionals")
         .select("barbershop_id")
         .in("barbershop_id", shopIds)
-        .eq("is_active", true);
+        .eq("active", true);
 
       const { data: clients } = await supabase
         .from("clients")
