@@ -616,7 +616,7 @@ export default function AgendaPage() {
                         className={`p-3 text-center border-l border-border/40 cursor-pointer hover:bg-accent/30 transition-colors ${isToday ? "bg-primary/5" : ""}`}
                         onClick={() => { setSelectedDate(d); setViewMode("day"); }}
                       >
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                        <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-bold">
                           {format(d, "EEE", { locale: ptBR })}
                         </span>
                         <p className={`text-sm font-bold mt-0.5 ${isToday ? "text-primary" : "text-foreground"}`}>
