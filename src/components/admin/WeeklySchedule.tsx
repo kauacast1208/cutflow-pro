@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { format, startOfWeek, addDays, isSameDay, isToday } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -10,9 +10,9 @@ interface Appointment {
   clientName: string;
   serviceName: string;
   professionalName: string;
-  startTime: string; // HH:mm
+  startTime: string;
   endTime: string;
-  date: string; // yyyy-MM-dd
+  date: string;
   status: "scheduled" | "confirmed" | "completed" | "cancelled";
 }
 
@@ -23,21 +23,65 @@ interface WeeklyScheduleProps {
 
 const hours = Array.from({ length: 12 }, (_, i) => `${(i + 8).toString().padStart(2, "0")}:00`);
 
-const statusColors: Record<string, string> = {
-  scheduled: "bg-accent border-primary/30 text-accent-foreground",
-  confirmed: "bg-primary/10 border-primary/40 text-primary",
-  completed: "bg-muted border-border text-muted-foreground",
-  cancelled: "bg-destructive/10 border-destructive/30 text-destructive",
+const statusConfig: Record<string, { bg: string; border: string; text: string; dot: string }> = {
+  scheduled: {
+    bg: "bg-accent/80",
+    border: "border-primary/20",
+    text: "text-accent-foreground",
+    dot: "bg-primary",
+  },
+  confirmed: {
+    bg: "bg-primary/10",
+    border: "border-primary/30",
+    text: "text-primary",
+    dot: "bg-primary",
+  },
+  completed: {
+    bg: "bg-muted/60",
+    border: "border-border",
+    text: "text-muted-foreground",
+    dot: "bg-muted-foreground/50",
+  },
+  cancelled: {
+    bg: "bg-destructive/8",
+    border: "border-destructive/20",
+    text: "text-destructive/80",
+    dot: "bg-destructive/60",
+  },
 };
 
 export default function WeeklySchedule({ appointments = [], onSlotClick }: WeeklyScheduleProps) {
   const [weekOffset, setWeekOffset] = useState(0);
+  const [currentMinutes, setCurrentMinutes] = useState(() => {
+    const n = new Date();
+    return n.getHours() * 60 + n.getMinutes();
+  });
+
+  // Update current time every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const n = new Date();
+      setCurrentMinutes(n.getHours() * 60 + n.getMinutes());
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
   const now = new Date();
   const weekStart = startOfWeek(addDays(now, weekOffset * 7), { weekStartsOn: 1 });
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
   const getAppointmentsForDay = (date: Date) =>
     appointments.filter((a) => a.date === format(date, "yyyy-MM-dd"));
+
+  // Current time indicator position (percentage within the grid)
+  const gridStartMinutes = 8 * 60; // 08:00
+  const gridEndMinutes = 20 * 60;  // 20:00
+  const isCurrentTimeVisible = currentMinutes >= gridStartMinutes && currentMinutes <= gridEndMinutes;
+  const currentTimePercent = ((currentMinutes - gridStartMinutes) / (gridEndMinutes - gridStartMinutes)) * 100;
+
+  // Check if current week contains today
+  const weekHasToday = days.some((d) => isToday(d));
+  const todayIndex = days.findIndex((d) => isToday(d));
 
   return (
     <motion.div
@@ -74,23 +118,27 @@ export default function WeeklySchedule({ appointments = [], onSlotClick }: Weekl
 
       {/* Grid */}
       <div className="overflow-x-auto">
-        <div className="min-w-[700px]">
+        <div className="min-w-[740px] relative">
           {/* Day headers */}
-          <div className="grid grid-cols-[72px_repeat(7,1fr)] border-b border-border/50">
+          <div className="grid grid-cols-[76px_repeat(7,1fr)] border-b border-border/60 bg-muted/[0.03]">
             <div className="p-2" />
             {days.map((day) => {
               const today = isToday(day);
               return (
                 <div
                   key={day.toISOString()}
-                  className={`p-2.5 text-center border-l border-border/40 ${today ? "bg-primary/[0.04]" : ""}`}
+                  className={`py-3 px-2 text-center border-l border-border/30 transition-colors ${
+                    today ? "bg-primary/[0.06]" : ""
+                  }`}
                 >
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-bold">
+                  <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50 font-semibold">
                     {format(day, "EEE", { locale: ptBR })}
                   </p>
                   <p
-                    className={`text-sm font-semibold mt-0.5 ${
-                      today ? "text-primary" : "text-foreground"
+                    className={`text-sm mt-0.5 tabular-nums ${
+                      today
+                        ? "font-bold text-primary bg-primary/10 rounded-full w-7 h-7 flex items-center justify-center mx-auto"
+                        : "font-semibold text-foreground"
                     }`}
                   >
                     {format(day, "dd")}
@@ -100,39 +148,111 @@ export default function WeeklySchedule({ appointments = [], onSlotClick }: Weekl
             })}
           </div>
 
-          {/* Time slots */}
-          {hours.map((hour) => (
-            <div key={hour} className={`grid grid-cols-[72px_repeat(7,1fr)] border-b border-border/40 last:border-b-0 ${parseInt(hour) % 2 === 0 ? '' : 'bg-muted/[0.02]'}`}>
-              <div className="p-2.5 text-xs text-muted-foreground font-bold text-right pr-3 tabular-nums">
-                {hour}
-              </div>
-              {days.map((day) => {
-                const dayAppts = getAppointmentsForDay(day).filter((a) => a.startTime.startsWith(hour.slice(0, 2)));
-                const today = isToday(day);
-                return (
-                  <div
-                    key={day.toISOString() + hour}
-                    className={`min-h-[56px] border-l border-border/50 p-1.5 cursor-pointer hover:bg-accent/30 transition-colors duration-150 ${
-                      today ? "bg-accent/15" : ""
-                    }`}
-                    onClick={() => onSlotClick?.(format(day, "yyyy-MM-dd"), hour)}
-                  >
-                    {dayAppts.map((appt) => (
-                      <div
-                        key={appt.id}
-                        className={`rounded-lg border px-2 py-1.5 text-[11px] leading-tight mb-0.5 ${
-                          statusColors[appt.status] || statusColors.scheduled
-                        }`}
-                      >
-                        <p className="font-medium truncate">{appt.clientName}</p>
-                        <p className="truncate opacity-70">{appt.serviceName}</p>
-                      </div>
-                    ))}
+          {/* Time rows with current time indicator */}
+          <div className="relative">
+            {/* Current time indicator line */}
+            {isCurrentTimeVisible && weekHasToday && (
+              <div
+                className="absolute left-0 right-0 z-20 pointer-events-none"
+                style={{ top: `${currentTimePercent}%` }}
+              >
+                {/* Line across the today column */}
+                <div className="grid grid-cols-[76px_repeat(7,1fr)]">
+                  <div className="relative">
+                    {/* Time label */}
+                    <span className="absolute right-1 -top-2.5 text-[10px] font-bold text-primary tabular-nums bg-primary/10 px-1.5 py-0.5 rounded-md">
+                      {`${Math.floor(currentMinutes / 60).toString().padStart(2, "0")}:${(currentMinutes % 60).toString().padStart(2, "0")}`}
+                    </span>
                   </div>
-                );
-              })}
-            </div>
-          ))}
+                  {days.map((day, i) => (
+                    <div key={i} className="relative border-l border-border/30">
+                      {isToday(day) && (
+                        <>
+                          <div className="absolute left-0 right-0 h-[2px] bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.4)]" />
+                          <div className="absolute -left-[5px] -top-[4px] w-[10px] h-[10px] rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.5)]" />
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {hours.map((hour, hourIdx) => (
+              <div
+                key={hour}
+                className={`grid grid-cols-[76px_repeat(7,1fr)] border-b border-border/30 last:border-b-0 ${
+                  hourIdx % 2 === 0 ? "bg-background" : "bg-muted/[0.02]"
+                }`}
+              >
+                {/* Hour label */}
+                <div className="min-h-[72px] flex items-start justify-end pr-3 pt-2">
+                  <span
+                    className="text-[11px] text-muted-foreground/50 font-semibold tabular-nums tracking-tight"
+                    style={{ fontFamily: "'Plus Jakarta Sans', monospace" }}
+                  >
+                    {hour}
+                  </span>
+                </div>
+
+                {/* Day cells */}
+                {days.map((day) => {
+                  const dayAppts = getAppointmentsForDay(day).filter((a) =>
+                    a.startTime.startsWith(hour.slice(0, 2))
+                  );
+                  const today = isToday(day);
+                  const hasAppts = dayAppts.length > 0;
+
+                  return (
+                    <div
+                      key={day.toISOString() + hour}
+                      className={`min-h-[72px] border-l border-border/30 p-1.5 cursor-pointer transition-all duration-150 group relative ${
+                        today
+                          ? "bg-primary/[0.03]"
+                          : ""
+                      } ${
+                        !hasAppts
+                          ? "hover:bg-accent/20"
+                          : ""
+                      }`}
+                      onClick={() => onSlotClick?.(format(day, "yyyy-MM-dd"), hour)}
+                    >
+                      {/* Hover indicator for empty slots */}
+                      {!hasAppts && (
+                        <div className="absolute inset-1.5 rounded-lg border border-dashed border-transparent group-hover:border-primary/15 transition-colors duration-150" />
+                      )}
+
+                      {dayAppts.map((appt) => {
+                        const sc = statusConfig[appt.status] || statusConfig.scheduled;
+                        return (
+                          <div
+                            key={appt.id}
+                            className={`rounded-lg border ${sc.border} ${sc.bg} px-2.5 py-2 mb-1 last:mb-0 transition-shadow hover:shadow-md`}
+                          >
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              <span className={`h-1.5 w-1.5 rounded-full ${sc.dot} shrink-0`} />
+                              <p
+                                className={`text-[11px] font-bold truncate ${sc.text}`}
+                                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                              >
+                                {appt.serviceName}
+                              </p>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground truncate pl-3">
+                              {appt.clientName}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground/60 tabular-nums pl-3 mt-0.5">
+                              {appt.startTime} – {appt.endTime}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </motion.div>
