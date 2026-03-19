@@ -76,10 +76,10 @@ function SectionCard({ children, className = "", ...props }: React.HTMLAttribute
 
 function SectionTitle({ icon: Icon, children, action }: { icon: React.ElementType; children: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between mb-5">
-      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-        <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
-          <Icon className="h-3.5 w-3.5 text-primary" />
+    <div className="flex items-center justify-between mb-6">
+      <h3 className="text-sm font-bold text-foreground flex items-center gap-2.5" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center shadow-[0_0_0_1px_hsl(var(--primary)/0.08)]">
+          <Icon className="h-4 w-4 text-primary" />
         </div>
         {children}
       </h3>
