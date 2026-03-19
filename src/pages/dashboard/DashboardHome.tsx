@@ -66,7 +66,7 @@ const tooltipStyle = {
 function SectionCard({ children, className = "", ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={`rounded-2xl border border-border/60 bg-card p-4 sm:p-6 shadow-sm transition-all duration-300 hover:border-border/80 ${className}`}
+      className={`rounded-2xl border border-border/50 bg-card p-5 sm:p-7 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_8px_24px_-8px_rgba(0,0,0,0.12)] transition-all duration-300 hover:border-border/70 hover:shadow-[0_2px_6px_rgba(0,0,0,0.1),0_12px_32px_-8px_rgba(0,0,0,0.15)] ${className}`}
       {...props}
     >
       {children}
