@@ -182,6 +182,8 @@ export type Database = {
           referral_reward: string | null
           slot_interval_minutes: number
           slug: string
+          theme_mode: string | null
+          theme_primary_color: string | null
           updated_at: string
           whatsapp: string | null
         }
@@ -211,6 +213,8 @@ export type Database = {
           referral_reward?: string | null
           slot_interval_minutes?: number
           slug: string
+          theme_mode?: string | null
+          theme_primary_color?: string | null
           updated_at?: string
           whatsapp?: string | null
         }
@@ -240,6 +244,8 @@ export type Database = {
           referral_reward?: string | null
           slot_interval_minutes?: number
           slug?: string
+          theme_mode?: string | null
+          theme_primary_color?: string | null
           updated_at?: string
           whatsapp?: string | null
         }
@@ -1124,6 +1130,78 @@ export type Database = {
             columns: ["referrer_client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          appointment_id: string | null
+          barbershop_id: string
+          client_name: string
+          client_phone: string | null
+          comment: string | null
+          created_at: string
+          id: string
+          professional_id: string | null
+          rating: number
+        }
+        Insert: {
+          appointment_id?: string | null
+          barbershop_id: string
+          client_name: string
+          client_phone?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          professional_id?: string | null
+          rating: number
+        }
+        Update: {
+          appointment_id?: string | null
+          barbershop_id?: string
+          client_name?: string
+          client_phone?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          professional_id?: string | null
+          rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
             referencedColumns: ["id"]
           },
         ]

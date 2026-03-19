@@ -10,6 +10,7 @@ import { format, addMinutes, parse } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import SupportBot from "@/components/booking/SupportBot";
+import { ReviewsDisplay } from "@/components/booking/ReviewsDisplay";
 import { ServiceStep } from "@/components/booking/ServiceStep";
 import { ProfessionalStep, ANY_PRO_ID } from "@/components/booking/ProfessionalStep";
 import { DateTimeStep } from "@/components/booking/DateTimeStep";
@@ -366,6 +367,9 @@ export default function PublicBookingPage() {
         slug={slug || ""}
         onReschedule={handleReschedule}
         onCancel={handleCancelAppointment}
+        appointmentId={appointmentId}
+        clientName={clientName}
+        clientPhone={clientPhone}
       />
     );
   }
@@ -423,24 +427,24 @@ export default function PublicBookingPage() {
             className="overflow-hidden"
           >
             <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
-              <div className="rounded-2xl border border-border/60 bg-card p-6 sm:p-7 shadow-sm">
+              <div className="rounded-2xl border border-border/60 bg-card p-5 sm:p-7 shadow-sm">
                 <div className="flex items-start gap-4 sm:gap-5">
                   {barbershop.logo_url ? (
-                    <img src={barbershop.logo_url} className="h-16 w-16 sm:h-[72px] sm:w-[72px] rounded-2xl object-cover border border-border/40 shrink-0 shadow-sm" alt="" />
+                    <img src={barbershop.logo_url} className="h-14 w-14 sm:h-[72px] sm:w-[72px] rounded-2xl object-cover border border-border/40 shrink-0 shadow-sm" alt="" />
                   ) : (
-                    <div className="h-16 w-16 sm:h-[72px] sm:w-[72px] rounded-2xl bg-primary/8 flex items-center justify-center shrink-0">
-                      <Scissors className="h-7 w-7 text-primary" />
+                    <div className="h-14 w-14 sm:h-[72px] sm:w-[72px] rounded-2xl bg-primary/8 flex items-center justify-center shrink-0">
+                      <Scissors className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <h1 className="font-extrabold text-xl sm:text-2xl tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    <h1 className="font-extrabold text-lg sm:text-2xl tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                       {displayName}
                     </h1>
                     <p className="text-sm text-muted-foreground mt-1">Agende seu horário online</p>
                     {barbershop.description && (
                       <p className="text-sm text-muted-foreground/70 mt-1.5 line-clamp-2">{barbershop.description}</p>
                     )}
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 text-xs text-muted-foreground/70">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-3 text-xs text-muted-foreground/70">
                       {barbershop.address && (
                         <span className="flex items-center gap-1.5">
                           <MapPin className="h-3 w-3 shrink-0" />{barbershop.address}
@@ -467,6 +471,13 @@ export default function PublicBookingPage() {
                       name={barbershop.name}
                       addressComplement={barbershop.address_complement}
                     />
+                  </div>
+                )}
+
+                {/* Reviews display */}
+                {barbershop.id && (
+                  <div className="mt-5">
+                    <ReviewsDisplay barbershopId={barbershop.id} />
                   </div>
                 )}
               </div>
@@ -568,14 +579,14 @@ export default function PublicBookingPage() {
           </motion.div>
         </AnimatePresence>
 
-        {/* Navigation */}
-        <div className="flex justify-between mt-8 sm:mt-10 pb-8">
+        {/* Navigation - mobile optimized with larger touch targets */}
+        <div className="flex justify-between mt-8 sm:mt-10 pb-6">
           <Button
             variant="outline"
             size="lg"
             onClick={goBack}
             disabled={step === 0}
-            className="rounded-xl h-12 px-6 font-semibold"
+            className="rounded-xl h-13 sm:h-12 px-5 sm:px-6 font-semibold min-w-[120px] text-base sm:text-sm"
           >
             <ArrowLeft className="h-4 w-4 mr-2" /> Voltar
           </Button>
@@ -584,9 +595,9 @@ export default function PublicBookingPage() {
               size="lg"
               onClick={goNext}
               disabled={!canNext}
-              className="rounded-xl h-12 px-6 font-semibold shadow-sm"
+              className="rounded-xl h-13 sm:h-12 px-5 sm:px-6 font-semibold shadow-sm min-w-[120px] text-base sm:text-sm"
             >
-              Proximo <ArrowRight className="h-4 w-4 ml-2" />
+              Próximo <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           ) : (
             <Button
@@ -594,7 +605,7 @@ export default function PublicBookingPage() {
               size="lg"
               onClick={handleConfirm}
               disabled={submitting}
-              className="rounded-xl h-12 px-8 shadow-glow"
+              className="rounded-xl h-13 sm:h-12 px-6 sm:px-8 shadow-glow min-w-[140px] text-base sm:text-sm"
             >
               {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Confirmar <Check className="h-4 w-4 ml-2" />
@@ -602,8 +613,8 @@ export default function PublicBookingPage() {
           )}
         </div>
 
-        {/* Trust footer */}
-        <div className="flex flex-wrap items-center justify-center gap-4 pb-24 sm:pb-10 text-[11px] text-muted-foreground/70">
+        {/* Trust footer with safe area */}
+        <div className="flex flex-wrap items-center justify-center gap-4 pb-[env(safe-area-inset-bottom,24px)] sm:pb-10 text-[11px] text-muted-foreground/70">
           <span>Agendamento seguro</span>
           <span className="text-muted-foreground/30">·</span>
           <span>Dados protegidos</span>

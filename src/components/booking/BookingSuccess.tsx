@@ -7,6 +7,8 @@ import { formatCurrency, getInitials } from "@/lib/format";
 import { buildGoogleCalendarUrl } from "@/lib/calendar";
 import { motion } from "framer-motion";
 import { openWhatsApp } from "@/lib/whatsappCTA";
+import { ReviewDialog } from "@/components/booking/ReviewDialog";
+import { useState } from "react";
 
 interface BookingSuccessProps {
   barbershop: any;
@@ -17,6 +19,9 @@ interface BookingSuccessProps {
   slug: string;
   onReschedule: () => void;
   onCancel: () => void;
+  appointmentId?: string | null;
+  clientName?: string;
+  clientPhone?: string;
 }
 
 export function BookingSuccess({
@@ -28,7 +33,11 @@ export function BookingSuccess({
   slug,
   onReschedule,
   onCancel,
+  appointmentId,
+  clientName,
+  clientPhone,
 }: BookingSuccessProps) {
+  const [reviewDone, setReviewDone] = useState(false);
   const endTimeStr = format(
     addMinutes(parse(selectedTime, "HH:mm", selectedDate), service.duration_minutes),
     "HH:mm"
@@ -113,7 +122,7 @@ export function BookingSuccess({
               </div>
 
               <div className="flex justify-between text-sm py-0.5">
-                <span className="text-muted-foreground">Servico</span>
+                <span className="text-muted-foreground">Serviço</span>
                 <span className="font-semibold">{service.name}</span>
               </div>
               <div className="flex justify-between text-sm py-0.5">
@@ -121,11 +130,11 @@ export function BookingSuccess({
                 <span className="font-semibold capitalize">{format(selectedDate, "EEEE, dd MMM", { locale: ptBR })}</span>
               </div>
               <div className="flex justify-between text-sm py-0.5">
-                <span className="text-muted-foreground">Horario</span>
+                <span className="text-muted-foreground">Horário</span>
                 <span className="font-semibold">{selectedTime} - {endTimeStr}</span>
               </div>
               <div className="flex justify-between text-sm py-0.5">
-                <span className="text-muted-foreground">Duracao</span>
+                <span className="text-muted-foreground">Duração</span>
                 <span className="font-semibold">{service.duration_minutes} min</span>
               </div>
               <div className="border-t border-border pt-4 flex justify-between items-center">
@@ -165,6 +174,25 @@ export function BookingSuccess({
                 Cancelar
               </Button>
             </div>
+
+            {/* Review section */}
+            {!reviewDone && barbershop?.id && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+                className="mb-5"
+              >
+                <ReviewDialog
+                  barbershopId={barbershop.id}
+                  appointmentId={appointmentId}
+                  professionalId={professional?.id}
+                  clientName={clientName || "Cliente"}
+                  clientPhone={clientPhone}
+                  onSubmitted={() => setReviewDone(true)}
+                />
+              </motion.div>
+            )}
 
           <Link to={`/b/${slug}`} onClick={() => window.location.reload()}>
               <Button variant="ghost" size="sm" className="text-muted-foreground font-medium">

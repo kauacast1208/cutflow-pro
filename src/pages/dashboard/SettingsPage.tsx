@@ -10,7 +10,7 @@ import { useBarbershop } from "@/hooks/useBarbershop";
 import { useToast } from "@/hooks/use-toast";
 import {
   Store, Clock, Scissors, Users, Shield, Loader2, Plus,
-  Trash2, Save, Copy, ExternalLink, CreditCard, MessageCircle, Globe, Plug,
+  Trash2, Save, Copy, ExternalLink, CreditCard, MessageCircle, Globe, Plug, Palette,
 } from "lucide-react";
 import SubscriptionManager from "@/components/billing/SubscriptionManager";
 import WhatsAppSettingsPanel from "@/components/admin/WhatsAppSettingsPanel";
@@ -31,6 +31,8 @@ export default function SettingsPage() {
   const [services, setServices] = useState<any[]>([]);
   const [professionals, setProfessionals] = useState<any[]>([]);
   const [blockedTimes, setBlockedTimes] = useState<any[]>([]);
+  const [themePrimaryColor, setThemePrimaryColor] = useState("#10b981");
+  const [themeMode, setThemeMode] = useState("auto");
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -85,6 +87,8 @@ export default function SettingsPage() {
     setAllowReschedule(barbershop.allow_online_reschedule ?? true);
     setCancelLimit(barbershop.cancellation_limit_hours || 2);
     setAutoConfirm(barbershop.auto_confirm ?? true);
+    setThemePrimaryColor((barbershop as any).theme_primary_color || "#10b981");
+    setThemeMode((barbershop as any).theme_mode || "auto");
     loadServices();
     loadProfessionals();
     loadBlockedTimes();
@@ -283,7 +287,7 @@ export default function SettingsPage() {
 
       <motion.div {...fadeUp(1)}>
         <Tabs defaultValue="info" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-6 h-auto rounded-xl bg-muted/50 p-1">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 h-auto rounded-xl bg-muted/50 p-1">
             <TabsTrigger value="info" className="text-xs rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
               <Store className="h-3.5 w-3.5 mr-1.5" /> Dados
             </TabsTrigger>
@@ -307,6 +311,9 @@ export default function SettingsPage() {
             </TabsTrigger>
             <TabsTrigger value="integrations" className="text-xs rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
               <Plug className="h-3.5 w-3.5 mr-1.5" /> Integrações
+            </TabsTrigger>
+            <TabsTrigger value="appearance" className="text-xs rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
+              <Palette className="h-3.5 w-3.5 mr-1.5" /> Aparência
             </TabsTrigger>
           </TabsList>
 
@@ -587,6 +594,113 @@ export default function SettingsPage() {
           {/* INTEGRATIONS */}
           <TabsContent value="integrations">
             <GoogleCalendarSettings />
+          </TabsContent>
+
+          {/* APPEARANCE / THEME */}
+          <TabsContent value="appearance">
+            <CardSection className="space-y-6">
+              <SectionTitle>Personalização da página pública</SectionTitle>
+              <p className="text-xs text-muted-foreground -mt-3">Customize a aparência da sua página de agendamento online.</p>
+
+              <div className="space-y-5">
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-muted-foreground">Cor principal</Label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={themePrimaryColor}
+                      onChange={(e) => setThemePrimaryColor(e.target.value)}
+                      className="h-10 w-14 rounded-lg border border-border cursor-pointer"
+                    />
+                    <Input
+                      value={themePrimaryColor}
+                      onChange={(e) => setThemePrimaryColor(e.target.value)}
+                      className="bg-card max-w-[120px] font-mono text-sm"
+                      maxLength={7}
+                    />
+                    <div className="flex gap-1.5">
+                      {["#10b981", "#3b82f6", "#8b5cf6", "#f59e0b", "#ef4444", "#ec4899"].map(c => (
+                        <button
+                          key={c}
+                          onClick={() => setThemePrimaryColor(c)}
+                          className={`h-8 w-8 rounded-lg border-2 transition-all ${
+                            themePrimaryColor === c ? "border-foreground scale-110" : "border-border hover:scale-105"
+                          }`}
+                          style={{ backgroundColor: c }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-muted-foreground">Tema</Label>
+                  <div className="flex gap-2">
+                    {[
+                      { value: "auto", label: "Automático" },
+                      { value: "light", label: "Claro" },
+                      { value: "dark", label: "Escuro" },
+                    ].map(opt => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setThemeMode(opt.value)}
+                        className={`flex-1 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${
+                          themeMode === opt.value
+                            ? "border-primary bg-primary/5 text-primary"
+                            : "border-border bg-card text-muted-foreground hover:border-primary/30"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Preview */}
+                <div className="rounded-2xl border border-border p-4">
+                  <p className="text-xs font-medium text-muted-foreground mb-3">Pré-visualização</p>
+                  <div className="rounded-xl p-4 border border-border/50" style={{ backgroundColor: themeMode === "dark" ? "#1a1a2e" : "#fff" }}>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="h-10 w-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: themePrimaryColor + "20" }}>
+                        <Scissors className="h-5 w-5" style={{ color: themePrimaryColor }} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold" style={{ color: themeMode === "dark" ? "#fff" : "#000" }}>
+                          {barbershop?.name || "Sua Barbearia"}
+                        </p>
+                        <p className="text-[11px]" style={{ color: themeMode === "dark" ? "#888" : "#666" }}>Agendamento online</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="h-9 flex-1 rounded-lg flex items-center justify-center text-xs font-semibold text-white" style={{ backgroundColor: themePrimaryColor }}>
+                        Agendar
+                      </div>
+                      <div className="h-9 flex-1 rounded-lg flex items-center justify-center text-xs font-semibold border" style={{ borderColor: themePrimaryColor + "40", color: themePrimaryColor }}>
+                        Ver horários
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <SaveButton saving={saving} onClick={async () => {
+                if (!barbershop) return;
+                setSaving(true);
+                const { error } = await supabase
+                  .from("barbershops")
+                  .update({
+                    theme_primary_color: themePrimaryColor,
+                    theme_mode: themeMode,
+                  } as any)
+                  .eq("id", barbershop.id);
+                setSaving(false);
+                if (!error) {
+                  toast({ title: "Salvo!", description: "Tema atualizado com sucesso." });
+                } else {
+                  toast({ title: "Erro", description: error.message, variant: "destructive" });
+                }
+              }} label="Salvar aparência" />
+            </CardSection>
           </TabsContent>
 
           {/* PREFERENCES */}
