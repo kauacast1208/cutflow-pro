@@ -296,7 +296,7 @@ export default function AgendaPage() {
   };
 
   return (
-    <div className="space-y-5 pb-24 sm:pb-6">
+    <div className="space-y-4 sm:space-y-5 pb-28 sm:pb-6 px-0.5 sm:px-0">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
         className="flex flex-col gap-3 sm:gap-4"
