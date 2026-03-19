@@ -49,6 +49,13 @@ export default function AdminTopbar() {
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors shrink-0 h-10 w-10 sm:h-auto sm:w-auto flex items-center justify-center" />
         <div className="h-4 w-px bg-border/60 hidden sm:block" />
+        {barbershop?.logo_url ? (
+          <img
+            src={barbershop.logo_url}
+            alt=""
+            className="h-7 w-7 rounded-lg object-cover border border-border/40 shrink-0 hidden sm:block"
+          />
+        ) : null}
         <h1
           className="text-sm sm:text-lg font-semibold tracking-tight text-foreground truncate"
           style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}

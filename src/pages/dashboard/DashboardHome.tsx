@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import {
   Calendar, DollarSign, Users, TrendingUp, Copy, ExternalLink, Plus,
   AlertTriangle, Trophy, Clock, Zap, Bell, Heart, Lightbulb, UserX,
-  ArrowUpRight, ArrowDownRight, Target, BarChart3,
+  ArrowUpRight, ArrowDownRight, Target, BarChart3, Scissors,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
