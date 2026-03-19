@@ -296,7 +296,7 @@ export default function AgendaPage() {
   };
 
   return (
-    <div className="space-y-5 pb-24 sm:pb-6">
+    <div className="space-y-4 sm:space-y-5 pb-28 sm:pb-6 px-0.5 sm:px-0">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
         className="flex flex-col gap-3 sm:gap-4"
@@ -351,7 +351,7 @@ export default function AgendaPage() {
         </div>
 
         {/* Controls row */}
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 overflow-x-auto -mx-0.5 px-0.5 sm:mx-0 sm:px-0">
           {/* View mode toggle */}
           <div className="flex items-center bg-muted/50 rounded-xl p-0.5">
             {([
@@ -362,7 +362,7 @@ export default function AgendaPage() {
               <button
                 key={v.key}
                 onClick={() => setViewMode(v.key)}
-                className={`flex items-center gap-1 px-2.5 sm:px-3 py-2 text-xs font-medium rounded-lg transition-all min-h-[36px] ${
+                className={`flex items-center gap-1 px-2.5 sm:px-3 py-2 text-[11px] sm:text-xs font-medium rounded-lg transition-all min-h-[40px] sm:min-h-[36px] ${
                   viewMode === v.key
                     ? "bg-card text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -433,7 +433,7 @@ export default function AgendaPage() {
 
       {/* Quick stats */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }}
-        className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3"
+        className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3"
       >
         {[
           { label: "Agendamentos", value: String(todayAppts.length), sub: "hoje", icon: CalendarDays },
@@ -441,15 +441,15 @@ export default function AgendaPage() {
           { label: "Horários livres", value: String(freeSlots), sub: "disponíveis", icon: Clock },
           { label: "Destaque", value: topPro?.name?.split(" ")[0] || "--", sub: topPro ? `${topPro.count} atend.` : "sem dados", icon: TrendingUp },
         ].map((s, i) => (
-          <div key={i} className="rounded-xl border border-border/50 bg-card p-3 sm:p-4 hover:border-border/80 hover:shadow-md transition-all duration-200 group">
-            <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-              <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-muted-foreground/60 font-bold">{s.label}</p>
+          <div key={i} className="rounded-xl border border-border/50 bg-card p-3 sm:p-4 hover:border-border/80 hover:shadow-md transition-all duration-200 group active:scale-[0.98]">
+            <div className="flex items-center justify-between mb-1 sm:mb-2">
+              <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-muted-foreground/60 font-bold leading-tight">{s.label}</p>
               <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg bg-primary/8 flex items-center justify-center group-hover:bg-primary/12 transition-colors">
                 <s.icon className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary/60" />
               </div>
             </div>
-            <p className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.value}</p>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground/50 mt-0.5 font-medium">{s.sub}</p>
+            <p className="text-base sm:text-xl font-extrabold text-foreground tracking-tight leading-none" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.value}</p>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground/50 mt-1 sm:mt-0.5 font-medium">{s.sub}</p>
           </div>
         ))}
       </motion.div>
@@ -489,10 +489,10 @@ export default function AgendaPage() {
 
                 return (
                   <div key={hour} className="flex group/row hover:bg-accent/10 transition-colors">
-                    <div className="w-[52px] shrink-0 py-3.5 pr-2.5 text-right">
+                    <div className="w-[52px] shrink-0 py-3.5 sm:py-3.5 pr-2.5 text-right">
                       <span className="text-[11px] font-bold text-muted-foreground/70 tabular-nums">{hour}</span>
                     </div>
-                    <div className={`flex-1 py-2.5 px-3 min-h-[64px] border-l border-border/50 ${
+                    <div className={`flex-1 py-2.5 px-3 min-h-[68px] border-l border-border/50 ${
                       slotBlocks.length > 0 && slotAppts.length === 0
                         ? (slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "bg-amber-500/5" :
                           (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "bg-blue-500/5" :
@@ -506,7 +506,7 @@ export default function AgendaPage() {
                           ))}
                         </div>
                       ) : slotBlocks.length > 0 ? (
-                        <div className="flex items-center gap-2 py-2.5 min-h-[44px]">
+                        <div className="flex items-center gap-2 py-2.5 min-h-[48px]">
                           <span className="text-xs">
                             {(slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "🍽️" :
                              (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "☕" : "🚫"}
@@ -516,7 +516,7 @@ export default function AgendaPage() {
                             {slotBlocks[0]?.recurring && " · Recorrente"}
                           </span>
                           {canViewFullAgenda && (
-                            <button onClick={() => handleDeleteBlock(slotBlocks[0].id)} className="text-[11px] text-destructive/60 hover:text-destructive ml-auto min-h-[36px] min-w-[44px] flex items-center justify-end">
+                            <button onClick={() => handleDeleteBlock(slotBlocks[0].id)} className="text-[11px] text-destructive/60 hover:text-destructive ml-auto min-h-[44px] min-w-[48px] flex items-center justify-end active:text-destructive">
                               Remover
                             </button>
                           )}

@@ -66,7 +66,7 @@ const tooltipStyle = {
 function SectionCard({ children, className = "", ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={`rounded-2xl border border-border/50 bg-card p-5 sm:p-7 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_8px_24px_-8px_rgba(0,0,0,0.12)] transition-all duration-300 hover:border-border/70 hover:shadow-[0_2px_6px_rgba(0,0,0,0.1),0_12px_32px_-8px_rgba(0,0,0,0.15)] ${className}`}
+      className={`rounded-2xl border border-border/50 bg-card p-4 sm:p-7 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_8px_24px_-8px_rgba(0,0,0,0.12)] transition-all duration-300 hover:border-border/70 hover:shadow-[0_2px_6px_rgba(0,0,0,0.1),0_12px_32px_-8px_rgba(0,0,0,0.15)] ${className}`}
       {...props}
     >
       {children}
@@ -381,10 +381,10 @@ export default function DashboardHome() {
   }, [weekAppts]);
 
   const PeriodFilter = () => (
-    <div className="flex items-center gap-0.5 rounded-xl border border-border/60 bg-muted/30 p-1">
+    <div className="flex items-center gap-0.5 rounded-xl border border-border/60 bg-muted/30 p-0.5 sm:p-1">
       {periodOptions.map(opt => (
         <button key={opt.value} onClick={() => setPeriod(opt.value)}
-          className={`px-3.5 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 ${
+          className={`px-3 sm:px-3.5 py-2 sm:py-1.5 text-[11px] sm:text-xs font-medium rounded-lg transition-all duration-200 min-h-[36px] ${
             period === opt.value
               ? "bg-card text-foreground shadow-sm border border-border/60"
               : "text-muted-foreground hover:text-foreground"
@@ -399,38 +399,38 @@ export default function DashboardHome() {
     label: string; value: string; change?: string | null; changePositive?: boolean; icon: React.ElementType; sub?: string; idx: number; accent?: string;
   }) => (
     <motion.div {...fadeUp(idx)}
-      className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_8px_24px_-8px_rgba(0,0,0,0.12)] transition-all duration-300 hover:border-border/70 hover:shadow-[0_2px_6px_rgba(0,0,0,0.1),0_12px_32px_-8px_rgba(0,0,0,0.15)]"
+      className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card p-4 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_8px_24px_-8px_rgba(0,0,0,0.12)] transition-all duration-300 hover:border-border/70 hover:shadow-[0_2px_6px_rgba(0,0,0,0.1),0_12px_32px_-8px_rgba(0,0,0,0.15)]"
     >
       {/* Subtle top accent line */}
       <div className={`absolute top-0 left-0 right-0 h-[2px] ${accent || "bg-primary/40"} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
 
-      <div className="relative flex items-start justify-between gap-3">
-        <div className="space-y-2 sm:space-y-2.5 min-w-0 flex-1">
-          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60">{label}</p>
-          <p className="text-2xl sm:text-[32px] font-extrabold tracking-tight text-foreground leading-none" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            {loading ? <Skeleton className="h-7 sm:h-8 w-20 sm:w-28" /> : value}
+      <div className="relative flex items-start justify-between gap-2 sm:gap-3">
+        <div className="space-y-1.5 sm:space-y-2.5 min-w-0 flex-1">
+          <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.08em] sm:tracking-[0.1em] text-muted-foreground/60 leading-tight">{label}</p>
+          <p className="text-xl sm:text-[32px] font-extrabold tracking-tight text-foreground leading-none" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            {loading ? <Skeleton className="h-6 sm:h-8 w-16 sm:w-28" /> : value}
           </p>
-          <div className="flex items-center gap-2 flex-wrap pt-0.5">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap pt-0.5">
             {change && (
-              <span className={`inline-flex items-center gap-0.5 text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-lg ${
+              <span className={`inline-flex items-center gap-0.5 text-[9px] sm:text-[11px] font-bold px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg ${
                 changePositive ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"
               }`}>
-                {changePositive ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                {changePositive ? <ArrowUpRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" /> : <ArrowDownRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" />}
                 {change}
               </span>
             )}
-            {sub && <p className="text-[10px] sm:text-[11px] text-muted-foreground/50">{sub}</p>}
+            {sub && <p className="text-[9px] sm:text-[11px] text-muted-foreground/50 leading-tight">{sub}</p>}
           </div>
         </div>
-        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-2xl bg-primary/[0.06] flex items-center justify-center shrink-0 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
-          <Icon className="h-[18px] w-[18px] sm:h-5 sm:w-5 text-primary/60" />
+        <div className="h-9 w-9 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-primary/[0.06] flex items-center justify-center shrink-0 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary/60" />
         </div>
       </div>
     </motion.div>
   );
 
   return (
-    <div className="space-y-6 sm:space-y-8 pb-24 sm:pb-8">
+    <div className="space-y-5 sm:space-y-8 pb-28 sm:pb-8 px-0.5 sm:px-0">
       <WelcomeModal />
 
       {/* Trial Banner - urgent */}
@@ -450,44 +450,46 @@ export default function DashboardHome() {
       <OnboardingChecklist />
 
       {/* ── Header with barbershop identity ── */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4">
-        <div className="flex items-start gap-3.5">
+      <div className="flex flex-col gap-4 sm:gap-4">
+        <div className="flex items-start gap-3 sm:gap-3.5">
           {barbershop?.logo_url ? (
             <img
               src={barbershop.logo_url}
               alt={barbershop.name || ""}
-              className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl object-cover border border-border/40 shadow-sm shrink-0"
+              className="h-11 w-11 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl object-cover border border-border/40 shadow-sm shrink-0"
             />
           ) : (
-            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+            <div className="h-11 w-11 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
               <Scissors className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             </div>
           )}
-          <div>
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h2 className="text-xl sm:text-[28px] font-extrabold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-lg sm:text-[28px] font-extrabold tracking-tight text-foreground leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                 {greeting}, {userName}
               </h2>
               {isTrial && daysRemaining !== null && daysRemaining > 3 && (
-                <Badge variant="secondary" className="bg-primary/8 text-primary border-primary/15 text-[10px] font-semibold px-2 py-0.5 gap-1 rounded-lg">
-                  <Clock className="h-3 w-3" />
+                <Badge variant="secondary" className="bg-primary/8 text-primary border-primary/15 text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 gap-1 rounded-md sm:rounded-lg">
+                  <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                   Trial: {daysRemaining}d
                 </Badge>
               )}
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground/70 mt-0.5">
+            <p className="text-[11px] sm:text-sm text-muted-foreground/70 mt-0.5 truncate">
               {barbershop?.name ? `${barbershop.name} · ` : ""}{format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <PeriodFilter />
-          <Button variant="outline" size="sm" onClick={copyLink} className="hidden sm:flex rounded-xl text-xs h-8 border-border/60">
-            <Copy className="h-3 w-3 mr-1.5" /> Copiar link
-          </Button>
-          <Button size="sm" onClick={() => navigate("/dashboard/agenda")} className="rounded-xl text-xs h-8">
-            <Plus className="h-3 w-3 mr-1.5" /> Novo agendamento
-          </Button>
+          <div className="flex items-center gap-2 ml-auto sm:ml-0">
+            <Button variant="outline" size="sm" onClick={copyLink} className="hidden sm:flex rounded-xl text-xs h-8 border-border/60">
+              <Copy className="h-3 w-3 mr-1.5" /> Copiar link
+            </Button>
+            <Button size="sm" onClick={() => navigate("/dashboard/agenda")} className="rounded-xl text-xs h-9 sm:h-8 px-3 sm:px-3">
+              <Plus className="h-3.5 w-3.5 sm:h-3 sm:w-3 mr-1" /> <span className="hidden sm:inline">Novo agendamento</span><span className="sm:hidden">Novo</span>
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -506,7 +508,7 @@ export default function DashboardHome() {
       )}
 
       {/* ── KPI CARDS ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-5">
         <MetricCard
           idx={0} label="Atendimentos hoje" icon={Calendar}
           value={String(todayAppts.length)}
@@ -542,7 +544,7 @@ export default function DashboardHome() {
       </div>
 
       {/* ── TODAY SUMMARY + UPCOMING ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-7">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-7">
         <motion.div {...fadeUp(4)}>
           <SectionCard>
             <SectionTitle icon={ArrowUpRight}>Próximos</SectionTitle>
@@ -553,22 +555,22 @@ export default function DashboardHome() {
             ) : upcomingToday.length === 0 ? (
               <EmptyState icon={Calendar} title="Nenhum atendimento pendente" description="Seus próximos agendamentos aparecerão aqui" />
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 {upcomingToday.map((a, i) => (
                   <div key={a.id} onClick={() => navigate("/dashboard/agenda")}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer ${
+                    className={`flex items-center gap-2.5 sm:gap-3 px-3 py-3 sm:py-2.5 rounded-xl transition-all cursor-pointer active:scale-[0.98] ${
                       i === 0
                         ? "bg-primary/5 border border-primary/15 shadow-sm"
                         : "hover:bg-accent/40 border border-transparent"
                     }`}
                   >
-                    <span className="text-sm font-mono font-bold text-primary shrink-0 w-12 tabular-nums">{a.start_time?.slice(0, 5)}</span>
+                    <span className="text-[13px] sm:text-sm font-mono font-bold text-primary shrink-0 w-11 sm:w-12 tabular-nums">{a.start_time?.slice(0, 5)}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate text-foreground">{a.client_name}</p>
+                      <p className="text-[13px] sm:text-sm font-medium truncate text-foreground">{a.client_name}</p>
                       <p className="text-[11px] text-muted-foreground/60 truncate">{a.services?.name}</p>
                     </div>
                     {i === 0 && (
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-md shrink-0">
+                      <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-1.5 sm:px-2 py-0.5 rounded-md shrink-0">
                         Próximo
                       </span>
                     )}
@@ -593,19 +595,19 @@ export default function DashboardHome() {
             ) : todayAppts.length === 0 ? (
               <EmptyState icon={Calendar} title="Nenhum agendamento hoje" description="Novos agendamentos aparecerão automaticamente aqui" />
             ) : (
-              <div className="space-y-2 max-h-[320px] overflow-y-auto">
+              <div className="space-y-1.5 sm:space-y-2 max-h-[320px] overflow-y-auto">
                 {todayAppts.map(a => {
                   const st = statusLabels[a.status] || statusLabels.scheduled;
                   return (
                     <div key={a.id} onClick={() => navigate("/dashboard/agenda")}
-                      className="flex items-center gap-3 p-3 rounded-xl border border-border/40 hover:border-primary/20 hover:bg-accent/30 transition-all cursor-pointer group"
+                      className="flex items-center gap-2.5 sm:gap-3 p-3 rounded-xl border border-border/40 hover:border-primary/20 hover:bg-accent/30 transition-all cursor-pointer active:scale-[0.98] group"
                     >
-                      <span className="text-sm font-mono font-bold text-primary shrink-0 w-12 tabular-nums">{a.start_time?.slice(0, 5)}</span>
+                      <span className="text-[13px] sm:text-sm font-mono font-bold text-primary shrink-0 w-11 sm:w-12 tabular-nums">{a.start_time?.slice(0, 5)}</span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate text-foreground">{a.client_name}</p>
-                        <p className="text-xs text-muted-foreground/60 truncate">{a.services?.name} · {a.professionals?.name}</p>
+                        <p className="text-[13px] sm:text-sm font-medium truncate text-foreground">{a.client_name}</p>
+                        <p className="text-[11px] sm:text-xs text-muted-foreground/60 truncate">{a.services?.name} · {a.professionals?.name}</p>
                       </div>
-                      <Badge variant="secondary" className={`text-[10px] rounded-full border-0 font-semibold ${st.className}`}>{st.label}</Badge>
+                      <Badge variant="secondary" className={`text-[9px] sm:text-[10px] rounded-full border-0 font-semibold ${st.className}`}>{st.label}</Badge>
                     </div>
                   );
                 })}
@@ -687,7 +689,7 @@ export default function DashboardHome() {
 
 
       {/* ── OCCUPANCY RATE + REVENUE CHART ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-7">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-7">
         {/* Occupancy by professional */}
         <motion.div {...fadeUp(6)}>
           <SectionCard className="h-full">
@@ -764,7 +766,7 @@ export default function DashboardHome() {
       </div>
 
       {/* ── INSIGHTS + INACTIVE CLIENTS ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-7">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-7">
         <motion.div {...fadeUp(7)}>
           <SectionCard className="h-full">
             <SectionTitle icon={Lightbulb}>Insights do negócio</SectionTitle>
@@ -807,18 +809,18 @@ export default function DashboardHome() {
                 { label: "Inativos há 60+ dias", value: inactiveClients.d60, severity: "bg-destructive/10 text-destructive" },
                 { label: "Inativos há 90+ dias", value: inactiveClients.d90, severity: "bg-destructive/15 text-destructive" },
               ].map(item => (
-                <div key={item.label} className="flex items-center justify-between p-3 rounded-xl border border-border/40">
-                  <span className="text-sm text-muted-foreground">{item.label}</span>
-                  <Badge variant="secondary" className={`text-[11px] font-bold rounded-lg border-0 min-w-[28px] justify-center ${item.severity}`}>{item.value}</Badge>
+                <div key={item.label} className="flex items-center justify-between p-3 sm:p-3 rounded-xl border border-border/40">
+                   <span className="text-[13px] sm:text-sm text-muted-foreground">{item.label}</span>
+                   <Badge variant="secondary" className={`text-[10px] sm:text-[11px] font-bold rounded-lg border-0 min-w-[28px] justify-center ${item.severity}`}>{item.value}</Badge>
                 </div>
               ))}
             </div>
             <div className="flex gap-2 mt-4">
-              <Button size="sm" variant="outline" className="rounded-xl text-xs flex-1 h-9 border-border/60" onClick={() => navigate("/dashboard/retention")}>
-                <Heart className="h-3 w-3 mr-1.5" /> Retenção
+              <Button size="sm" variant="outline" className="rounded-xl text-xs flex-1 h-10 sm:h-9 border-border/60" onClick={() => navigate("/dashboard/retention")}>
+                <Heart className="h-3.5 w-3.5 sm:h-3 sm:w-3 mr-1.5" /> Retenção
               </Button>
-              <Button size="sm" className="rounded-xl text-xs flex-1 h-9" onClick={() => navigate("/dashboard/automations")}>
-                <Bell className="h-3 w-3 mr-1.5" /> Campanha
+              <Button size="sm" className="rounded-xl text-xs flex-1 h-10 sm:h-9" onClick={() => navigate("/dashboard/automations")}>
+                <Bell className="h-3.5 w-3.5 sm:h-3 sm:w-3 mr-1.5" /> Campanha
               </Button>
             </div>
           </SectionCard>
@@ -846,7 +848,7 @@ export default function DashboardHome() {
       )}
 
       {/* ── CHARTS: Services + Day of Week ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-7">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-7">
         <motion.div {...fadeUp(10)}>
           <SectionCard>
             <SectionTitle icon={Target}>Serviços mais vendidos</SectionTitle>
@@ -922,7 +924,7 @@ export default function DashboardHome() {
       <WeeklySchedule appointments={weeklyAppointments} onSlotClick={() => navigate("/dashboard/agenda")} />
 
       {/* Retention + Loyalty shortcuts */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-5">
         <motion.div {...fadeUp(13)}
           className="rounded-2xl border border-border/60 bg-card p-5 hover:border-border/80 hover:shadow-md transition-all duration-300 cursor-pointer group"
           onClick={() => navigate("/dashboard/retention")}
@@ -959,7 +961,7 @@ export default function DashboardHome() {
       <motion.div {...fadeUp(15)}>
         <SectionCard>
           <SectionTitle icon={Zap}>Ações rápidas</SectionTitle>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
             {[
               { label: "Novo agendamento", icon: Plus, bg: "bg-primary/10", color: "text-primary", action: () => navigate("/dashboard/agenda") },
               { label: "Cadastrar cliente", icon: Users, bg: "bg-blue-500/10", color: "text-blue-600 dark:text-blue-400", action: () => navigate("/dashboard/clients") },
@@ -969,12 +971,12 @@ export default function DashboardHome() {
               <button
                 key={item.label}
                 onClick={item.action}
-                className="flex flex-col items-center gap-2.5 p-4 sm:p-5 rounded-2xl border border-border/50 bg-card hover:border-primary/25 hover:shadow-md active:scale-[0.97] transition-all duration-200 cursor-pointer group"
+                className="flex flex-col items-center gap-2 sm:gap-2.5 p-4 sm:p-5 rounded-2xl border border-border/50 bg-card hover:border-primary/25 hover:shadow-md active:scale-[0.97] transition-all duration-200 cursor-pointer group min-h-[88px]"
               >
                 <div className={`h-10 w-10 rounded-xl ${item.bg} flex items-center justify-center group-hover:scale-110 transition-transform duration-200`}>
                   <item.icon className={`h-[18px] w-[18px] ${item.color}`} />
                 </div>
-                <span className="text-xs font-semibold text-foreground">{item.label}</span>
+                <span className="text-[11px] sm:text-xs font-semibold text-foreground text-center leading-tight">{item.label}</span>
               </button>
             ))}
           </div>
