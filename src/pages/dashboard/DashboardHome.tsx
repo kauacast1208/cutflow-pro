@@ -555,22 +555,22 @@ export default function DashboardHome() {
             ) : upcomingToday.length === 0 ? (
               <EmptyState icon={Calendar} title="Nenhum atendimento pendente" description="Seus próximos agendamentos aparecerão aqui" />
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 {upcomingToday.map((a, i) => (
                   <div key={a.id} onClick={() => navigate("/dashboard/agenda")}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer ${
+                    className={`flex items-center gap-2.5 sm:gap-3 px-3 py-3 sm:py-2.5 rounded-xl transition-all cursor-pointer active:scale-[0.98] ${
                       i === 0
                         ? "bg-primary/5 border border-primary/15 shadow-sm"
                         : "hover:bg-accent/40 border border-transparent"
                     }`}
                   >
-                    <span className="text-sm font-mono font-bold text-primary shrink-0 w-12 tabular-nums">{a.start_time?.slice(0, 5)}</span>
+                    <span className="text-[13px] sm:text-sm font-mono font-bold text-primary shrink-0 w-11 sm:w-12 tabular-nums">{a.start_time?.slice(0, 5)}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate text-foreground">{a.client_name}</p>
+                      <p className="text-[13px] sm:text-sm font-medium truncate text-foreground">{a.client_name}</p>
                       <p className="text-[11px] text-muted-foreground/60 truncate">{a.services?.name}</p>
                     </div>
                     {i === 0 && (
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-md shrink-0">
+                      <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-1.5 sm:px-2 py-0.5 rounded-md shrink-0">
                         Próximo
                       </span>
                     )}
