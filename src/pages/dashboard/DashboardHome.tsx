@@ -90,12 +90,12 @@ function SectionTitle({ icon: Icon, children, action }: { icon: React.ElementTyp
 
 function EmptyState({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description?: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-10 text-center">
-      <div className="h-12 w-12 rounded-xl bg-muted/50 flex items-center justify-center mb-3">
-        <Icon className="h-5 w-5 text-muted-foreground/40" />
+    <div className="flex flex-col items-center justify-center py-12 text-center">
+      <div className="h-14 w-14 rounded-2xl bg-muted/40 flex items-center justify-center mb-4 shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)]">
+        <Icon className="h-6 w-6 text-muted-foreground/30" />
       </div>
-      <p className="text-sm font-medium text-muted-foreground">{title}</p>
-      {description && <p className="text-xs text-muted-foreground/60 mt-1 max-w-[200px]">{description}</p>}
+      <p className="text-sm font-semibold text-muted-foreground/70">{title}</p>
+      {description && <p className="text-xs text-muted-foreground/50 mt-1.5 max-w-[220px] leading-relaxed">{description}</p>}
     </div>
   );
 }
