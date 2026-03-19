@@ -809,9 +809,9 @@ export default function DashboardHome() {
                 { label: "Inativos há 60+ dias", value: inactiveClients.d60, severity: "bg-destructive/10 text-destructive" },
                 { label: "Inativos há 90+ dias", value: inactiveClients.d90, severity: "bg-destructive/15 text-destructive" },
               ].map(item => (
-                <div key={item.label} className="flex items-center justify-between p-3 rounded-xl border border-border/40">
-                  <span className="text-sm text-muted-foreground">{item.label}</span>
-                  <Badge variant="secondary" className={`text-[11px] font-bold rounded-lg border-0 min-w-[28px] justify-center ${item.severity}`}>{item.value}</Badge>
+                <div key={item.label} className="flex items-center justify-between p-3 sm:p-3 rounded-xl border border-border/40">
+                   <span className="text-[13px] sm:text-sm text-muted-foreground">{item.label}</span>
+                   <Badge variant="secondary" className={`text-[10px] sm:text-[11px] font-bold rounded-lg border-0 min-w-[28px] justify-center ${item.severity}`}>{item.value}</Badge>
                 </div>
               ))}
             </div>
