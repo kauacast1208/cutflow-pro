@@ -508,7 +508,7 @@ export default function DashboardHome() {
       )}
 
       {/* ── KPI CARDS ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-5">
         <MetricCard
           idx={0} label="Atendimentos hoje" icon={Calendar}
           value={String(todayAppts.length)}
