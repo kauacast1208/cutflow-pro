@@ -489,10 +489,10 @@ export default function AgendaPage() {
 
                 return (
                   <div key={hour} className="flex group/row hover:bg-accent/10 transition-colors">
-                    <div className="w-[52px] shrink-0 py-3.5 pr-2.5 text-right">
+                    <div className="w-[52px] shrink-0 py-3.5 sm:py-3.5 pr-2.5 text-right">
                       <span className="text-[11px] font-bold text-muted-foreground/70 tabular-nums">{hour}</span>
                     </div>
-                    <div className={`flex-1 py-2.5 px-3 min-h-[64px] border-l border-border/50 ${
+                    <div className={`flex-1 py-2.5 px-3 min-h-[68px] border-l border-border/50 ${
                       slotBlocks.length > 0 && slotAppts.length === 0
                         ? (slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "bg-amber-500/5" :
                           (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "bg-blue-500/5" :
