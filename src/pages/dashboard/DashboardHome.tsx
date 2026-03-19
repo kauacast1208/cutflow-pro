@@ -544,7 +544,7 @@ export default function DashboardHome() {
       </div>
 
       {/* ── TODAY SUMMARY + UPCOMING ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-7">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-7">
         <motion.div {...fadeUp(4)}>
           <SectionCard>
             <SectionTitle icon={ArrowUpRight}>Próximos</SectionTitle>
