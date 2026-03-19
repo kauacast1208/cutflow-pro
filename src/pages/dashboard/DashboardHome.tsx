@@ -66,7 +66,7 @@ const tooltipStyle = {
 function SectionCard({ children, className = "", ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={`rounded-2xl border border-border/60 bg-card p-4 sm:p-6 shadow-sm transition-all duration-300 hover:border-border/80 ${className}`}
+      className={`rounded-2xl border border-border/50 bg-card p-5 sm:p-7 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_8px_24px_-8px_rgba(0,0,0,0.12)] transition-all duration-300 hover:border-border/70 hover:shadow-[0_2px_6px_rgba(0,0,0,0.1),0_12px_32px_-8px_rgba(0,0,0,0.15)] ${className}`}
       {...props}
     >
       {children}
@@ -76,10 +76,10 @@ function SectionCard({ children, className = "", ...props }: React.HTMLAttribute
 
 function SectionTitle({ icon: Icon, children, action }: { icon: React.ElementType; children: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between mb-5">
-      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-        <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
-          <Icon className="h-3.5 w-3.5 text-primary" />
+    <div className="flex items-center justify-between mb-6">
+      <h3 className="text-sm font-bold text-foreground flex items-center gap-2.5" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center shadow-[0_0_0_1px_hsl(var(--primary)/0.08)]">
+          <Icon className="h-4 w-4 text-primary" />
         </div>
         {children}
       </h3>
@@ -90,12 +90,12 @@ function SectionTitle({ icon: Icon, children, action }: { icon: React.ElementTyp
 
 function EmptyState({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description?: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-10 text-center">
-      <div className="h-12 w-12 rounded-xl bg-muted/50 flex items-center justify-center mb-3">
-        <Icon className="h-5 w-5 text-muted-foreground/40" />
+    <div className="flex flex-col items-center justify-center py-12 text-center">
+      <div className="h-14 w-14 rounded-2xl bg-muted/40 flex items-center justify-center mb-4 shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)]">
+        <Icon className="h-6 w-6 text-muted-foreground/30" />
       </div>
-      <p className="text-sm font-medium text-muted-foreground">{title}</p>
-      {description && <p className="text-xs text-muted-foreground/60 mt-1 max-w-[200px]">{description}</p>}
+      <p className="text-sm font-semibold text-muted-foreground/70">{title}</p>
+      {description && <p className="text-xs text-muted-foreground/50 mt-1.5 max-w-[220px] leading-relaxed">{description}</p>}
     </div>
   );
 }
@@ -399,38 +399,38 @@ export default function DashboardHome() {
     label: string; value: string; change?: string | null; changePositive?: boolean; icon: React.ElementType; sub?: string; idx: number; accent?: string;
   }) => (
     <motion.div {...fadeUp(idx)}
-      className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card p-4 sm:p-5 transition-all duration-300 hover:border-border/80 hover:shadow-md"
+      className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_8px_24px_-8px_rgba(0,0,0,0.12)] transition-all duration-300 hover:border-border/70 hover:shadow-[0_2px_6px_rgba(0,0,0,0.1),0_12px_32px_-8px_rgba(0,0,0,0.15)]"
     >
       {/* Subtle top accent line */}
       <div className={`absolute top-0 left-0 right-0 h-[2px] ${accent || "bg-primary/40"} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
 
-      <div className="relative flex items-start justify-between gap-2 sm:gap-3">
-        <div className="space-y-1.5 sm:space-y-2 min-w-0 flex-1">
-          <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">{label}</p>
-          <p className="text-xl sm:text-[28px] font-extrabold tracking-tight text-foreground leading-none" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            {loading ? <Skeleton className="h-6 sm:h-7 w-20 sm:w-24" /> : value}
+      <div className="relative flex items-start justify-between gap-3">
+        <div className="space-y-2 sm:space-y-2.5 min-w-0 flex-1">
+          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60">{label}</p>
+          <p className="text-2xl sm:text-[32px] font-extrabold tracking-tight text-foreground leading-none" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            {loading ? <Skeleton className="h-7 sm:h-8 w-20 sm:w-28" /> : value}
           </p>
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap pt-0.5">
             {change && (
-              <span className={`inline-flex items-center gap-0.5 text-[10px] sm:text-[11px] font-semibold px-1.5 py-0.5 rounded-md ${
+              <span className={`inline-flex items-center gap-0.5 text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-lg ${
                 changePositive ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"
               }`}>
                 {changePositive ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
                 {change}
               </span>
             )}
-            {sub && <p className="text-[10px] sm:text-[11px] text-muted-foreground/60">{sub}</p>}
+            {sub && <p className="text-[10px] sm:text-[11px] text-muted-foreground/50">{sub}</p>}
           </div>
         </div>
-        <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-primary/8 flex items-center justify-center shrink-0">
-          <Icon className="h-4 w-4 sm:h-[18px] sm:w-[18px] text-primary/70" />
+        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-2xl bg-primary/[0.06] flex items-center justify-center shrink-0 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
+          <Icon className="h-[18px] w-[18px] sm:h-5 sm:w-5 text-primary/60" />
         </div>
       </div>
     </motion.div>
   );
 
   return (
-    <div className="space-y-5 sm:space-y-6 pb-24 sm:pb-6">
+    <div className="space-y-6 sm:space-y-8 pb-24 sm:pb-8">
       <WelcomeModal />
 
       {/* Trial Banner - urgent */}
@@ -506,7 +506,7 @@ export default function DashboardHome() {
       )}
 
       {/* ── KPI CARDS ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
         <MetricCard
           idx={0} label="Atendimentos hoje" icon={Calendar}
           value={String(todayAppts.length)}
@@ -542,7 +542,7 @@ export default function DashboardHome() {
       </div>
 
       {/* ── TODAY SUMMARY + UPCOMING ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-7">
         <motion.div {...fadeUp(4)}>
           <SectionCard>
             <SectionTitle icon={ArrowUpRight}>Próximos</SectionTitle>
@@ -687,7 +687,7 @@ export default function DashboardHome() {
 
 
       {/* ── OCCUPANCY RATE + REVENUE CHART ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-7">
         {/* Occupancy by professional */}
         <motion.div {...fadeUp(6)}>
           <SectionCard className="h-full">
@@ -764,7 +764,7 @@ export default function DashboardHome() {
       </div>
 
       {/* ── INSIGHTS + INACTIVE CLIENTS ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-7">
         <motion.div {...fadeUp(7)}>
           <SectionCard className="h-full">
             <SectionTitle icon={Lightbulb}>Insights do negócio</SectionTitle>
@@ -846,7 +846,7 @@ export default function DashboardHome() {
       )}
 
       {/* ── CHARTS: Services + Day of Week ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-7">
         <motion.div {...fadeUp(10)}>
           <SectionCard>
             <SectionTitle icon={Target}>Serviços mais vendidos</SectionTitle>
@@ -922,7 +922,7 @@ export default function DashboardHome() {
       <WeeklySchedule appointments={weeklyAppointments} onSlotClick={() => navigate("/dashboard/agenda")} />
 
       {/* Retention + Loyalty shortcuts */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
         <motion.div {...fadeUp(13)}
           className="rounded-2xl border border-border/60 bg-card p-5 hover:border-border/80 hover:shadow-md transition-all duration-300 cursor-pointer group"
           onClick={() => navigate("/dashboard/retention")}
