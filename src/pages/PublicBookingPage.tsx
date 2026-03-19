@@ -579,14 +579,14 @@ export default function PublicBookingPage() {
           </motion.div>
         </AnimatePresence>
 
-        {/* Navigation */}
-        <div className="flex justify-between mt-8 sm:mt-10 pb-8">
+        {/* Navigation - mobile optimized with larger touch targets */}
+        <div className="flex justify-between mt-8 sm:mt-10 pb-6">
           <Button
             variant="outline"
             size="lg"
             onClick={goBack}
             disabled={step === 0}
-            className="rounded-xl h-12 px-6 font-semibold"
+            className="rounded-xl h-13 sm:h-12 px-5 sm:px-6 font-semibold min-w-[120px] text-base sm:text-sm"
           >
             <ArrowLeft className="h-4 w-4 mr-2" /> Voltar
           </Button>
@@ -595,9 +595,9 @@ export default function PublicBookingPage() {
               size="lg"
               onClick={goNext}
               disabled={!canNext}
-              className="rounded-xl h-12 px-6 font-semibold shadow-sm"
+              className="rounded-xl h-13 sm:h-12 px-5 sm:px-6 font-semibold shadow-sm min-w-[120px] text-base sm:text-sm"
             >
-              Proximo <ArrowRight className="h-4 w-4 ml-2" />
+              Próximo <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           ) : (
             <Button
@@ -605,7 +605,7 @@ export default function PublicBookingPage() {
               size="lg"
               onClick={handleConfirm}
               disabled={submitting}
-              className="rounded-xl h-12 px-8 shadow-glow"
+              className="rounded-xl h-13 sm:h-12 px-6 sm:px-8 shadow-glow min-w-[140px] text-base sm:text-sm"
             >
               {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Confirmar <Check className="h-4 w-4 ml-2" />
@@ -613,8 +613,8 @@ export default function PublicBookingPage() {
           )}
         </div>
 
-        {/* Trust footer */}
-        <div className="flex flex-wrap items-center justify-center gap-4 pb-24 sm:pb-10 text-[11px] text-muted-foreground/70">
+        {/* Trust footer with safe area */}
+        <div className="flex flex-wrap items-center justify-center gap-4 pb-[env(safe-area-inset-bottom,24px)] sm:pb-10 text-[11px] text-muted-foreground/70">
           <span>Agendamento seguro</span>
           <span className="text-muted-foreground/30">·</span>
           <span>Dados protegidos</span>
