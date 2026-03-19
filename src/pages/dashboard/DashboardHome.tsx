@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import {
   Calendar, DollarSign, Users, TrendingUp, Copy, ExternalLink, Plus,
   AlertTriangle, Trophy, Clock, Zap, Bell, Heart, Lightbulb, UserX,
-  ArrowUpRight, ArrowDownRight, Target, BarChart3,
+  ArrowUpRight, ArrowDownRight, Target, BarChart3, Scissors,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -422,21 +422,36 @@ export default function DashboardHome() {
 
       <OnboardingChecklist />
 
-      {/* ── Header ── */}
+      {/* ── Header with barbershop identity ── */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4">
-        <div>
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <h2 className="text-xl sm:text-[28px] font-extrabold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              {greeting}, {userName}
-            </h2>
-            {isTrial && daysRemaining !== null && daysRemaining > 3 && (
-              <Badge variant="secondary" className="bg-primary/8 text-primary border-primary/15 text-[10px] font-semibold px-2 py-0.5 gap-1 rounded-lg">
-                <Clock className="h-3 w-3" />
-                Trial: {daysRemaining}d
-              </Badge>
-            )}
+        <div className="flex items-start gap-3.5">
+          {barbershop?.logo_url ? (
+            <img
+              src={barbershop.logo_url}
+              alt={barbershop.name || ""}
+              className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl object-cover border border-border/40 shadow-sm shrink-0"
+            />
+          ) : (
+            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Scissors className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+            </div>
+          )}
+          <div>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h2 className="text-xl sm:text-[28px] font-extrabold tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                {greeting}, {userName}
+              </h2>
+              {isTrial && daysRemaining !== null && daysRemaining > 3 && (
+                <Badge variant="secondary" className="bg-primary/8 text-primary border-primary/15 text-[10px] font-semibold px-2 py-0.5 gap-1 rounded-lg">
+                  <Clock className="h-3 w-3" />
+                  Trial: {daysRemaining}d
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs sm:text-sm text-muted-foreground/70 mt-0.5">
+              {barbershop?.name ? `${barbershop.name} · ` : ""}{format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}
+            </p>
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground/70 mt-1">{format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <PeriodFilter />
