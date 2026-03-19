@@ -595,19 +595,19 @@ export default function DashboardHome() {
             ) : todayAppts.length === 0 ? (
               <EmptyState icon={Calendar} title="Nenhum agendamento hoje" description="Novos agendamentos aparecerão automaticamente aqui" />
             ) : (
-              <div className="space-y-2 max-h-[320px] overflow-y-auto">
+              <div className="space-y-1.5 sm:space-y-2 max-h-[320px] overflow-y-auto">
                 {todayAppts.map(a => {
                   const st = statusLabels[a.status] || statusLabels.scheduled;
                   return (
                     <div key={a.id} onClick={() => navigate("/dashboard/agenda")}
-                      className="flex items-center gap-3 p-3 rounded-xl border border-border/40 hover:border-primary/20 hover:bg-accent/30 transition-all cursor-pointer group"
+                      className="flex items-center gap-2.5 sm:gap-3 p-3 rounded-xl border border-border/40 hover:border-primary/20 hover:bg-accent/30 transition-all cursor-pointer active:scale-[0.98] group"
                     >
-                      <span className="text-sm font-mono font-bold text-primary shrink-0 w-12 tabular-nums">{a.start_time?.slice(0, 5)}</span>
+                      <span className="text-[13px] sm:text-sm font-mono font-bold text-primary shrink-0 w-11 sm:w-12 tabular-nums">{a.start_time?.slice(0, 5)}</span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate text-foreground">{a.client_name}</p>
-                        <p className="text-xs text-muted-foreground/60 truncate">{a.services?.name} · {a.professionals?.name}</p>
+                        <p className="text-[13px] sm:text-sm font-medium truncate text-foreground">{a.client_name}</p>
+                        <p className="text-[11px] sm:text-xs text-muted-foreground/60 truncate">{a.services?.name} · {a.professionals?.name}</p>
                       </div>
-                      <Badge variant="secondary" className={`text-[10px] rounded-full border-0 font-semibold ${st.className}`}>{st.label}</Badge>
+                      <Badge variant="secondary" className={`text-[9px] sm:text-[10px] rounded-full border-0 font-semibold ${st.className}`}>{st.label}</Badge>
                     </div>
                   );
                 })}
