@@ -426,24 +426,24 @@ export default function PublicBookingPage() {
             className="overflow-hidden"
           >
             <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
-              <div className="rounded-2xl border border-border/60 bg-card p-6 sm:p-7 shadow-sm">
+              <div className="rounded-2xl border border-border/60 bg-card p-5 sm:p-7 shadow-sm">
                 <div className="flex items-start gap-4 sm:gap-5">
                   {barbershop.logo_url ? (
-                    <img src={barbershop.logo_url} className="h-16 w-16 sm:h-[72px] sm:w-[72px] rounded-2xl object-cover border border-border/40 shrink-0 shadow-sm" alt="" />
+                    <img src={barbershop.logo_url} className="h-14 w-14 sm:h-[72px] sm:w-[72px] rounded-2xl object-cover border border-border/40 shrink-0 shadow-sm" alt="" />
                   ) : (
-                    <div className="h-16 w-16 sm:h-[72px] sm:w-[72px] rounded-2xl bg-primary/8 flex items-center justify-center shrink-0">
-                      <Scissors className="h-7 w-7 text-primary" />
+                    <div className="h-14 w-14 sm:h-[72px] sm:w-[72px] rounded-2xl bg-primary/8 flex items-center justify-center shrink-0">
+                      <Scissors className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <h1 className="font-extrabold text-xl sm:text-2xl tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    <h1 className="font-extrabold text-lg sm:text-2xl tracking-tight text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                       {displayName}
                     </h1>
                     <p className="text-sm text-muted-foreground mt-1">Agende seu horário online</p>
                     {barbershop.description && (
                       <p className="text-sm text-muted-foreground/70 mt-1.5 line-clamp-2">{barbershop.description}</p>
                     )}
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 text-xs text-muted-foreground/70">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-3 text-xs text-muted-foreground/70">
                       {barbershop.address && (
                         <span className="flex items-center gap-1.5">
                           <MapPin className="h-3 w-3 shrink-0" />{barbershop.address}
@@ -470,6 +470,13 @@ export default function PublicBookingPage() {
                       name={barbershop.name}
                       addressComplement={barbershop.address_complement}
                     />
+                  </div>
+                )}
+
+                {/* Reviews display */}
+                {barbershop.id && (
+                  <div className="mt-5">
+                    <ReviewsDisplay barbershopId={barbershop.id} />
                   </div>
                 )}
               </div>
