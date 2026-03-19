@@ -924,7 +924,7 @@ export default function DashboardHome() {
       <WeeklySchedule appointments={weeklyAppointments} onSlotClick={() => navigate("/dashboard/agenda")} />
 
       {/* Retention + Loyalty shortcuts */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-5">
         <motion.div {...fadeUp(13)}
           className="rounded-2xl border border-border/60 bg-card p-5 hover:border-border/80 hover:shadow-md transition-all duration-300 cursor-pointer group"
           onClick={() => navigate("/dashboard/retention")}
