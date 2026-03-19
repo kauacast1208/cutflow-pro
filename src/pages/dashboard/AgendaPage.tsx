@@ -362,7 +362,7 @@ export default function AgendaPage() {
               <button
                 key={v.key}
                 onClick={() => setViewMode(v.key)}
-                className={`flex items-center gap-1 px-2.5 sm:px-3 py-2 text-xs font-medium rounded-lg transition-all min-h-[36px] ${
+                className={`flex items-center gap-1 px-2.5 sm:px-3 py-2 text-[11px] sm:text-xs font-medium rounded-lg transition-all min-h-[40px] sm:min-h-[36px] ${
                   viewMode === v.key
                     ? "bg-card text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
