@@ -433,7 +433,7 @@ export default function AgendaPage() {
 
       {/* Quick stats */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }}
-        className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3"
+        className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3"
       >
         {[
           { label: "Agendamentos", value: String(todayAppts.length), sub: "hoje", icon: CalendarDays },
