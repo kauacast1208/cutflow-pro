@@ -312,6 +312,9 @@ export default function SettingsPage() {
             <TabsTrigger value="integrations" className="text-xs rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
               <Plug className="h-3.5 w-3.5 mr-1.5" /> Integrações
             </TabsTrigger>
+            <TabsTrigger value="appearance" className="text-xs rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
+              <Palette className="h-3.5 w-3.5 mr-1.5" /> Aparência
+            </TabsTrigger>
           </TabsList>
 
           {/* INFO */}
