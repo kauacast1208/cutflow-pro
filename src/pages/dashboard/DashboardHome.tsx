@@ -318,6 +318,33 @@ export default function DashboardHome() {
     return entries.slice(0, 3).filter(e => e.avg < 1);
   }, [completed, period]);
 
+  // Occupancy rate by professional
+  const occupancyData = useMemo(() => {
+    if (!barbershop || !completed.length) return [];
+    const openH = parseInt(barbershop.opening_time?.slice(0, 2) || "9");
+    const closeH = parseInt(barbershop.closing_time?.slice(0, 2) || "19");
+    const totalSlotsPerDay = closeH - openH;
+    const workDays = Math.max(1, period * 5 / 7); // approximate working days
+    
+    const proMap: Record<string, { name: string; totalMin: number }> = {};
+    completed.forEach(a => {
+      const name = a.professionals?.name || "-";
+      if (!proMap[name]) proMap[name] = { name, totalMin: 0 };
+      const start = parseInt(a.start_time?.slice(0, 2) || "0") * 60 + parseInt(a.start_time?.slice(3, 5) || "0");
+      const end = parseInt(a.end_time?.slice(0, 2) || "0") * 60 + parseInt(a.end_time?.slice(3, 5) || "0");
+      proMap[name].totalMin += Math.max(0, end - start);
+    });
+
+    const totalAvailableMin = totalSlotsPerDay * 60 * workDays;
+    return Object.values(proMap)
+      .map(p => ({
+        name: p.name,
+        occupancy: Math.min(100, Math.round((p.totalMin / totalAvailableMin) * 100)),
+      }))
+      .sort((a, b) => b.occupancy - a.occupancy)
+      .slice(0, 6);
+  }, [completed, barbershop, period]);
+
   const insights = useMemo(() => {
     const items: { text: string; icon: React.ElementType; color: string }[] = [];
     const hourCounts: Record<string, number> = {};
