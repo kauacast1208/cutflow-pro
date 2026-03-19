@@ -430,7 +430,7 @@ export default function DashboardHome() {
   );
 
   return (
-    <div className="space-y-6 sm:space-y-8 pb-24 sm:pb-8">
+    <div className="space-y-5 sm:space-y-8 pb-28 sm:pb-8 px-0.5 sm:px-0">
       <WelcomeModal />
 
       {/* Trial Banner - urgent */}
