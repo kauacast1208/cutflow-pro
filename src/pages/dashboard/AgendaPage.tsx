@@ -506,7 +506,7 @@ export default function AgendaPage() {
                           ))}
                         </div>
                       ) : slotBlocks.length > 0 ? (
-                        <div className="flex items-center gap-2 py-2.5 min-h-[44px]">
+                        <div className="flex items-center gap-2 py-2.5 min-h-[48px]">
                           <span className="text-xs">
                             {(slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "🍽️" :
                              (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "☕" : "🚫"}
