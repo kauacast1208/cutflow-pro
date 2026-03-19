@@ -961,7 +961,7 @@ export default function DashboardHome() {
       <motion.div {...fadeUp(15)}>
         <SectionCard>
           <SectionTitle icon={Zap}>Ações rápidas</SectionTitle>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
             {[
               { label: "Novo agendamento", icon: Plus, bg: "bg-primary/10", color: "text-primary", action: () => navigate("/dashboard/agenda") },
               { label: "Cadastrar cliente", icon: Users, bg: "bg-blue-500/10", color: "text-blue-600 dark:text-blue-400", action: () => navigate("/dashboard/clients") },
@@ -971,12 +971,12 @@ export default function DashboardHome() {
               <button
                 key={item.label}
                 onClick={item.action}
-                className="flex flex-col items-center gap-2.5 p-4 sm:p-5 rounded-2xl border border-border/50 bg-card hover:border-primary/25 hover:shadow-md active:scale-[0.97] transition-all duration-200 cursor-pointer group"
+                className="flex flex-col items-center gap-2 sm:gap-2.5 p-4 sm:p-5 rounded-2xl border border-border/50 bg-card hover:border-primary/25 hover:shadow-md active:scale-[0.97] transition-all duration-200 cursor-pointer group min-h-[88px]"
               >
                 <div className={`h-10 w-10 rounded-xl ${item.bg} flex items-center justify-center group-hover:scale-110 transition-transform duration-200`}>
                   <item.icon className={`h-[18px] w-[18px] ${item.color}`} />
                 </div>
-                <span className="text-xs font-semibold text-foreground">{item.label}</span>
+                <span className="text-[11px] sm:text-xs font-semibold text-foreground text-center leading-tight">{item.label}</span>
               </button>
             ))}
           </div>
