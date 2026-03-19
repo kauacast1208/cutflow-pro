@@ -516,7 +516,7 @@ export default function AgendaPage() {
                             {slotBlocks[0]?.recurring && " · Recorrente"}
                           </span>
                           {canViewFullAgenda && (
-                            <button onClick={() => handleDeleteBlock(slotBlocks[0].id)} className="text-[11px] text-destructive/60 hover:text-destructive ml-auto min-h-[36px] min-w-[44px] flex items-center justify-end">
+                            <button onClick={() => handleDeleteBlock(slotBlocks[0].id)} className="text-[11px] text-destructive/60 hover:text-destructive ml-auto min-h-[44px] min-w-[48px] flex items-center justify-end active:text-destructive">
                               Remover
                             </button>
                           )}
