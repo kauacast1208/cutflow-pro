@@ -689,7 +689,7 @@ export default function DashboardHome() {
 
 
       {/* ── OCCUPANCY RATE + REVENUE CHART ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-7">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-7">
         {/* Occupancy by professional */}
         <motion.div {...fadeUp(6)}>
           <SectionCard className="h-full">
