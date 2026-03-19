@@ -351,7 +351,7 @@ export default function AgendaPage() {
         </div>
 
         {/* Controls row */}
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 overflow-x-auto -mx-0.5 px-0.5 sm:mx-0 sm:px-0">
           {/* View mode toggle */}
           <div className="flex items-center bg-muted/50 rounded-xl p-0.5">
             {([
