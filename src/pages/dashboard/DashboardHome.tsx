@@ -816,11 +816,11 @@ export default function DashboardHome() {
               ))}
             </div>
             <div className="flex gap-2 mt-4">
-              <Button size="sm" variant="outline" className="rounded-xl text-xs flex-1 h-9 border-border/60" onClick={() => navigate("/dashboard/retention")}>
-                <Heart className="h-3 w-3 mr-1.5" /> Retenção
+              <Button size="sm" variant="outline" className="rounded-xl text-xs flex-1 h-10 sm:h-9 border-border/60" onClick={() => navigate("/dashboard/retention")}>
+                <Heart className="h-3.5 w-3.5 sm:h-3 sm:w-3 mr-1.5" /> Retenção
               </Button>
-              <Button size="sm" className="rounded-xl text-xs flex-1 h-9" onClick={() => navigate("/dashboard/automations")}>
-                <Bell className="h-3 w-3 mr-1.5" /> Campanha
+              <Button size="sm" className="rounded-xl text-xs flex-1 h-10 sm:h-9" onClick={() => navigate("/dashboard/automations")}>
+                <Bell className="h-3.5 w-3.5 sm:h-3 sm:w-3 mr-1.5" /> Campanha
               </Button>
             </div>
           </SectionCard>
