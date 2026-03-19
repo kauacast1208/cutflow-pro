@@ -766,7 +766,7 @@ export default function DashboardHome() {
       </div>
 
       {/* ── INSIGHTS + INACTIVE CLIENTS ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-7">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-7">
         <motion.div {...fadeUp(7)}>
           <SectionCard className="h-full">
             <SectionTitle icon={Lightbulb}>Insights do negócio</SectionTitle>
