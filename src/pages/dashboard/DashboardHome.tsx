@@ -686,42 +686,82 @@ export default function DashboardHome() {
       </motion.div>
 
 
-      <motion.div {...fadeUp(6)}>
-        <SectionCard>
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-2">
-              <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                <DollarSign className="h-3.5 w-3.5 text-primary" />
+      {/* ── OCCUPANCY RATE + REVENUE CHART ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        {/* Occupancy by professional */}
+        <motion.div {...fadeUp(6)}>
+          <SectionCard className="h-full">
+            <SectionTitle icon={Users}>Taxa de ocupação</SectionTitle>
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map(i => <Skeleton key={i} className="h-10 w-full rounded-xl" />)}
               </div>
-              <h3 className="text-sm font-semibold text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                Faturamento diário
-              </h3>
+            ) : occupancyData.length === 0 ? (
+              <EmptyState icon={Users} title="Sem dados" description="Agende atendimentos para ver a taxa de ocupação" />
+            ) : (
+              <div className="space-y-3">
+                {occupancyData.map((pro) => (
+                  <div key={pro.name} className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-foreground truncate">{pro.name}</span>
+                      <span className="text-xs font-bold text-primary tabular-nums">{pro.occupancy}%</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-muted/50 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          pro.occupancy >= 75 ? "bg-primary" :
+                          pro.occupancy >= 50 ? "bg-amber-500" :
+                          "bg-destructive/70"
+                        }`}
+                        style={{ width: `${pro.occupancy}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+                <p className="text-[10px] text-muted-foreground/50 mt-2">Baseado nos últimos {period} dias</p>
+              </div>
+            )}
+          </SectionCard>
+        </motion.div>
+
+        {/* Revenue chart */}
+        <motion.div {...fadeUp(6.5)} className="lg:col-span-2">
+          <SectionCard>
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <DollarSign className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <h3 className="text-sm font-semibold text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  Faturamento diário
+                </h3>
+              </div>
+              <span className="text-[11px] text-muted-foreground/60 font-medium">Últimos {Math.min(period, 30)} dias</span>
             </div>
-            <span className="text-[11px] text-muted-foreground/60 font-medium">Últimos {Math.min(period, 30)} dias</span>
-          </div>
-          {loading ? (
-            <Skeleton className="h-48 sm:h-64 w-full rounded-xl" />
-          ) : (
-            <div className="h-48 sm:h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={revenueChartData} margin={{ left: -10, right: 5, top: 5, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" vertical={false} />
-                  <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground) / 0.3)" interval="preserveStartEnd" tickLine={false} axisLine={false} />
-                  <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground) / 0.3)" width={40} tickLine={false} axisLine={false} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`R$ ${v}`, "Receita"]} />
-                  <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#revGrad)" strokeWidth={2} dot={false} activeDot={{ r: 4, strokeWidth: 2, fill: "hsl(var(--card))", stroke: "hsl(var(--primary))" }} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </SectionCard>
-      </motion.div>
+            {loading ? (
+              <Skeleton className="h-48 sm:h-64 w-full rounded-xl" />
+            ) : (
+              <div className="h-48 sm:h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={revenueChartData} margin={{ left: -10, right: 5, top: 5, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.4)" vertical={false} />
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground) / 0.3)" interval="preserveStartEnd" tickLine={false} axisLine={false} />
+                    <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground) / 0.3)" width={40} tickLine={false} axisLine={false} />
+                    <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`R$ ${v}`, "Receita"]} />
+                    <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#revGrad)" strokeWidth={2} dot={false} activeDot={{ r: 4, strokeWidth: 2, fill: "hsl(var(--card))", stroke: "hsl(var(--primary))" }} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </SectionCard>
+        </motion.div>
+      </div>
 
       {/* ── INSIGHTS + INACTIVE CLIENTS ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
