@@ -10,6 +10,7 @@ import { format, addMinutes, parse } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import SupportBot from "@/components/booking/SupportBot";
+import { ReviewsDisplay } from "@/components/booking/ReviewsDisplay";
 import { ServiceStep } from "@/components/booking/ServiceStep";
 import { ProfessionalStep, ANY_PRO_ID } from "@/components/booking/ProfessionalStep";
 import { DateTimeStep } from "@/components/booking/DateTimeStep";
