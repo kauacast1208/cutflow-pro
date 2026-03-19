@@ -848,7 +848,7 @@ export default function DashboardHome() {
       )}
 
       {/* ── CHARTS: Services + Day of Week ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-7">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-7">
         <motion.div {...fadeUp(10)}>
           <SectionCard>
             <SectionTitle icon={Target}>Serviços mais vendidos</SectionTitle>
