@@ -366,6 +366,9 @@ export default function PublicBookingPage() {
         slug={slug || ""}
         onReschedule={handleReschedule}
         onCancel={handleCancelAppointment}
+        appointmentId={appointmentId}
+        clientName={clientName}
+        clientPhone={clientPhone}
       />
     );
   }
