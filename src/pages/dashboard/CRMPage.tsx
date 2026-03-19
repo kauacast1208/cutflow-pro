@@ -9,13 +9,16 @@ import { Progress } from "@/components/ui/progress";
 import {
   Users, UserCheck, UserX, Cake, TrendingUp, ArrowRight,
   AlertTriangle, Heart, Star, Clock, Send, Sparkles,
-  Target, Lightbulb, MessageSquare, Zap,
+  Target, Lightbulb, MessageSquare, Zap, ShieldCheck, Gift, BarChart3,
 } from "lucide-react";
-import { format, subDays, isSameWeek, isSameMonth, isToday } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { format, subDays, isSameWeek, isSameMonth } from "date-fns";
 import { motion } from "framer-motion";
 
-const anim = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 } };
+const fadeUp = (delay = 0) => ({
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.4, delay, ease: [0.25, 0.46, 0.45, 0.94] as const },
+});
 
 export default function CRMPage() {
   const { barbershop } = useBarbershop();
@@ -69,10 +72,7 @@ export default function CRMPage() {
       const key = (c.email || c.phone || c.name).toLowerCase();
       const stat = clientLastVisit.get(key);
 
-      if (!stat) {
-        newClients++;
-        return;
-      }
+      if (!stat) { newClients++; return; }
 
       const daysSince = Math.floor((now.getTime() - new Date(stat.lastDate).getTime()) / (1000 * 60 * 60 * 24));
 
@@ -82,7 +82,6 @@ export default function CRMPage() {
       if (daysSince >= 30) noReturn30++;
       if (daysSince >= 60) noReturn60++;
 
-      // Birthday check
       if (c.birth_date) {
         const bday = new Date(c.birth_date);
         const thisYearBday = new Date(now.getFullYear(), bday.getMonth(), bday.getDate());
@@ -91,18 +90,15 @@ export default function CRMPage() {
       }
     });
 
-    // Missed (no-shows)
     missed = appointments.filter((a) => a.status === "no_show").length;
 
     return { active, inactive, vip, newClients, noReturn30, noReturn60, missed, birthdaysThisWeek, birthdaysThisMonth, total: clients.length };
   }, [clients, appointments]);
 
-  // ── Campaign stats ──
   const campaignsSent = campaigns.filter((c) => c.status === "sent").length;
   const totalRecipients = campaigns.filter((c) => c.status === "sent").reduce((s, c) => s + (c.recipient_count || 0), 0);
   const msgSent = notifications.filter((n) => n.status === "sent").length;
 
-  // ── Return rate ──
   const returnRate = useMemo(() => {
     if (clients.length === 0) return 0;
     const visitCount = new Map<string, number>();
@@ -114,207 +110,211 @@ export default function CRMPage() {
     return Math.round((returning / clients.length) * 100);
   }, [clients, appointments]);
 
-  // ── Insights ──
   const insights = useMemo(() => {
     const list: { icon: any; text: string; action?: string; route?: string; severity: "info" | "warning" | "success" }[] = [];
-
-    if (segments.noReturn30 > 0) {
-      list.push({
-        icon: AlertTriangle,
-        text: `Você tem ${segments.noReturn30} cliente${segments.noReturn30 > 1 ? "s" : ""} sem retorno há mais de 30 dias`,
-        action: "Ver inativos",
-        route: "/dashboard/inactive-clients",
-        severity: "warning",
-      });
-    }
-    if (segments.birthdaysThisWeek.length > 0) {
-      list.push({
-        icon: Cake,
-        text: `${segments.birthdaysThisWeek.length} aniversariante${segments.birthdaysThisWeek.length > 1 ? "s" : ""} esta semana`,
-        action: "Enviar parabéns",
-        route: "/dashboard/birthdays",
-        severity: "info",
-      });
-    }
-    if (segments.vip > 0) {
-      list.push({
-        icon: Star,
-        text: `${segments.vip} clientes VIP com alta frequência`,
-        action: "Ver clientes",
-        route: "/dashboard/clients",
-        severity: "success",
-      });
-    }
-    if (returnRate > 0 && returnRate < 40) {
-      list.push({
-        icon: TrendingUp,
-        text: `Taxa de retorno de ${returnRate}% — envie incentivos para aumentar`,
-        action: "Ver retenção",
-        route: "/dashboard/retention",
-        severity: "warning",
-      });
-    }
-    if (segments.noReturn60 > 0) {
-      list.push({
-        icon: UserX,
-        text: `${segments.noReturn60} clientes podem estar perdidos (60+ dias sem visita)`,
-        action: "Reativar",
-        route: "/dashboard/inactive-clients",
-        severity: "warning",
-      });
-    }
-    if (segments.newClients > 0) {
-      list.push({
-        icon: Sparkles,
-        text: `${segments.newClients} clientes novos ainda sem agendamento registrado`,
-        severity: "info",
-      });
-    }
-
+    if (segments.noReturn30 > 0) list.push({ icon: AlertTriangle, text: `${segments.noReturn30} cliente${segments.noReturn30 > 1 ? "s" : ""} sem retorno há mais de 30 dias`, action: "Ver inativos", route: "/dashboard/inactive-clients", severity: "warning" });
+    if (segments.birthdaysThisWeek.length > 0) list.push({ icon: Cake, text: `${segments.birthdaysThisWeek.length} aniversariante${segments.birthdaysThisWeek.length > 1 ? "s" : ""} esta semana`, action: "Enviar parabéns", route: "/dashboard/birthdays", severity: "info" });
+    if (segments.vip > 0) list.push({ icon: Star, text: `${segments.vip} clientes VIP com alta frequência`, action: "Ver clientes", route: "/dashboard/clients", severity: "success" });
+    if (returnRate > 0 && returnRate < 40) list.push({ icon: TrendingUp, text: `Taxa de retorno de ${returnRate}% — envie incentivos para aumentar`, action: "Ver retenção", route: "/dashboard/retention", severity: "warning" });
+    if (segments.noReturn60 > 0) list.push({ icon: UserX, text: `${segments.noReturn60} clientes podem estar perdidos (60+ dias sem visita)`, action: "Reativar", route: "/dashboard/inactive-clients", severity: "warning" });
+    if (segments.newClients > 0) list.push({ icon: Sparkles, text: `${segments.newClients} clientes novos ainda sem agendamento registrado`, severity: "info" });
     return list;
   }, [segments, returnRate]);
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64 text-muted-foreground">Carregando CRM...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-3">
+        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center animate-pulse">
+          <Heart className="h-5 w-5 text-primary" />
+        </div>
+        <p className="text-sm text-muted-foreground">Carregando CRM...</p>
+      </div>
+    );
   }
 
   const segmentCards = [
-    { label: "Clientes Ativos", value: segments.active, icon: UserCheck, color: "text-emerald-600", bg: "bg-emerald-500/10" },
-    { label: "Inativos (30d+)", value: segments.inactive, icon: UserX, color: "text-amber-600", bg: "bg-amber-500/10" },
-    { label: "VIP", value: segments.vip, icon: Star, color: "text-primary", bg: "bg-primary/10" },
-    { label: "Novos", value: segments.newClients, icon: Sparkles, color: "text-blue-600", bg: "bg-blue-500/10" },
-    { label: "Aniversariantes (mês)", value: segments.birthdaysThisMonth.length, icon: Cake, color: "text-pink-600", bg: "bg-pink-500/10" },
-    { label: "Taxa de retorno", value: `${returnRate}%`, icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-500/10" },
+    { label: "Clientes Ativos", value: segments.active, icon: UserCheck, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10", trend: "Últimos 30 dias" },
+    { label: "Inativos", value: segments.inactive, icon: UserX, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10", trend: "30+ dias sem visita" },
+    { label: "VIP", value: segments.vip, icon: Star, color: "text-primary", bg: "bg-primary/10", trend: "10+ visitas" },
+    { label: "Novos", value: segments.newClients, icon: Sparkles, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500/10", trend: "Sem agendamento" },
+    { label: "Aniversariantes", value: segments.birthdaysThisMonth.length, icon: Cake, color: "text-pink-600 dark:text-pink-400", bg: "bg-pink-500/10", trend: "Este mês" },
+    { label: "Retorno", value: `${returnRate}%`, icon: TrendingUp, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10", trend: "Taxa de fidelização" },
   ];
 
   const quickActions = [
-    { label: "Reativação de inativos", desc: "Enviar campanha para clientes que não voltam há 30+ dias", icon: Send, route: "/dashboard/inactive-clients" },
-    { label: "Parabéns aniversariantes", desc: "Enviar mensagem personalizada de aniversário", icon: Cake, route: "/dashboard/birthdays" },
-    { label: "Campanha de retorno", desc: "Criar campanha de incentivo para clientes recorrentes", icon: MessageSquare, route: "/dashboard/campaigns" },
-    { label: "Análise de retenção", desc: "Ver previsão de retorno e clientes em risco", icon: Heart, route: "/dashboard/retention" },
+    { label: "Reativar inativos", desc: "Enviar campanha para clientes que não voltam há 30+ dias", icon: Send, route: "/dashboard/inactive-clients", accent: "bg-amber-500/10 text-amber-600 dark:text-amber-400" },
+    { label: "Aniversariantes", desc: "Enviar mensagem personalizada de aniversário", icon: Gift, route: "/dashboard/birthdays", accent: "bg-pink-500/10 text-pink-600 dark:text-pink-400" },
+    { label: "Nova campanha", desc: "Criar campanha de incentivo para clientes recorrentes", icon: MessageSquare, route: "/dashboard/campaigns", accent: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
+    { label: "Análise de retenção", desc: "Ver previsão de retorno e clientes em risco", icon: BarChart3, route: "/dashboard/retention", accent: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
   ];
 
   const isEmpty = segments.total === 0;
 
   return (
-    <div className="space-y-5 sm:space-y-6 max-w-full pb-20 sm:pb-6">
+    <div className="space-y-6 sm:space-y-8 max-w-full pb-24 sm:pb-6">
       {/* Header */}
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
-          <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-          CRM
-        </h1>
-        <p className="text-muted-foreground text-xs sm:text-sm mt-1">
-          {isEmpty
-            ? "Gerencie o relacionamento com seus clientes de forma inteligente"
-            : `Relacionamento inteligente com seus clientes · ${segments.total} clientes cadastrados`}
-        </p>
-      </div>
+      <motion.div {...fadeUp(0)}>
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-11 w-11 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <Heart className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                CRM Inteligente
+              </h1>
+              <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">
+                {isEmpty
+                  ? "Gerencie o relacionamento com seus clientes"
+                  : `${segments.total} clientes · ${segments.active} ativos`}
+              </p>
+            </div>
+          </div>
+          <Button size="sm" variant="outline" className="hidden sm:flex" onClick={() => navigate("/dashboard/clients")}>
+            <Users className="h-4 w-4 mr-1.5" /> Ver todos
+          </Button>
+        </div>
+      </motion.div>
 
       {/* Segment Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
+      <motion.div {...fadeUp(0.06)} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-3.5">
         {segmentCards.map((card, i) => (
-          <motion.div key={card.label} {...anim} transition={{ delay: i * 0.05 }}>
-            <Card className="border-border/60 bg-card hover:border-border transition-colors">
-              <CardContent className="pt-3 sm:pt-4 pb-2.5 sm:pb-3 px-3 sm:px-4">
-                <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-                  <div className={`h-8 w-8 sm:h-9 sm:w-9 rounded-lg ${card.bg} flex items-center justify-center`}>
-                    <card.icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${card.color}`} />
-                  </div>
-                </div>
-                <div className="text-xl sm:text-2xl font-bold tracking-tight">{card.value}</div>
-                <p className="text-[10px] sm:text-[11px] text-muted-foreground font-medium mt-0.5 sm:mt-1">{card.label}</p>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <div
+            key={card.label}
+            className="group relative rounded-2xl border border-border/60 bg-card p-4 sm:p-5 hover:border-border hover:shadow-card-hover transition-all duration-200 cursor-default"
+          >
+            <div className={`h-9 w-9 sm:h-10 sm:w-10 rounded-xl ${card.bg} flex items-center justify-center mb-3`}>
+              <card.icon className={`h-4 w-4 sm:h-[18px] sm:w-[18px] ${card.color}`} />
+            </div>
+            <div className="text-2xl sm:text-3xl font-extrabold tracking-tight leading-none" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              {card.value}
+            </div>
+            <p className="text-[11px] sm:text-xs text-muted-foreground font-semibold mt-1.5 uppercase tracking-wider">
+              {card.label}
+            </p>
+            <p className="text-[10px] text-muted-foreground/60 mt-0.5 hidden sm:block">
+              {card.trend}
+            </p>
+          </div>
         ))}
-      </div>
+      </motion.div>
 
-      {/* Empty state for new users */}
+      {/* Premium Empty State */}
       {isEmpty && insights.length === 0 && (
-        <motion.div {...anim} transition={{ delay: 0.2 }}>
-          <Card className="border-border/60">
-            <CardContent className="py-10 sm:py-12 flex flex-col items-center text-center px-5">
-              <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-3 sm:mb-4">
-                <Users className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+        <motion.div {...fadeUp(0.15)}>
+          <div className="relative rounded-2xl border border-border/60 bg-card overflow-hidden">
+            {/* Subtle gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] via-transparent to-transparent pointer-events-none" />
+            <div className="relative py-12 sm:py-16 flex flex-col items-center text-center px-6">
+              <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-5">
+                <Users className="h-7 w-7 text-primary" />
               </div>
-              <h3 className="text-sm sm:text-base font-semibold mb-1.5">Comece a construir seu CRM</h3>
-              <p className="text-xs sm:text-sm text-muted-foreground max-w-sm">
-                Cadastre seus clientes e registre agendamentos para visualizar segmentações, insights e oportunidades de retenção automaticamente.
+              <h3 className="text-lg sm:text-xl font-bold mb-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                Comece a construir seu CRM
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
+                Cadastre seus clientes e registre agendamentos para visualizar segmentações inteligentes, insights e oportunidades de retenção automaticamente.
               </p>
-              <Button className="mt-4 sm:mt-5 h-11 sm:h-10 min-w-[180px]" onClick={() => navigate("/dashboard/clients")}>
-                <Users className="h-4 w-4 mr-2" />
-                Cadastrar clientes
-              </Button>
-            </CardContent>
-          </Card>
+
+              {/* Step cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-8 w-full max-w-lg">
+                {[
+                  { icon: Users, label: "Cadastrar clientes", desc: "Adicione seus primeiros clientes", route: "/dashboard/clients" },
+                  { icon: ShieldCheck, label: "Agendar serviço", desc: "Registre um agendamento", route: "/dashboard/agenda" },
+                  { icon: MessageSquare, label: "Criar campanha", desc: "Envie sua primeira mensagem", route: "/dashboard/campaigns" },
+                ].map((step) => (
+                  <button
+                    key={step.label}
+                    onClick={() => navigate(step.route)}
+                    className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border/60 bg-muted/30 hover:bg-muted/60 hover:border-primary/20 transition-all text-center group min-h-[100px]"
+                  >
+                    <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
+                      <step.icon className="h-4 w-4 text-primary" />
+                    </div>
+                    <p className="text-xs font-semibold">{step.label}</p>
+                    <p className="text-[10px] text-muted-foreground leading-tight">{step.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         </motion.div>
       )}
 
       {/* Smart Insights */}
       {insights.length > 0 && (
-        <motion.div {...anim} transition={{ delay: 0.2 }}>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Lightbulb className="h-4 w-4 text-amber-500" />
+        <motion.div {...fadeUp(0.12)}>
+          <Card className="border-border/60">
+            <CardHeader className="pb-3 px-5 sm:px-6">
+              <CardTitle className="text-sm sm:text-base flex items-center gap-2.5">
+                <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                  <Lightbulb className="h-4 w-4 text-amber-500" />
+                </div>
                 Insights inteligentes
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              {insights.map((insight, i) => (
-                <div
-                  key={i}
-                  className={`flex items-start sm:items-center gap-3 rounded-xl p-3 sm:p-3 transition-colors ${
-                    insight.severity === "warning"
-                      ? "bg-amber-500/5 border border-amber-500/10"
-                      : insight.severity === "success"
-                      ? "bg-emerald-500/5 border border-emerald-500/10"
-                      : "bg-muted/50 border border-border/50"
-                  }`}
-                >
-                  <insight.icon className={`h-4 w-4 shrink-0 mt-0.5 sm:mt-0 ${
-                    insight.severity === "warning" ? "text-amber-600" : insight.severity === "success" ? "text-emerald-600" : "text-primary"
-                  }`} />
-                  <span className="text-xs sm:text-sm flex-1">{insight.text}</span>
-                  {insight.action && insight.route && (
-                    <Button variant="ghost" size="sm" className="text-xs h-9 sm:h-7 shrink-0 px-2 sm:px-3" onClick={() => navigate(insight.route!)}>
-                      {insight.action}
-                      <ArrowRight className="h-3 w-3 ml-1" />
-                    </Button>
-                  )}
-                </div>
-              ))}
+            <CardContent className="space-y-2 px-5 sm:px-6">
+              {insights.map((insight, i) => {
+                const severityStyles = {
+                  warning: "bg-amber-500/5 border-amber-500/15 dark:bg-amber-500/[0.06]",
+                  success: "bg-emerald-500/5 border-emerald-500/15 dark:bg-emerald-500/[0.06]",
+                  info: "bg-muted/40 border-border/50",
+                };
+                const iconColors = {
+                  warning: "text-amber-600 dark:text-amber-400",
+                  success: "text-emerald-600 dark:text-emerald-400",
+                  info: "text-primary",
+                };
+                return (
+                  <div
+                    key={i}
+                    className={`flex items-start sm:items-center gap-3 rounded-xl p-3.5 sm:p-3 border transition-colors ${severityStyles[insight.severity]}`}
+                  >
+                    <div className={`h-8 w-8 rounded-lg ${insight.severity === "warning" ? "bg-amber-500/10" : insight.severity === "success" ? "bg-emerald-500/10" : "bg-primary/10"} flex items-center justify-center shrink-0`}>
+                      <insight.icon className={`h-4 w-4 ${iconColors[insight.severity]}`} />
+                    </div>
+                    <span className="text-xs sm:text-sm flex-1 leading-snug">{insight.text}</span>
+                    {insight.action && insight.route && (
+                      <Button variant="ghost" size="sm" className="text-xs h-9 sm:h-8 shrink-0 px-3 font-medium" onClick={() => navigate(insight.route!)}>
+                        {insight.action}
+                        <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
             </CardContent>
           </Card>
         </motion.div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
         {/* Quick Actions */}
-        <motion.div {...anim} transition={{ delay: 0.3 }}>
-          <Card className="h-full">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-                <Zap className="h-4 w-4 text-primary" />
+        <motion.div {...fadeUp(0.18)}>
+          <Card className="h-full border-border/60">
+            <CardHeader className="pb-3 px-5 sm:px-6">
+              <CardTitle className="text-sm sm:text-base flex items-center gap-2.5">
+                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Zap className="h-4 w-4 text-primary" />
+                </div>
                 Ações rápidas
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-2.5 px-5 sm:px-6">
               {quickActions.map((action) => (
                 <button
                   key={action.label}
                   onClick={() => navigate(action.route)}
-                  className="w-full flex items-center gap-3 rounded-xl p-3 hover:bg-muted/50 border border-border/50 transition-all text-left group min-h-[56px] sm:min-h-0 active:scale-[0.98]"
+                  className="w-full flex items-center gap-3.5 rounded-xl p-3.5 sm:p-3 hover:bg-muted/50 border border-border/50 hover:border-border transition-all text-left group min-h-[60px] active:scale-[0.98]"
                 >
-                  <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/15 transition-colors">
-                    <action.icon className="h-4 w-4 text-primary" />
+                  <div className={`h-10 w-10 rounded-xl ${action.accent.split(" ")[0]} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform`}>
+                    <action.icon className={`h-[18px] w-[18px] ${action.accent.split(" ").slice(1).join(" ")}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium">{action.label}</p>
-                    <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{action.desc}</p>
+                    <p className="text-sm font-semibold">{action.label}</p>
+                    <p className="text-[11px] sm:text-xs text-muted-foreground truncate mt-0.5">{action.desc}</p>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-foreground transition-colors shrink-0" />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-foreground/60 group-hover:translate-x-0.5 transition-all shrink-0" />
                 </button>
               ))}
             </CardContent>
@@ -322,48 +322,56 @@ export default function CRMPage() {
         </motion.div>
 
         {/* Campaign Performance */}
-        <motion.div {...anim} transition={{ delay: 0.35 }}>
-          <Card className="h-full">
-            <CardHeader className="pb-3">
+        <motion.div {...fadeUp(0.22)}>
+          <Card className="h-full border-border/60">
+            <CardHeader className="pb-3 px-5 sm:px-6">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Target className="h-4 w-4 text-primary" />
-                  Performance de campanhas
+                <CardTitle className="text-sm sm:text-base flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Target className="h-4 w-4 text-primary" />
+                  </div>
+                  Performance
                 </CardTitle>
-                <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => navigate("/dashboard/campaigns")}>
+                <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => navigate("/dashboard/campaigns")}>
                   Ver todas <ArrowRight className="h-3 w-3 ml-1" />
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                <div className="text-center p-2.5 sm:p-3 rounded-xl bg-muted/50">
-                  <div className="text-lg sm:text-xl font-bold">{campaignsSent}</div>
-                  <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Campanhas</p>
-                </div>
-                <div className="text-center p-2.5 sm:p-3 rounded-xl bg-muted/50">
-                  <div className="text-lg sm:text-xl font-bold">{totalRecipients}</div>
-                  <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Destinatários</p>
-                </div>
-                <div className="text-center p-2.5 sm:p-3 rounded-xl bg-muted/50">
-                  <div className="text-lg sm:text-xl font-bold">{msgSent}</div>
-                  <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Mensagens</p>
-                </div>
+            <CardContent className="space-y-5 px-5 sm:px-6">
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { value: campaignsSent, label: "Campanhas", color: "text-primary" },
+                  { value: totalRecipients, label: "Destinatários", color: "text-foreground" },
+                  { value: msgSent, label: "Mensagens", color: "text-foreground" },
+                ].map((stat) => (
+                  <div key={stat.label} className="text-center p-3.5 sm:p-4 rounded-xl bg-muted/40 border border-border/40">
+                    <div className={`text-xl sm:text-2xl font-extrabold ${stat.color}`} style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      {stat.value}
+                    </div>
+                    <p className="text-[9px] sm:text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mt-1">
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
               </div>
 
-              {/* Retention health bar */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Saúde do relacionamento</span>
-                  <span className="font-semibold">{returnRate}%</span>
+              {/* Retention health */}
+              <div className="p-4 rounded-xl bg-muted/30 border border-border/40 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Saúde do relacionamento</span>
+                  <span className="text-lg font-extrabold text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    {returnRate}%
+                  </span>
                 </div>
-                <Progress value={returnRate} className="h-2" />
-                <p className="text-[11px] text-muted-foreground">
+                <Progress value={returnRate} className="h-2.5" />
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
                   {returnRate >= 60
-                    ? "Excelente! Seus clientes estão retornando."
+                    ? "🟢 Excelente! Seus clientes estão retornando com frequência."
                     : returnRate >= 40
-                    ? "Bom, mas há espaço para melhorar a retenção."
-                    : "Atenção: considere ativar campanhas de reativação."}
+                    ? "🟡 Bom progresso, mas há espaço para melhorar a retenção."
+                    : returnRate > 0
+                    ? "🟠 Atenção: considere ativar campanhas de reativação."
+                    : "Registre agendamentos para calcular a taxa de retorno."}
                 </p>
               </div>
             </CardContent>
@@ -373,26 +381,28 @@ export default function CRMPage() {
 
       {/* Birthdays this week */}
       {segments.birthdaysThisWeek.length > 0 && (
-        <motion.div {...anim} transition={{ delay: 0.4 }}>
-          <Card>
-            <CardHeader className="pb-3">
+        <motion.div {...fadeUp(0.28)}>
+          <Card className="border-border/60">
+            <CardHeader className="pb-3 px-5 sm:px-6">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Cake className="h-4 w-4 text-pink-500" />
-                  Aniversariantes desta semana
+                <CardTitle className="text-sm sm:text-base flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-lg bg-pink-500/10 flex items-center justify-center">
+                    <Cake className="h-4 w-4 text-pink-500" />
+                  </div>
+                  Aniversariantes da semana
                 </CardTitle>
-                <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => navigate("/dashboard/birthdays")}>
+                <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => navigate("/dashboard/birthdays")}>
                   Ver todos <ArrowRight className="h-3 w-3 ml-1" />
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
+            <CardContent className="px-5 sm:px-6">
+              <div className="flex flex-wrap gap-2.5">
                 {segments.birthdaysThisWeek.map((c) => (
-                  <Badge key={c.id} variant="secondary" className="text-xs px-3 py-1.5 bg-pink-500/5 text-pink-700 border-pink-500/15">
+                  <Badge key={c.id} variant="secondary" className="text-xs px-3.5 py-2 bg-pink-500/5 text-pink-700 dark:text-pink-400 border border-pink-500/15 rounded-lg font-medium">
                     🎂 {c.name}
                     {c.birth_date && (
-                      <span className="ml-1 opacity-60">
+                      <span className="ml-1.5 opacity-50 text-[10px]">
                         {format(new Date(new Date(c.birth_date).getFullYear(), new Date(c.birth_date).getMonth(), new Date(c.birth_date).getDate()), "dd/MM")}
                       </span>
                     )}
