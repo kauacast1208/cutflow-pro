@@ -381,10 +381,10 @@ export default function DashboardHome() {
   }, [weekAppts]);
 
   const PeriodFilter = () => (
-    <div className="flex items-center gap-0.5 rounded-xl border border-border/60 bg-muted/30 p-1">
+    <div className="flex items-center gap-0.5 rounded-xl border border-border/60 bg-muted/30 p-0.5 sm:p-1">
       {periodOptions.map(opt => (
         <button key={opt.value} onClick={() => setPeriod(opt.value)}
-          className={`px-3.5 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 ${
+          className={`px-3 sm:px-3.5 py-2 sm:py-1.5 text-[11px] sm:text-xs font-medium rounded-lg transition-all duration-200 min-h-[36px] ${
             period === opt.value
               ? "bg-card text-foreground shadow-sm border border-border/60"
               : "text-muted-foreground hover:text-foreground"
