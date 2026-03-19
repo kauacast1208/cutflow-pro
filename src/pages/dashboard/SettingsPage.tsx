@@ -30,7 +30,8 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [services, setServices] = useState<any[]>([]);
   const [professionals, setProfessionals] = useState<any[]>([]);
-  const [blockedTimes, setBlockedTimes] = useState<any[]>([]);
+  const [themePrimaryColor, setThemePrimaryColor] = useState("#10b981");
+  const [themeMode, setThemeMode] = useState("auto");
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
