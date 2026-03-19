@@ -86,6 +86,8 @@ export default function SettingsPage() {
     setAllowReschedule(barbershop.allow_online_reschedule ?? true);
     setCancelLimit(barbershop.cancellation_limit_hours || 2);
     setAutoConfirm(barbershop.auto_confirm ?? true);
+    setThemePrimaryColor((barbershop as any).theme_primary_color || "#10b981");
+    setThemeMode((barbershop as any).theme_mode || "auto");
     loadServices();
     loadProfessionals();
     loadBlockedTimes();
