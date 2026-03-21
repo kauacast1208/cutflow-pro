@@ -17,6 +17,7 @@ import WhatsAppSettingsPanel from "@/components/admin/WhatsAppSettingsPanel";
 import GoogleCalendarSettings from "@/components/settings/GoogleCalendarSettings";
 import LogoUpload from "@/components/settings/LogoUpload";
 import { barbershopSettingsSchema, buildBarbershopUpdate, getBarbershopErrorMessage } from "@/lib/barbershop";
+import { buildPublicBookingUrl } from "@/lib/publicBooking";
 
 const fadeUp = (i: number) => ({
   initial: { opacity: 0, y: 14 },
@@ -251,7 +252,7 @@ export default function SettingsPage() {
     loadBlockedTimes(); toast({ title: "Bloqueio removido." });
   };
 
-  const bookingUrl = barbershop ? `${window.location.origin}/b/${barbershop.slug}` : "";
+  const bookingUrl = barbershop?.slug ? buildPublicBookingUrl(barbershop.slug) : "";
 
   if (!barbershop) {
     return (

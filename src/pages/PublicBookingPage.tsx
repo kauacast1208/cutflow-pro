@@ -21,6 +21,7 @@ import { LocationMap } from "@/components/booking/LocationMap";
 import { useBookingSlots } from "@/hooks/useBookingSlots";
 import { sendBookingEmail } from "@/lib/email";
 import { generateTimeSlots } from "@/lib/booking";
+import { fetchPublicBookingPageData, normalizePublicBookingSlug } from "@/lib/publicBooking";
 
 type Step = 0 | 1 | 2 | 3 | 4;
 
@@ -50,6 +51,7 @@ export default function PublicBookingPage() {
   const [availability, setAvailability] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   const [step, setStep] = useState<Step>(0);
   const [direction, setDirection] = useState(1); // 1 = forward, -1 = back
@@ -82,34 +84,48 @@ export default function PublicBookingPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!slug) return;
-      const { data: shop } = await (supabase as any)
-        .from("barbershops_public")
-        .select("*")
-        .eq("slug", slug)
-        .maybeSingle();
+      const normalizedSlug = slug ? normalizePublicBookingSlug(slug) : "";
 
-      if (!shop) {
+      if (!normalizedSlug) {
         setNotFound(true);
+        setLoadError(false);
         setLoading(false);
         return;
       }
 
-      setBarbershop(shop);
+      setLoading(true);
+      setNotFound(false);
+      setLoadError(false);
 
-      const proIds = (await (supabase as any).from("professionals_public").select("id").eq("barbershop_id", shop.id).eq("active", true)).data?.map((p: any) => p.id) || [];
+      try {
+        const data = await fetchPublicBookingPageData(normalizedSlug);
 
-      const [servRes, proRes, availRes] = await Promise.all([
-        supabase.from("services").select("*").eq("barbershop_id", shop.id).eq("active", true).order("sort_order"),
-        (supabase as any).from("professionals_public").select("*").eq("barbershop_id", shop.id).eq("active", true),
-        supabase.from("professional_availability").select("*").in("professional_id", proIds),
-      ]);
+        if (data === null) {
+          setNotFound(true);
+          setBarbershop(null);
+          setServices([]);
+          setProfessionals([]);
+          setAvailability([]);
+          setLoading(false);
+          return;
+        }
 
-      setServices(servRes.data || []);
-      setProfessionals(proRes.data || []);
-      setAvailability(availRes.data || []);
-      setLoading(false);
+        setBarbershop(data.barbershop);
+        setServices(data.services);
+        setProfessionals(data.professionals);
+        setAvailability(data.availability);
+      } catch (error) {
+        console.error("Failed to load public booking page", { slug: normalizedSlug, error });
+        setLoadError(true);
+        setBarbershop(null);
+        setServices([]);
+        setProfessionals([]);
+        setAvailability([]);
+      } finally {
+        setLoading(false);
+      }
     };
+
     fetchData();
   }, [slug]);
 
@@ -350,6 +366,25 @@ export default function PublicBookingPage() {
           </div>
           <h1 className="text-2xl font-extrabold mb-2">Barbearia nao encontrada</h1>
           <p className="text-muted-foreground mb-8">O link que voce acessou nao corresponde a nenhuma barbearia cadastrada.</p>
+          <Link to="/"><Button variant="outline" className="rounded-xl h-11 px-6">Voltar ao inicio</Button></Link>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (loadError || !barbershop) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center max-w-md"
+        >
+          <div className="h-16 w-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-5">
+            <AlertCircle className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h1 className="text-2xl font-extrabold mb-2">Nao foi possivel carregar</h1>
+          <p className="text-muted-foreground mb-8">Ocorreu um erro ao carregar esta pagina de agendamento.</p>
           <Link to="/"><Button variant="outline" className="rounded-xl h-11 px-6">Voltar ao inicio</Button></Link>
         </motion.div>
       </div>
