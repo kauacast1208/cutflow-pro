@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Phone, Mail, Gift, DollarSign, Calendar, Star, Scissors, Clock, X } from "lucide-react";
+import { Phone, Mail, Gift, DollarSign, Calendar, Star, Scissors, Clock, X, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -10,6 +10,8 @@ export interface ClientDetailData {
   appointments: any[];
   totalSpent: number;
   visitCount: number;
+  averageTicket: number;
+  firstVisit: string | null;
   lastVisit: string | null;
   nextAppointment: any | null;
   preferredPro: string | null;
@@ -40,7 +42,6 @@ export function ClientDetailPanel({ detail, onClose, onEdit }: Props) {
         className="relative w-full max-w-md bg-card border-l border-border shadow-2xl overflow-y-auto"
       >
         <div className="p-6 space-y-6">
-          {/* Header */}
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center text-lg font-bold text-primary">
@@ -48,7 +49,14 @@ export function ClientDetailPanel({ detail, onClose, onEdit }: Props) {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-foreground">{detail.client.name}</h3>
-                <ClientStatusBadge type={detail.status.type} />
+                <div className="flex items-center gap-2 mt-1">
+                  <ClientStatusBadge type={detail.status.type} />
+                  {typeof detail.status.daysSinceLast === "number" && detail.status.daysSinceLast > 0 && (
+                    <span className="text-[11px] text-muted-foreground">
+                      {detail.status.daysSinceLast} dias desde a ultima visita
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -61,7 +69,6 @@ export function ClientDetailPanel({ detail, onClose, onEdit }: Props) {
             </div>
           </div>
 
-          {/* Contact info */}
           <div className="rounded-xl border border-border/60 p-4 space-y-2">
             {detail.client.phone && (
               <div className="flex items-center gap-2 text-sm">
@@ -85,13 +92,14 @@ export function ClientDetailPanel({ detail, onClose, onEdit }: Props) {
             )}
           </div>
 
-          {/* Stats grid */}
           <div className="grid grid-cols-2 gap-3">
             {[
               { label: "Total gasto", value: `R$ ${detail.totalSpent.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, icon: DollarSign },
+              { label: "Ticket medio", value: detail.visitCount > 0 ? `R$ ${detail.averageTicket.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "—", icon: AlertTriangle },
               { label: "Visitas", value: String(detail.visitCount), icon: Calendar },
+              { label: "Primeira visita", value: detail.firstVisit ? format(new Date(detail.firstVisit + "T12:00:00"), "dd/MM/yyyy") : "—", icon: Clock },
               { label: "Profissional favorito", value: detail.preferredPro || "—", icon: Star },
-              { label: "Serviço favorito", value: detail.topService || "—", icon: Scissors },
+              { label: "Servico favorito", value: detail.topService || "—", icon: Scissors },
             ].map((s, i) => (
               <div key={i} className="rounded-xl border border-border/60 p-3">
                 <div className="flex items-center gap-1.5 mb-1">
@@ -103,21 +111,10 @@ export function ClientDetailPanel({ detail, onClose, onEdit }: Props) {
             ))}
           </div>
 
-          {/* Ticket médio */}
-          {detail.visitCount > 0 && (
-            <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
-              <span className="text-xs text-muted-foreground">Ticket médio</span>
-              <span className="text-xs font-medium text-foreground">
-                R$ {(detail.totalSpent / detail.visitCount).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-              </span>
-            </div>
-          )}
-
-          {/* Last / Next visit */}
           <div className="space-y-2">
             {detail.lastVisit && (
               <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
-                <span className="text-xs text-muted-foreground">Última visita</span>
+                <span className="text-xs text-muted-foreground">Ultima visita</span>
                 <span className="text-xs font-medium text-foreground">
                   {format(new Date(detail.lastVisit + "T12:00:00"), "dd/MM/yyyy")}
                 </span>
@@ -125,27 +122,25 @@ export function ClientDetailPanel({ detail, onClose, onEdit }: Props) {
             )}
             {detail.nextAppointment && (
               <div className="flex items-center justify-between rounded-lg bg-primary/5 border border-primary/10 px-3 py-2">
-                <span className="text-xs text-primary font-medium">Próximo agendamento</span>
+                <span className="text-xs text-primary font-medium">Proximo agendamento</span>
                 <span className="text-xs font-medium text-foreground">
-                  {format(new Date(detail.nextAppointment.date + "T12:00:00"), "dd/MM/yyyy")} às {detail.nextAppointment.start_time?.slice(0, 5)}
+                  {format(new Date(detail.nextAppointment.date + "T12:00:00"), "dd/MM/yyyy")} as {detail.nextAppointment.start_time?.slice(0, 5)}
                 </span>
               </div>
             )}
           </div>
 
-          {/* Notes */}
           {detail.client.notes && (
             <div className="rounded-xl border border-border/60 p-4">
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Observações</span>
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Observacoes</span>
               <p className="text-sm text-foreground mt-1">{detail.client.notes}</p>
             </div>
           )}
 
-          {/* Appointment history */}
           <div>
             <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
-              Histórico de atendimentos
+              Historico de atendimentos
             </h4>
             {detail.appointments.length === 0 ? (
               <p className="text-xs text-muted-foreground">Nenhum atendimento registrado.</p>

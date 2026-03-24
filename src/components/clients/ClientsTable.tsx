@@ -28,9 +28,9 @@ export function ClientsTable({ clients, onSelect }: Props) {
               <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-muted-foreground p-4">Cliente</th>
               <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-muted-foreground p-4 hidden sm:table-cell">Contato</th>
               <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-muted-foreground p-4">Status</th>
-              <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-muted-foreground p-4 hidden md:table-cell">Visitas</th>
-              <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-muted-foreground p-4 hidden lg:table-cell">Total gasto</th>
-              <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-muted-foreground p-4 hidden lg:table-cell">Aniversário</th>
+              <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-muted-foreground p-4 hidden md:table-cell">Valor</th>
+              <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-muted-foreground p-4 hidden lg:table-cell">Historico</th>
+              <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-muted-foreground p-4 hidden xl:table-cell">Preferencia</th>
               <th className="p-4 w-10"></th>
             </tr>
           </thead>
@@ -63,17 +63,34 @@ export function ClientsTable({ clients, onSelect }: Props) {
                 </td>
                 <td className="p-4"><ClientStatusBadge type={c.status.type} /></td>
                 <td className="p-4 hidden md:table-cell">
-                  <span className="text-xs text-muted-foreground">{c.status.count > 0 ? `${c.status.count} visitas` : "—"}</span>
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-medium text-foreground">
+                      {c.status.totalSpent > 0 ? `R$ ${c.status.totalSpent.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "—"}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {c.status.count > 0
+                        ? `${c.status.count} visita${c.status.count > 1 ? "s" : ""} · ticket R$ ${c.status.averageTicket.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+                        : "Sem historico"}
+                    </p>
+                  </div>
                 </td>
                 <td className="p-4 hidden lg:table-cell">
-                  <span className="text-xs font-medium text-foreground">
-                    {c.status.totalSpent > 0 ? `R$ ${c.status.totalSpent.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "—"}
-                  </span>
+                  <div className="space-y-0.5">
+                    <p className="text-xs text-muted-foreground">
+                      Primeira: {c.status.firstDate ? format(new Date(c.status.firstDate + "T12:00:00"), "dd/MM/yyyy") : "—"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Ultima: {c.status.lastDate ? format(new Date(c.status.lastDate + "T12:00:00"), "dd/MM/yyyy") : "—"}
+                    </p>
+                  </div>
                 </td>
-                <td className="p-4 hidden lg:table-cell">
-                  <span className="text-xs text-muted-foreground">
-                    {c.birth_date ? format(new Date(c.birth_date + "T12:00:00"), "dd/MM") : "—"}
-                  </span>
+                <td className="p-4 hidden xl:table-cell">
+                  <div className="space-y-0.5">
+                    <p className="text-xs text-muted-foreground">{c.status.preferredService || "Sem preferencia"}</p>
+                    <p className="text-[11px] text-muted-foreground/70">
+                      {c.birth_date ? `Aniversario ${format(new Date(c.birth_date + "T12:00:00"), "dd/MM")}` : "Sem aniversario"}
+                    </p>
+                  </div>
                 </td>
                 <td className="p-4">
                   <ChevronRight className="h-4 w-4 text-muted-foreground/40" />

@@ -23,6 +23,7 @@ import { WelcomeModal } from "@/components/dashboard/WelcomeModal";
 import { useNavigate } from "react-router-dom";
 import WeeklySchedule from "@/components/admin/WeeklySchedule";
 import { motion } from "framer-motion";
+import { computeDashboardBusinessMetrics } from "@/lib/clientAnalytics";
 
 const PIE_COLORS = [
   "hsl(var(--primary))",
@@ -54,21 +55,22 @@ const fadeUp = (i: number) => ({
 });
 
 const tooltipStyle = {
-  background: "hsl(var(--card))",
-  border: "1px solid hsl(var(--border))",
-  borderRadius: "12px",
+  background: "rgba(11, 18, 32, 0.92)",
+  border: "1px solid rgba(148, 163, 184, 0.16)",
+  borderRadius: "16px",
   fontSize: 12,
-  color: "hsl(var(--foreground))",
-  boxShadow: "0 8px 32px -4px rgba(0,0,0,0.3)",
+  color: "#e5eefb",
+  boxShadow: "0 18px 48px -18px rgba(0,0,0,0.72)",
 };
 
 /* ── Section Card wrapper ── */
 function SectionCard({ children, className = "", ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={`rounded-2xl border border-border/50 bg-card p-4 sm:p-7 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_8px_24px_-8px_rgba(0,0,0,0.12)] transition-all duration-300 hover:border-border/70 hover:shadow-[0_2px_6px_rgba(0,0,0,0.1),0_12px_32px_-8px_rgba(0,0,0,0.15)] ${className}`}
+      className={`relative overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,_rgba(15,23,42,0.9),_rgba(8,15,28,0.92))] p-5 shadow-[0_20px_60px_-28px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.04)] transition-all duration-300 hover:border-emerald-400/18 hover:shadow-[0_24px_70px_-28px_rgba(0,0,0,0.92),0_0_0_1px_rgba(16,185,129,0.08)] sm:p-7 ${className}`}
       {...props}
     >
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
       {children}
     </div>
   );
@@ -77,9 +79,9 @@ function SectionCard({ children, className = "", ...props }: React.HTMLAttribute
 function SectionTitle({ icon: Icon, children, action }: { icon: React.ElementType; children: React.ReactNode; action?: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between mb-6">
-      <h3 className="text-sm font-bold text-foreground flex items-center gap-2.5" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-        <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center shadow-[0_0_0_1px_hsl(var(--primary)/0.08)]">
-          <Icon className="h-4 w-4 text-primary" />
+      <h3 className="flex items-center gap-3 text-sm font-bold text-slate-100" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-400/10 bg-emerald-400/10 shadow-[0_0_0_1px_rgba(16,185,129,0.06),0_10px_30px_-18px_rgba(16,185,129,0.7)]">
+          <Icon className="h-4 w-4 text-emerald-300" />
         </div>
         {children}
       </h3>
@@ -91,11 +93,11 @@ function SectionTitle({ icon: Icon, children, action }: { icon: React.ElementTyp
 function EmptyState({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description?: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
-      <div className="h-14 w-14 rounded-2xl bg-muted/40 flex items-center justify-center mb-4 shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)]">
-        <Icon className="h-6 w-6 text-muted-foreground/30" />
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/8 bg-white/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+        <Icon className="h-6 w-6 text-slate-500" />
       </div>
-      <p className="text-sm font-semibold text-muted-foreground/70">{title}</p>
-      {description && <p className="text-xs text-muted-foreground/50 mt-1.5 max-w-[220px] leading-relaxed">{description}</p>}
+      <p className="text-sm font-semibold text-slate-200">{title}</p>
+      {description && <p className="mt-1.5 max-w-[220px] text-xs leading-relaxed text-slate-400">{description}</p>}
     </div>
   );
 }
@@ -115,6 +117,7 @@ export default function DashboardHome() {
   const [weekAppts, setWeekAppts] = useState<any[]>([]);
   const [clientCount, setClientCount] = useState(0);
   const [clients, setClients] = useState<any[]>([]);
+  const [allAppointments, setAllAppointments] = useState<any[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
   const [monthAppts, setMonthAppts] = useState<any[]>([]);
   const [prevMonthAppts, setPrevMonthAppts] = useState<any[]>([]);
@@ -158,7 +161,9 @@ export default function DashboardHome() {
         .eq("barbershop_id", barbershop.id).gte("date", monthStart).lte("date", monthEnd),
       supabase.from("appointments").select("*, services(name, price)")
         .eq("barbershop_id", barbershop.id).gte("date", prevMonthStart).lte("date", prevMonthEnd),
-    ]).then(([apptRes, periodRes, prevRes, clientRes, weekRes, monthRes, prevMonthRes]) => {
+      supabase.from("appointments").select("*, services(name, price), professionals(name), cancellation_reason")
+        .eq("barbershop_id", barbershop.id),
+    ]).then(([apptRes, periodRes, prevRes, clientRes, weekRes, monthRes, prevMonthRes, allApptRes]) => {
       setTodayAppts(apptRes.data || []);
       setPeriodAppts(periodRes.data || []);
       setPrevPeriodAppts(prevRes.data || []);
@@ -167,6 +172,7 @@ export default function DashboardHome() {
       setWeekAppts(weekRes.data || []);
       setMonthAppts(monthRes.data || []);
       setPrevMonthAppts(prevMonthRes.data || []);
+      setAllAppointments(allApptRes.data || []);
       setPendingCount((apptRes.data || []).filter(a => a.status === "scheduled").length);
       setLoading(false);
     });
@@ -193,6 +199,12 @@ export default function DashboardHome() {
 
   const ticket = completed.length > 0 ? revenue / completed.length : 0;
   const todayRevenue = todayAppts.reduce((s, a) => s + Number(a.price || 0), 0);
+  const businessMetrics = useMemo(() => computeDashboardBusinessMetrics({
+    appointments: allAppointments,
+    clients,
+    openingTime: barbershop?.opening_time,
+    closingTime: barbershop?.closing_time,
+  }), [allAppointments, clients, barbershop?.opening_time, barbershop?.closing_time]);
 
   const { returningClients, newClients } = useMemo(() => {
     const clientAppts: Record<string, number> = {};
@@ -208,6 +220,7 @@ export default function DashboardHome() {
     });
     return { returningClients: returning, newClients: newC };
   }, [completed]);
+
 
   const upcomingToday = useMemo(() => {
     const now = format(new Date(), "HH:mm");
@@ -258,6 +271,21 @@ export default function DashboardHome() {
       .slice(0, 6)
       .map(([name, value]) => ({ name, value }));
   }, [completed]);
+
+  const totalUniqueClientsInPeriod = returningClients + newClients;
+  const returnRate = totalUniqueClientsInPeriod > 0 ? (returningClients / totalUniqueClientsInPeriod) * 100 : 0;
+  const avgDailyRevenue = revenueChartData.length > 0
+    ? revenueChartData.reduce((sum, item) => sum + item.revenue, 0) / revenueChartData.length
+    : 0;
+  const bestRevenueDay = revenueChartData.reduce<{ date: string; revenue: number } | null>((best, item) => {
+    if (!best || item.revenue > best.revenue) {
+      return { date: item.date, revenue: item.revenue };
+    }
+    return best;
+  }, null);
+  const topServiceShare = servicePieData.length > 0 && completed.length > 0
+    ? (servicePieData[0].value / completed.length) * 100
+    : 0;
 
   const proPerfData = useMemo(() => {
     const map: Record<string, { name: string; revenue: number; count: number }> = {};
@@ -381,13 +409,13 @@ export default function DashboardHome() {
   }, [weekAppts]);
 
   const PeriodFilter = () => (
-    <div className="flex items-center gap-0.5 rounded-xl border border-border/60 bg-muted/30 p-0.5 sm:p-1">
+    <div className="flex items-center gap-1 rounded-2xl border border-white/10 bg-white/[0.04] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
       {periodOptions.map(opt => (
         <button key={opt.value} onClick={() => setPeriod(opt.value)}
-          className={`px-3 sm:px-3.5 py-2 sm:py-1.5 text-[11px] sm:text-xs font-medium rounded-lg transition-all duration-200 min-h-[36px] ${
+          className={`min-h-[38px] rounded-xl px-3 py-2 text-[11px] font-semibold transition-all duration-200 sm:px-3.5 sm:text-xs ${
             period === opt.value
-              ? "bg-card text-foreground shadow-sm border border-border/60"
-              : "text-muted-foreground hover:text-foreground"
+              ? "border border-emerald-400/20 bg-[linear-gradient(135deg,_rgba(16,185,129,0.16),_rgba(15,118,110,0.08))] text-white shadow-[0_10px_28px_-16px_rgba(16,185,129,0.7)]"
+              : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-100"
           }`}
         >{opt.label}</button>
       ))}
@@ -399,38 +427,38 @@ export default function DashboardHome() {
     label: string; value: string; change?: string | null; changePositive?: boolean; icon: React.ElementType; sub?: string; idx: number; accent?: string;
   }) => (
     <motion.div {...fadeUp(idx)}
-      className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card p-4 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_8px_24px_-8px_rgba(0,0,0,0.12)] transition-all duration-300 hover:border-border/70 hover:shadow-[0_2px_6px_rgba(0,0,0,0.1),0_12px_32px_-8px_rgba(0,0,0,0.15)]"
+      className="group relative overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,_rgba(15,23,42,0.92),_rgba(8,15,28,0.95))] p-5 shadow-[0_22px_60px_-28px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-emerald-400/18 hover:shadow-[0_28px_70px_-30px_rgba(0,0,0,0.98),0_0_0_1px_rgba(16,185,129,0.06)] sm:p-6"
     >
-      {/* Subtle top accent line */}
-      <div className={`absolute top-0 left-0 right-0 h-[2px] ${accent || "bg-primary/40"} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.14),_transparent_32%)] opacity-80" />
+      <div className={`absolute inset-x-0 top-0 h-px ${accent || "bg-emerald-400/40"} opacity-80`} />
 
-      <div className="relative flex items-start justify-between gap-2 sm:gap-3">
-        <div className="space-y-1.5 sm:space-y-2.5 min-w-0 flex-1">
-          <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.08em] sm:tracking-[0.1em] text-muted-foreground/60 leading-tight">{label}</p>
-          <p className="text-xl sm:text-[32px] font-extrabold tracking-tight text-foreground leading-none" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      <div className="relative flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1 space-y-2.5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400/90">{label}</p>
+          <p className="text-[28px] font-extrabold leading-none tracking-tight text-white sm:text-[36px]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             {loading ? <Skeleton className="h-6 sm:h-8 w-16 sm:w-28" /> : value}
           </p>
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap pt-0.5">
+          <div className="flex flex-wrap items-center gap-2 pt-0.5">
             {change && (
-              <span className={`inline-flex items-center gap-0.5 text-[9px] sm:text-[11px] font-bold px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg ${
-                changePositive ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"
+              <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold ${
+                changePositive ? "bg-emerald-400/10 text-emerald-300" : "bg-rose-500/10 text-rose-300"
               }`}>
                 {changePositive ? <ArrowUpRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" /> : <ArrowDownRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" />}
                 {change}
               </span>
             )}
-            {sub && <p className="text-[9px] sm:text-[11px] text-muted-foreground/50 leading-tight">{sub}</p>}
+            {sub && <p className="text-[11px] leading-tight text-slate-400">{sub}</p>}
           </div>
         </div>
-        <div className="h-9 w-9 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-primary/[0.06] flex items-center justify-center shrink-0 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
-          <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary/60" />
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/8 bg-white/[0.05] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:h-14 sm:w-14">
+          <Icon className="h-5 w-5 text-emerald-300/90 sm:h-6 sm:w-6" />
         </div>
       </div>
     </motion.div>
   );
 
   return (
-    <div className="space-y-5 sm:space-y-8 pb-28 sm:pb-8 px-0.5 sm:px-0">
+    <div className="space-y-6 px-0.5 pb-28 text-slate-100 sm:space-y-8 sm:px-0 sm:pb-8">
       <WelcomeModal />
 
       {/* Trial Banner - urgent */}
@@ -450,32 +478,38 @@ export default function DashboardHome() {
       <OnboardingChecklist />
 
       {/* ── Header with barbershop identity ── */}
-      <div className="flex flex-col gap-4 sm:gap-4">
+      <div className="flex flex-col gap-5 rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,_rgba(15,23,42,0.84),_rgba(8,15,28,0.92))] p-5 shadow-[0_24px_70px_-30px_rgba(0,0,0,0.98)] sm:gap-5 sm:p-7">
         <div className="flex items-start gap-3 sm:gap-3.5">
           {barbershop?.logo_url ? (
             <img
               src={barbershop.logo_url}
               alt={barbershop.name || ""}
-              className="h-11 w-11 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl object-cover border border-border/40 shadow-sm shrink-0"
+              className="h-11 w-11 shrink-0 rounded-xl border border-white/10 object-cover shadow-[0_14px_32px_-18px_rgba(0,0,0,0.95)] sm:h-14 sm:w-14 sm:rounded-2xl"
             />
           ) : (
-            <div className="h-11 w-11 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-              <Scissors className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-emerald-400/15 bg-emerald-400/10 sm:h-14 sm:w-14 sm:rounded-2xl">
+              <Scissors className="h-5 w-5 text-emerald-300 sm:h-6 sm:w-6" />
             </div>
           )}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-lg sm:text-[28px] font-extrabold tracking-tight text-foreground leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              <span className="inline-flex items-center rounded-full border border-emerald-400/15 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-300">
+                Control Center
+              </span>
+              <h2 className="text-lg sm:text-[28px] font-extrabold tracking-tight text-white leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                 {greeting}, {userName}
               </h2>
               {isTrial && daysRemaining !== null && daysRemaining > 3 && (
-                <Badge variant="secondary" className="bg-primary/8 text-primary border-primary/15 text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 gap-1 rounded-md sm:rounded-lg">
+                <Badge variant="secondary" className="border-0 bg-white/8 px-1.5 py-0.5 text-[9px] font-semibold text-slate-300 sm:rounded-lg sm:px-2 sm:text-[10px]">
                   <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                   Trial: {daysRemaining}d
                 </Badge>
               )}
             </div>
-            <p className="text-[11px] sm:text-sm text-muted-foreground/70 mt-0.5 truncate">
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
+              Visao executiva do {barbershop?.name || "CutFlow"} com foco em faturamento, ocupacao e retencao.
+            </p>
+            <p className="mt-1 truncate text-[11px] uppercase tracking-[0.14em] text-slate-500 sm:text-sm">
               {barbershop?.name ? `${barbershop.name} · ` : ""}{format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}
             </p>
           </div>
@@ -483,10 +517,10 @@ export default function DashboardHome() {
         <div className="flex items-center gap-2 flex-wrap">
           <PeriodFilter />
           <div className="flex items-center gap-2 ml-auto sm:ml-0">
-            <Button variant="outline" size="sm" onClick={copyLink} className="hidden sm:flex rounded-xl text-xs h-8 border-border/60">
+            <Button variant="outline" size="sm" onClick={copyLink} className="hidden h-10 rounded-2xl border-white/10 bg-white/[0.04] text-xs text-slate-200 hover:bg-white/[0.08] sm:flex">
               <Copy className="h-3 w-3 mr-1.5" /> Copiar link
             </Button>
-            <Button size="sm" onClick={() => navigate("/dashboard/agenda")} className="rounded-xl text-xs h-9 sm:h-8 px-3 sm:px-3">
+            <Button size="sm" onClick={() => navigate("/dashboard/agenda")} className="h-10 rounded-2xl border border-emerald-400/20 bg-[linear-gradient(135deg,_rgba(16,185,129,0.24),_rgba(15,118,110,0.12))] px-4 text-xs text-white hover:bg-[linear-gradient(135deg,_rgba(16,185,129,0.32),_rgba(15,118,110,0.18))]">
               <Plus className="h-3.5 w-3.5 sm:h-3 sm:w-3 mr-1" /> <span className="hidden sm:inline">Novo agendamento</span><span className="sm:hidden">Novo</span>
             </Button>
           </div>
@@ -495,51 +529,66 @@ export default function DashboardHome() {
 
       {/* Pending alert */}
       {pendingCount > 0 && (
-        <motion.div {...fadeUp(1)} className="flex items-center gap-3 rounded-xl border border-amber-500/15 bg-amber-500/5 px-4 py-3">
-          <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
+        <motion.div {...fadeUp(1)} className="flex items-center gap-3 rounded-[24px] border border-amber-400/14 bg-amber-400/8 px-4 py-3.5 shadow-[0_18px_50px_-24px_rgba(0,0,0,0.9)]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-400/12">
             <Bell className="h-4 w-4 text-amber-600 dark:text-amber-400" />
           </div>
-          <p className="text-sm text-foreground flex-1">
+          <p className="flex-1 text-sm text-slate-200">
             <span className="font-semibold">{pendingCount} agendamento{pendingCount > 1 ? "s" : ""}</span>{" "}
             <span className="text-muted-foreground">aguardando confirmação</span>
           </p>
-          <Button size="sm" variant="outline" className="rounded-lg text-xs h-8 border-border/60" onClick={() => navigate("/dashboard/agenda")}>Ver agenda</Button>
+          <Button size="sm" variant="outline" className="h-9 rounded-xl border-white/10 bg-white/[0.04] text-xs text-slate-200 hover:bg-white/[0.08]" onClick={() => navigate("/dashboard/agenda")}>Ver agenda</Button>
         </motion.div>
       )}
 
       {/* ── KPI CARDS ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 xl:gap-5">
         <MetricCard
-          idx={0} label="Atendimentos hoje" icon={Calendar}
-          value={String(todayAppts.length)}
-          sub={`R$ ${todayRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 0 })} faturado`}
-        />
-        <MetricCard
-          idx={1} label="Atendimentos no mês" icon={BarChart3}
-          value={String(monthAppts.filter(a => a.status !== "cancelled").length)}
-          sub={`${monthAppts.filter(a => a.status === "cancelled").length} cancelamento${monthAppts.filter(a => a.status === "cancelled").length !== 1 ? "s" : ""}`}
-        />
-        <MetricCard
-          idx={2} label="Faturamento mensal" icon={DollarSign}
-          value={`R$ ${monthRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`}
+          idx={0} label="Faturamento do mês" icon={DollarSign}
+          value={`R$ ${businessMetrics.monthlyRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`}
           change={monthRevenueChange ? `${Number(monthRevenueChange) >= 0 ? "+" : ""}${monthRevenueChange}%` : null}
           changePositive={monthRevenueChange ? Number(monthRevenueChange) >= 0 : true}
+          sub={`Media diaria: R$ ${avgDailyRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
         />
         <MetricCard
-          idx={3} label="Novos clientes" icon={Users}
-          value={String(newClients)}
-          sub="no período"
+          idx={1} label="Agendamentos hoje" icon={Calendar}
+          value={String(businessMetrics.appointmentsToday)}
+          sub={`${todayAppts.length} na agenda atual`}
+          accent="bg-sky-400/40"
         />
         <MetricCard
-          idx={4} label="Clientes recorrentes" icon={Heart}
-          value={String(returningClients)}
-          sub="2+ visitas"
+          idx={2} label="Agendamentos na semana" icon={Clock}
+          value={String(businessMetrics.appointmentsThisWeek)}
+          sub="Volume confirmado ou previsto"
+          accent="bg-blue-400/40"
+        />
+        <MetricCard
+          idx={3} label="Novos clientes do mês" icon={Users}
+          value={String(businessMetrics.newClientsThisMonth)}
+          sub={`${clientCount} clientes cadastrados`}
           accent="bg-rose-400/40"
         />
         <MetricCard
+          idx={4} label="Clientes recorrentes" icon={Heart}
+          value={String(businessMetrics.returningClientsCount)}
+          sub={`${returnRate.toFixed(0)}% de retorno`}
+        />
+        <MetricCard
           idx={5} label="Ticket médio" icon={TrendingUp}
-          value={`R$ ${ticket.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
-          sub="por atendimento"
+          value={`R$ ${businessMetrics.averageTicket.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+          sub="Baseado no mês atual"
+        />
+        <MetricCard
+          idx={6} label="Ocupação" icon={BarChart3}
+          value={businessMetrics.occupancyRate !== null ? `${businessMetrics.occupancyRate}%` : "—"}
+          sub="Capacidade ocupada nesta semana"
+        />
+        <MetricCard
+          idx={7} label="Cancelamentos / falta" icon={AlertTriangle}
+          value={String(businessMetrics.cancellationCount)}
+          sub={businessMetrics.noShowTracked
+            ? `${businessMetrics.noShowCount} marcados como falta via motivo`
+            : "Sem rastreamento real de no-show ainda"}
         />
       </div>
 
