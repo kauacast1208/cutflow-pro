@@ -22,11 +22,11 @@ export default function DashboardLayout() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full bg-[radial-gradient(circle_at_top,_hsl(163_68%_18%_/_0.12),_transparent_24%),radial-gradient(circle_at_85%_18%,_hsl(207_62%_24%_/_0.18),_transparent_20%),linear-gradient(180deg,_hsl(217_39%_12%)_0%,_hsl(218_36%_10%)_45%,_hsl(222_30%_8%)_100%)]">
         <AdminSidebar />
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           <AdminTopbar />
-          <main className="flex-1 p-4 sm:p-5 lg:p-7 bg-background overflow-auto">
+          <main className="flex-1 overflow-auto bg-transparent px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-7">
             <Outlet />
           </main>
         </div>

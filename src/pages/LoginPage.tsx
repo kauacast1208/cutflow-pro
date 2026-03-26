@@ -9,6 +9,7 @@ import { GoogleIcon } from "@/components/signup/GoogleIcon";
 import { mapLoginError, mapOAuthError } from "@/lib/authErrors";
 import { cn } from "@/lib/utils";
 import { startGoogleOAuthFlow } from "@/lib/oauth";
+import { getAuthCallbackUrl } from "@/lib/appUrl";
 import { bootstrapCurrentUserProfile, fetchUserRole, isMasterRole } from "@/lib/tenant";
 
 function AuthError({ message }: { message: string }) {
@@ -110,7 +111,7 @@ export default function LoginPage() {
       setError("");
       setDebugRawError("");
 
-      const oauthErrorMessage = await startGoogleOAuthFlow(`${window.location.origin}/auth/callback`);
+      const oauthErrorMessage = await startGoogleOAuthFlow(getAuthCallbackUrl());
 
       if (oauthErrorMessage) {
         const mappedMessage = mapOAuthError(oauthErrorMessage, "login");

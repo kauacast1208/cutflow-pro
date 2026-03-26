@@ -8,6 +8,7 @@ import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { CalendarDays, Check, Loader2, AlertCircle, Clock, Scissors } from "lucide-react";
 import { generateTimeSlots, groupSlotsByPeriod, type SlotConfig } from "@/lib/booking";
+import { BarbershopLogo } from "@/components/shared/BarbershopLogo";
 
 export default function ReschedulePage() {
   const { token } = useParams<{ token: string }>();
@@ -72,18 +73,22 @@ export default function ReschedulePage() {
         _date: dateStr,
         _professional_id: appointment.professional_id,
       }),
-      (supabase as any).from("blocked_times_public").select("*").eq("barbershop_id", barbershop.id).eq("date", dateStr),
-    ]).then(([{ data: booked }, { data: blocked }]) => {
+      (supabase as any).from("blocked_times_public").select("*").eq("barbershop_id", barbershop.id).eq("recurring", false).eq("date", dateStr),
+      (supabase as any).from("blocked_times_public").select("*").eq("barbershop_id", barbershop.id).eq("recurring", true).contains("recurring_days", [selectedDate.getDay()]),
+    ]).then(([{ data: booked }, { data: blocked }, { data: recurringBlocked }]) => {
       setAppointments((booked || []).map((s: any) => ({
         professional_id: s.professional_id,
         start_time: s.start_time,
         end_time: s.end_time,
       })));
-      setBlockedTimes((blocked || []).map((b: any) => ({
+      setBlockedTimes([...(blocked || []), ...(recurringBlocked || [])].map((b: any) => ({
         professional_id: b.professional_id,
         all_day: b.all_day,
         start_time: b.start_time,
         end_time: b.end_time,
+        date: b.date,
+        recurring: b.recurring,
+        recurring_days: b.recurring_days,
       })));
     });
   }, [selectedDate, barbershop, appointment]);
@@ -106,9 +111,10 @@ export default function ReschedulePage() {
       config,
       appointments,
       blockedTimes,
-      availability
+      availability,
+      professional
     );
-  }, [selectedDate, barbershop, service, appointment, appointments, blockedTimes, availability]);
+  }, [selectedDate, barbershop, service, appointment, appointments, blockedTimes, availability, professional]);
 
   const handleReschedule = async () => {
     if (!selectedDate || !selectedTime || !appointment || !service) return;
@@ -129,14 +135,15 @@ export default function ReschedulePage() {
     const { error } = await supabase.functions.invoke("public-booking", {
       body: {
         barbershop_id: appointment.barbershop_id,
-        service_id: appointment.service_id,
+        services: [{ id: appointment.service_id }],
         professional_id: appointment.professional_id,
         date: format(selectedDate, "yyyy-MM-dd"),
         start_time: selectedTime,
-        end_time: endTime,
         client_name: appointment.client_name,
         client_phone: appointment.client_phone,
         client_email: appointment.client_email,
+        client_notes: appointment.notes,
+        auto_confirm: barbershop?.auto_confirm,
       },
     });
 
@@ -203,13 +210,12 @@ export default function ReschedulePage() {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-xl">
         <div className="max-w-lg mx-auto flex h-14 items-center px-4 gap-3">
-          {barbershop?.logo_url ? (
-            <img src={barbershop.logo_url} className="h-10 w-10 rounded-xl object-cover border border-border" alt="" />
-          ) : (
-            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Scissors className="h-4 w-4 text-primary" />
-            </div>
-          )}
+          <BarbershopLogo
+            name={barbershop?.name}
+            logoUrl={barbershop?.logo_url}
+            className="h-10 w-10 rounded-xl border border-border"
+            fallbackClassName="rounded-xl text-sm"
+          />
           <div>
             <span className="font-bold text-sm">{barbershop?.name}</span>
             <p className="text-xs text-muted-foreground">Remarcar agendamento</p>

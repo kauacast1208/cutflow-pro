@@ -10,6 +10,7 @@ import { GoogleIcon } from "@/components/signup/GoogleIcon";
 import { mapOAuthError, mapSignupError } from "@/lib/authErrors";
 import { cn } from "@/lib/utils";
 import { startGoogleOAuthFlow } from "@/lib/oauth";
+import { getAuthCallbackUrl } from "@/lib/appUrl";
 import { bootstrapCurrentUserProfile } from "@/lib/tenant";
 
 function AuthError({ message }: { message: string }) {
@@ -56,7 +57,7 @@ export default function SignupPage() {
         password,
         options: {
           data: { full_name: fullName.trim() },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: getAuthCallbackUrl(),
         },
       });
 
@@ -130,7 +131,7 @@ export default function SignupPage() {
       setError("");
       setDebugRawError("");
 
-      const oauthErrorMessage = await startGoogleOAuthFlow(`${window.location.origin}/auth/callback`);
+      const oauthErrorMessage = await startGoogleOAuthFlow(getAuthCallbackUrl());
 
       if (oauthErrorMessage) {
         const mappedMessage = mapOAuthError(oauthErrorMessage, "signup");

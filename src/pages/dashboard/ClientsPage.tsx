@@ -81,9 +81,10 @@ export default function ClientsPage() {
   const openDetail = (client: any) => {
     const key = getClientKeyFromClient(client);
     const stat = clientStats.get(key);
-    const appointments = stat?.appointments
-      ?.slice()
-      .sort((a: any, b: any) => b.date.localeCompare(a.date)) || [];
+    const appointments = allAppointments
+      .filter((appointment) => getClientKeyFromAppointment(appointment) === key)
+      .slice()
+      .sort((a: any, b: any) => `${b.date} ${b.start_time || ""}`.localeCompare(`${a.date} ${a.start_time || ""}`));
     const today = format(new Date(), "yyyy-MM-dd");
 
     const nextAppointment = allAppointments
@@ -119,6 +120,17 @@ export default function ClientsPage() {
   const handleNewClient = () => {
     setEditingClient(null);
     setFormOpen(true);
+  };
+
+  const handleClientUpdated = (updatedClient: any) => {
+    setClients((current) => current.map((client) => (client.id === updatedClient.id ? { ...client, ...updatedClient } : client)));
+    setSelectedClient((current) => {
+      if (!current || current.client.id !== updatedClient.id) return current;
+      return {
+        ...current,
+        client: { ...current.client, ...updatedClient },
+      };
+    });
   };
 
   return (
@@ -211,7 +223,12 @@ export default function ClientsPage() {
 
       <AnimatePresence>
         {selectedClient && (
-          <ClientDetailPanel detail={selectedClient} onClose={() => setSelectedClient(null)} onEdit={handleEdit} />
+          <ClientDetailPanel
+            detail={selectedClient}
+            onClose={() => setSelectedClient(null)}
+            onEdit={handleEdit}
+            onUpdated={handleClientUpdated}
+          />
         )}
       </AnimatePresence>
 

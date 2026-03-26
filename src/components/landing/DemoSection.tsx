@@ -7,7 +7,7 @@ import {
 import { useState, useEffect, useCallback, useRef } from "react";
 import { IPhoneLockScreen } from "./IPhoneLockScreen";
 
-/* ─── Tab config (6 tabs) ─── */
+/* Tab config (6 tabs) */
 const tabs = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "agenda", label: "Agenda", icon: Calendar },
@@ -33,28 +33,106 @@ function Sidebar({ activeTab }: { activeTab: string }) {
     dashboard: "Dashboard", agenda: "Agenda", clients: "Clientes",
     crm: "CRM", reports: "Relatórios", finance: "Financeiro",
   };
+  const primaryItems = sidebarItems.slice(0, 4);
+  const opsItems = sidebarItems.slice(4);
   return (
-    <div className="hidden lg:flex flex-col w-[160px] border-r border-border/30 dark:border-white/[0.06] bg-muted/20 dark:bg-white/[0.02] py-4 px-2.5 shrink-0">
-      <div className="flex items-center gap-2 px-2 mb-4">
-        <div className="h-7 w-7 rounded-lg bg-primary flex items-center justify-center">
-          <Scissors className="h-3.5 w-3.5 text-primary-foreground" />
-        </div>
-        <span className="text-[11px] font-bold text-foreground">CutFlow</span>
-      </div>
-      <div className="space-y-0.5">
-        {sidebarItems.map((item) => (
-          <div
-            key={item.label}
-            className={`flex items-center gap-2 px-2.5 py-2 rounded-lg text-[10px] font-medium transition-colors ${
-              activeMap[activeTab] === item.label
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground"
-            }`}
-          >
-            <item.icon className="h-3.5 w-3.5" />
-            {item.label}
+    <div className="hidden lg:flex w-[160px] shrink-0 flex-col border-r border-white/[0.06] bg-[linear-gradient(180deg,rgba(7,10,16,0.99),rgba(7,10,16,0.96)_28%,rgba(5,7,12,0.99))] px-2 py-2.5">
+      <div className="rounded-[18px] border border-white/[0.07] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.012))] px-2.5 py-2.5 shadow-[0_8px_18px_rgba(2,6,23,0.16),inset_0_1px_0_rgba(255,255,255,0.04)]">
+        <div className="flex items-center gap-2.5">
+          <div className="relative flex h-8 w-8 items-center justify-center rounded-[14px] bg-[linear-gradient(135deg,hsl(var(--primary)),rgba(34,197,94,0.72))] shadow-[0_10px_22px_rgba(22,163,74,0.22)]">
+            <div className="absolute inset-[1px] rounded-[11px] bg-[linear-gradient(180deg,rgba(255,255,255,0.14),rgba(255,255,255,0.03))]" />
+            <Scissors className="relative h-3.5 w-3.5 text-white" />
           </div>
-        ))}
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/90">CutFlow</p>
+            <p className="text-[9px] text-white/42">Control center</p>
+          </div>
+        </div>
+        <div className="mt-3 rounded-[14px] border border-white/[0.06] bg-black/18 p-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[8px] uppercase tracking-[0.22em] text-white/35">Studio pulse</p>
+              <p className="text-[10px] font-semibold text-white/88">4 cadeiras em operacao</p>
+            </div>
+            <div className="rounded-full bg-primary/10 px-2 py-0.5 text-[8px] font-semibold text-primary">+18%</div>
+          </div>
+          <div className="mt-2 flex items-center justify-between rounded-xl border border-white/[0.05] bg-white/[0.02] px-2.5 py-2">
+            <div>
+              <p className="text-[8px] uppercase tracking-[0.18em] text-white/30">Hoje</p>
+              <p className="mt-1 text-[11px] font-semibold text-white/88">87 slots</p>
+            </div>
+            <div className="text-right">
+              <p className="text-[8px] uppercase tracking-[0.18em] text-white/30">No-show</p>
+              <p className="mt-1 text-[11px] font-semibold text-white/88">3.2%</p>
+            </div>
+          </div>
+        </div>
+        <div className="mt-2.5 flex items-center justify-between rounded-xl border border-white/[0.05] bg-black/16 px-2.5 py-2">
+          <div>
+            <p className="text-[8px] uppercase tracking-[0.22em] text-white/35">Status</p>
+            <p className="text-[9px] font-medium text-white/80">Operacao estavel</p>
+          </div>
+          <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_10px_rgba(34,197,94,0.45)]" />
+        </div>
+      </div>
+      <p className="mt-3.5 px-2 text-[8px] font-semibold uppercase tracking-[0.24em] text-white/28">Front office</p>
+      <div className="mt-2 space-y-1">
+        {primaryItems.map((item) => {
+          const isActive = activeMap[activeTab] === item.label;
+          return (
+            <div
+              key={item.label}
+              className={`group relative flex items-center gap-2 overflow-hidden rounded-[14px] px-2.5 py-1.5 text-[10px] font-medium transition-all duration-200 ${
+                isActive
+                  ? "border border-white/[0.08] bg-primary/[0.09] text-white shadow-[0_8px_18px_rgba(2,6,23,0.22)]"
+                  : "border border-transparent text-white/52 hover:border-white/[0.06] hover:bg-white/[0.03] hover:text-white/82"
+              }`}
+            >
+              {isActive && <div className="absolute inset-y-2 left-0 w-[3px] rounded-full bg-primary" />}
+              <div className={`flex h-6.5 w-6.5 items-center justify-center rounded-lg border ${isActive ? "border-white/[0.08] bg-black/20" : "border-white/[0.04] bg-white/[0.02]"}`}>
+                <item.icon className={`h-3.5 w-3.5 ${isActive ? "text-primary" : "text-white/55 group-hover:text-white/75"}`} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[10px]">{item.label}</p>
+                <p className="text-[8px] text-white/34">{item.label === "Dashboard" ? "Visao executiva" : item.label === "Agenda" ? "Operacao ao vivo" : item.label === "Clientes" ? "Base ativa" : "Relacionamento"}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <p className="mt-3.5 px-2 text-[8px] font-semibold uppercase tracking-[0.24em] text-white/28">Back office</p>
+      <div className="mt-2 space-y-1">
+        {opsItems.map((item) => {
+          const isActive = activeMap[activeTab] === item.label;
+          return (
+            <div
+              key={item.label}
+              className={`group flex items-center gap-2 rounded-xl border px-2.5 py-1.5 text-[10px] font-medium transition-all duration-200 ${
+                isActive
+                  ? "border-white/[0.08] bg-white/[0.06] text-white"
+                  : "border-transparent bg-transparent text-white/48 hover:border-white/[0.04] hover:bg-white/[0.02] hover:text-white/75"
+              }`}
+            >
+              <div className={`flex h-7 w-7 items-center justify-center rounded-lg border ${isActive ? "border-white/[0.08] bg-black/20" : "border-white/[0.04] bg-white/[0.02]"}`}>
+                <item.icon className={`h-3.5 w-3.5 ${isActive ? "text-primary" : "text-white/52 group-hover:text-white/72"}`} />
+              </div>
+              <span className="truncate">{item.label}</span>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-auto rounded-[18px] border border-white/[0.07] bg-[linear-gradient(180deg,rgba(14,18,27,0.96),rgba(10,13,20,0.9))] p-2.5 shadow-[0_8px_18px_rgba(2,6,23,0.16),inset_0_1px_0_rgba(255,255,255,0.03)]">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[8px] uppercase tracking-[0.22em] text-white/35">AI concierge</p>
+            <p className="text-[10px] font-semibold text-white/88">12 reacoes sugeridas</p>
+          </div>
+          <div className="rounded-full bg-primary/10 px-2 py-0.5 text-[8px] font-semibold text-primary">Ativo</div>
+        </div>
+        <p className="mt-2 text-[8px] leading-relaxed text-white/50">Clientes VIP com 17 dias sem retorno. Campanha pronta.</p>
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+          <div className="h-full w-[68%] rounded-full bg-[linear-gradient(90deg,hsl(var(--primary)),hsl(268_72%_66%))]" />
+        </div>
       </div>
     </div>
   );
@@ -62,75 +140,302 @@ function Sidebar({ activeTab }: { activeTab: string }) {
 
 function TopBar() {
   return (
-    <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/30 dark:border-white/[0.06] bg-muted/10 dark:bg-white/[0.02]">
-      <div className="flex items-center gap-2 bg-muted/40 dark:bg-white/[0.04] rounded-lg px-2.5 py-1.5 text-[9px] text-muted-foreground w-32 border border-border/40 dark:border-white/[0.06]">
-        <Search className="h-3 w-3" /><span>Buscar...</span>
-      </div>
-      <div className="flex items-center gap-2.5">
-        <div className="relative">
-          <Bell className="h-3.5 w-3.5 text-muted-foreground" />
-          <div className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
+    <div className="flex items-center justify-between gap-2.5 border-b border-white/[0.06] bg-[linear-gradient(180deg,rgba(14,17,24,0.92),rgba(11,14,20,0.82))] px-3 py-1.5 backdrop-blur-xl">
+      <div className="flex min-w-0 items-center gap-2.5">
+        <div className="hidden xl:flex items-center gap-2 rounded-[14px] border border-white/[0.07] bg-white/[0.03] px-2 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-[linear-gradient(135deg,rgba(34,197,94,0.22),rgba(34,197,94,0.08))] text-primary">
+            <LayoutDashboard className="h-3.5 w-3.5" />
+          </div>
+          <div>
+            <p className="text-[8px] uppercase tracking-[0.2em] text-white/34">Workspace</p>
+            <p className="text-[10px] font-semibold text-white/88">CutFlow Prime</p>
+          </div>
         </div>
-        <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-[9px] font-bold text-primary">CS</div>
+        <div className="flex min-w-0 items-center gap-2 rounded-[14px] border border-white/[0.07] bg-white/[0.03] px-2.5 py-1.5 text-[9px] text-white/52 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+          <Search className="h-3 w-3 shrink-0" />
+          <span className="truncate">Buscar cliente ou agendamento</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="hidden lg:flex items-center gap-2 rounded-[14px] border border-white/[0.07] bg-white/[0.03] px-2 py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+          <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_12px_rgba(34,197,94,0.8)]" />
+          <span className="text-[8px] font-semibold uppercase tracking-[0.2em] text-white/55">Ao vivo</span>
+        </div>
+        <div className="hidden rounded-[14px] border border-white/[0.07] bg-white/[0.03] px-2 py-1 text-[8px] font-medium text-white/62 lg:block">11 mar 2026</div>
+        <div className="relative flex h-7.5 w-7.5 items-center justify-center rounded-[14px] border border-white/[0.07] bg-white/[0.03] text-white/65 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+          <Bell className="h-3.5 w-3.5" />
+          <div className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_10px_rgba(34,197,94,0.8)]" />
+        </div>
+        <div className="flex items-center gap-2 rounded-[14px] border border-white/[0.07] bg-white/[0.03] px-2 py-1.5 shadow-[0_6px_14px_rgba(2,6,23,0.14)]">
+          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-black/20 text-[9px] font-bold text-white">CS</div>
+          <div className="hidden sm:block">
+            <p className="text-[9px] font-semibold text-white/90">Carlos Souza</p>
+            <p className="text-[8px] text-white/45">Owner</p>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-/* ─── Dashboard ─── */
+/* Dashboard */
 function DashboardMockup() {
+  const metrics = [
+    { label: "Receita do dia", value: "R$ 8.420", sub: "76% da meta capturada ate agora", icon: TrendingUp, change: "+22%", tone: "from-primary/28 via-primary/12 to-transparent", accent: "text-primary" },
+    { label: "Ocupacao", value: "91%", sub: "32 de 35 slots confirmados", icon: Calendar, change: "+9 pts", tone: "from-[rgba(139,92,246,0.22)] via-[rgba(139,92,246,0.08)] to-transparent", accent: "text-[hsl(268_72%_66%)]" },
+    { label: "Clientes VIP", value: "18", sub: "5 prontos para reaceleracao", icon: Crown, change: "+6", tone: "from-white/16 via-white/[0.05] to-transparent", accent: "text-white" },
+  ];
+  const revenuePoints = "16,156 96,132 176,118 256,78 336,84 416,48 496,36";
+  const demandPoints = "16,168 96,148 176,136 256,112 336,96 416,86 496,72";
+  const flowBars = [
+    { label: "Walk-in", value: "24%", height: "44%" },
+    { label: "Online", value: "61%", height: "82%" },
+    { label: "Retorno", value: "38%", height: "58%" },
+    { label: "Upsell", value: "17%", height: "35%" },
+  ];
+
   return (
-    <div className="p-4 space-y-3">
-      <div>
-        <p className="text-[11px] font-semibold text-foreground">Bom dia, Carlos 👋</p>
-        <p className="text-[9px] text-muted-foreground">Terça-feira, 11 de março de 2026</p>
-      </div>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-        {[
-          { label: "Agendamentos", value: "12", icon: Calendar, change: "+3" },
-          { label: "Clientes", value: "248", icon: Users, change: "+8" },
-          { label: "Faturamento", value: "R$ 18.5k", icon: TrendingUp, change: "+12%" },
-          { label: "Presença", value: "94%", icon: Star, change: "+2%" },
-        ].map((m) => (
-          <div key={m.label} className="rounded-xl border border-border/50 dark:border-white/[0.06] bg-card dark:bg-white/[0.03] p-2.5">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="h-6 w-6 rounded-lg flex items-center justify-center bg-primary/10">
-                <m.icon className="h-3 w-3 text-primary" />
-              </div>
-              <span className="text-[8px] text-emerald-500 flex items-center font-medium"><ArrowUpRight className="h-2 w-2" />{m.change}</span>
+    <div className="space-y-2.5 p-3 text-white">
+      <div className="overflow-hidden rounded-[24px] border border-white/[0.08] bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.08),transparent_22%),radial-gradient(circle_at_top_right,rgba(139,92,246,0.06),transparent_30%),linear-gradient(180deg,rgba(16,20,30,0.98),rgba(8,11,18,0.96))] p-3.5 shadow-[0_18px_40px_rgba(2,6,23,0.24)]">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+          <div className="max-w-[480px]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.07] bg-white/[0.035] px-3 py-1">
+              <Star className="h-3.5 w-3.5 text-amber-300" />
+              <span className="text-[8px] font-semibold uppercase tracking-[0.3em] text-white/55">Executive command deck</span>
             </div>
-            <p className="text-sm font-bold text-foreground">{m.value}</p>
-            <p className="text-[8px] text-muted-foreground">{m.label}</p>
+            <h3 className="mt-3 text-[20px] font-semibold tracking-[-0.05em] text-white">Carlos, sua operacao entra na janela mais lucrativa em 42 minutos.</h3>
+            <p className="mt-2 text-[9px] leading-relaxed text-white/54">Receita projetada acima da media, fila premium aquecida e base VIP com alto potencial de reativacao. O painel abaixo prioriza crescimento de ticket, ocupacao e margem em uma unica leitura.</p>
           </div>
-        ))}
-      </div>
-      <div className="rounded-xl border border-border/50 dark:border-white/[0.06] bg-card dark:bg-white/[0.03] p-3">
-        <div className="flex items-center justify-between mb-2.5">
-          <p className="text-[10px] font-semibold text-foreground">Próximos agendamentos</p>
-          <ChevronRight className="h-3 w-3 text-muted-foreground" />
-        </div>
-        <div className="space-y-2">
-          {[
-            { time: "09:00", name: "João Silva", service: "Corte + Barba", color: "bg-primary" },
-            { time: "10:30", name: "Pedro Santos", service: "Corte", color: "bg-blue-500" },
-            { time: "11:00", name: "Lucas Oliveira", service: "Barba", color: "bg-amber-500" },
-          ].map((a) => (
-            <div key={a.time} className="flex items-center gap-2.5 p-1.5 rounded-lg">
-              <div className={`h-7 w-0.5 rounded-full ${a.color}`} />
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-medium text-foreground truncate">{a.name}</p>
-                <p className="text-[8px] text-muted-foreground">{a.service}</p>
+          <div className="grid gap-2 sm:grid-cols-2 xl:w-[270px]">
+            <div className="rounded-[18px] border border-primary/14 bg-[linear-gradient(180deg,rgba(34,197,94,0.12),rgba(34,197,94,0.035))] p-2.5 shadow-[0_8px_16px_rgba(34,197,94,0.07)]">
+              <p className="text-[8px] uppercase tracking-[0.22em] text-white/42">Meta premium</p>
+              <p className="mt-1 text-[18px] font-bold tracking-[-0.05em] text-white">R$ 18.9k</p>
+              <p className="mt-1 text-[8px] text-primary">+14% acima do plano do dia</p>
+            </div>
+            <div className="rounded-[18px] border border-white/[0.07] bg-white/[0.028] p-2.5">
+              <div className="flex items-center justify-between">
+                <p className="text-[8px] uppercase tracking-[0.22em] text-white/42">Alertas ativos</p>
+                <Bell className="h-3.5 w-3.5 text-white/42" />
               </div>
-              <span className="font-mono text-[9px] text-muted-foreground">{a.time}</span>
+              <p className="mt-1 text-[18px] font-bold tracking-[-0.05em] text-white">03</p>
+              <p className="mt-1 text-[8px] text-white/52">2 upsells quentes e 1 risco de ociosidade</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-3.5 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+          {metrics.map((m) => (
+            <div key={m.label} className="rounded-[18px] border border-white/[0.07] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.018))] p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+              <div className="flex items-start justify-between">
+                <div className={`flex h-8 w-8 items-center justify-center rounded-[16px] border border-white/[0.07] bg-gradient-to-br ${m.tone}`}>
+                  <m.icon className={`h-4 w-4 ${m.accent}`} />
+                </div>
+                <span className="flex items-center gap-0.5 rounded-full border border-white/[0.07] bg-black/18 px-2 py-1 text-[8px] font-semibold text-primary">
+                  <ArrowUpRight className="h-2.5 w-2.5" />
+                  {m.change}
+                </span>
+              </div>
+              <p className="mt-3 text-[8px] uppercase tracking-[0.22em] text-white/34">{m.label}</p>
+              <p className="mt-1 text-[19px] font-bold tracking-[-0.05em] text-white">{m.value}</p>
+              <p className="mt-1 text-[8px] leading-relaxed text-white/54">{m.sub}</p>
             </div>
           ))}
+          <div className="rounded-[18px] border border-white/[0.07] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.018))] p-2.5">
+            <div className="flex items-center justify-between">
+              <p className="text-[8px] uppercase tracking-[0.22em] text-white/42">Leverage score</p>
+              <Target className="h-4 w-4 text-primary" />
+            </div>
+            <p className="mt-2 text-[22px] font-bold tracking-[-0.07em] text-white">94</p>
+            <p className="mt-1 text-[8px] leading-relaxed text-white/54">Equipe, mix e ocupacao no melhor alinhamento da semana.</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-2 xl:grid-cols-[1.56fr_0.88fr]">
+        <div className="rounded-[24px] border border-white/[0.08] bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.07),transparent_20%),linear-gradient(180deg,rgba(13,17,24,0.98),rgba(8,11,18,0.94))] p-3 shadow-[0_18px_38px_rgba(2,6,23,0.24)]">
+          <div className="mb-2.5 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-[8px] uppercase tracking-[0.28em] text-white/34">Performance cockpit</p>
+              <p className="mt-1 text-[15px] font-semibold tracking-[-0.04em] text-white">Receita, demanda e margem em escala executiva</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full border border-primary/16 bg-primary/10 px-2.5 py-1 text-[8px] font-semibold text-primary">Forecast +27%</span>
+              <span className="rounded-full border border-white/[0.07] bg-white/[0.03] px-2.5 py-1 text-[8px] text-white/56">Agora</span>
+            </div>
+          </div>
+
+          <div className="grid gap-2.5 lg:grid-cols-[1.52fr_0.72fr]">
+            <div className="relative overflow-hidden rounded-[22px] border border-white/[0.07] bg-[linear-gradient(180deg,rgba(255,255,255,0.042),rgba(255,255,255,0.015))] px-3.5 py-3">
+              <div className="absolute -left-10 top-4 h-24 w-24 rounded-full bg-primary/7 blur-3xl" />
+              <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-[hsl(268_72%_66%/.06)] blur-3xl" />
+              <div className="relative z-10 flex items-end justify-between">
+                <div>
+                  <p className="text-[8px] uppercase tracking-[0.22em] text-white/34">Gross revenue runway</p>
+                  <p className="mt-1 text-[24px] font-bold tracking-[-0.06em] text-white">R$ 24.900</p>
+                  <p className="mt-1 text-[8px] text-white/46">Melhor leitura dos ultimos 90 dias com margem premium em alta.</p>
+                </div>
+                <div className="rounded-[18px] border border-white/[0.07] bg-black/18 px-3 py-2 text-right">
+                  <p className="text-[8px] uppercase tracking-[0.2em] text-white/34">Margem</p>
+                  <p className="mt-1 text-[14px] font-semibold text-white">31.4%</p>
+                  <p className="text-[8px] text-primary">+4.2 pts</p>
+                </div>
+              </div>
+              <svg viewBox="0 0 512 236" className="relative z-10 mt-3 h-[186px] w-full" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="dashboardRevenueFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="rgba(34,197,94,0.32)" />
+                    <stop offset="70%" stopColor="rgba(139,92,246,0.08)" />
+                    <stop offset="100%" stopColor="rgba(139,92,246,0)" />
+                  </linearGradient>
+                  <linearGradient id="dashboardRevenueStroke" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="rgba(110,231,183,0.88)" />
+                    <stop offset="50%" stopColor="rgba(34,197,94,1)" />
+                    <stop offset="100%" stopColor="rgba(168,85,247,0.58)" />
+                  </linearGradient>
+                </defs>
+                {[26, 64, 102, 140, 178, 216].map((y) => (
+                  <line key={y} x1="0" y1={y} x2="512" y2={y} stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+                ))}
+                {[42, 134, 226, 318, 410].map((x) => (
+                  <line key={x} x1={x} y1="0" x2={x} y2="236" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+                ))}
+                <polyline fill="url(#dashboardRevenueFill)" stroke="none" points={`${revenuePoints} 496,236 16,236`} />
+                <polyline fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="2" strokeDasharray="6 7" strokeLinecap="round" strokeLinejoin="round" points={demandPoints} />
+                <polyline fill="none" stroke="url(#dashboardRevenueStroke)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" points={revenuePoints} />
+                <circle cx="496" cy="36" r="7" fill="rgba(34,197,94,1)" />
+                <circle cx="496" cy="36" r="16" fill="rgba(34,197,94,0.14)" />
+              </svg>
+              <div className="relative z-10 mt-2.5 grid grid-cols-4 gap-1.5">
+                {flowBars.map((bar) => (
+                  <div key={bar.label} className="rounded-[14px] border border-white/[0.05] bg-black/16 px-2 py-1.5">
+                    <div className="flex h-10 items-end">
+                      <div className="w-full rounded-t-[14px] bg-[linear-gradient(180deg,rgba(34,197,94,0.98),rgba(34,197,94,0.48))]" style={{ height: bar.height }} />
+                    </div>
+                    <p className="mt-2 text-[8px] uppercase tracking-[0.18em] text-white/32">{bar.label}</p>
+                    <p className="text-[10px] font-semibold text-white/88">{bar.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2.5">
+              <div className="rounded-[18px] border border-white/[0.07] bg-white/[0.028] p-2.5">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-semibold text-white/92">Mix de servicos</p>
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[8px] font-semibold text-primary">High margin</span>
+                </div>
+                <div className="mt-3 space-y-2">
+                  {[
+                    { label: "Corte + Barba Signature", value: "46%", width: "46%", tone: "bg-primary" },
+                    { label: "Corte premium", value: "28%", width: "28%", tone: "bg-white/60" },
+                    { label: "Barba executive", value: "18%", width: "18%", tone: "bg-white/35" },
+                  ].map((item) => (
+                    <div key={item.label}>
+                      <div className="mb-1 flex items-center justify-between text-[8px]">
+                        <span className="text-white/46">{item.label}</span>
+                        <span className="font-semibold text-white/86">{item.value}</span>
+                      </div>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+                        <div className={`h-full rounded-full ${item.tone}`} style={{ width: item.width }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[18px] border border-white/[0.07] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.018))] p-2.5">
+                <p className="text-[8px] uppercase tracking-[0.22em] text-white/34">Ticket premium</p>
+                <p className="mt-1 text-[21px] font-bold tracking-[-0.05em] text-white">R$ 143</p>
+                <p className="mt-1 text-[8px] leading-relaxed text-white/54">Clientes premium aceitam upgrade com 82% de conversao quando entram entre 11h e 13h.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <div className="rounded-[24px] border border-white/[0.08] bg-[radial-gradient(circle_at_top_right,rgba(139,92,246,0.06),transparent_32%),linear-gradient(180deg,rgba(15,18,27,0.98),rgba(8,11,18,0.92))] p-3 shadow-[0_18px_36px_rgba(2,6,23,0.22)]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[8px] uppercase tracking-[0.24em] text-white/34">Insight rail</p>
+                <p className="mt-1 text-[13px] font-semibold text-white/92">Prioridades executivas</p>
+              </div>
+              <div className="rounded-full bg-primary/10 px-2 py-0.5 text-[8px] font-medium text-primary">Live</div>
+            </div>
+
+            <div className="mt-3 space-y-2">
+              {[
+                { title: "Janela de pico", desc: "11:30-13:00 com maior elasticidade de ticket e menor risco de ociosidade.", icon: TrendingUp, tone: "text-primary bg-primary/12" },
+                { title: "VIP em risco", desc: "3 clientes premium sem retorno ha 19 dias. Campanha de recall recomendada.", icon: Crown, tone: "text-amber-300 bg-amber-300/12" },
+                { title: "Equipe lider", desc: "Andre converte 32% dos upgrades e sustenta a maior margem da semana.", icon: Users, tone: "text-white bg-white/[0.08]" },
+              ].map((item) => (
+                <div key={item.title} className="rounded-[18px] border border-white/[0.06] bg-white/[0.03] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                  <div className="flex items-start gap-3">
+                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[18px] ${item.tone}`}>
+                      <item.icon className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold text-white/88">{item.title}</p>
+                      <p className="mt-1 text-[8px] leading-relaxed text-white/46">{item.desc}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-3 rounded-[18px] border border-white/[0.06] bg-black/16 p-2.5">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-[10px] font-semibold text-white/92">Linha de frente</p>
+                <ChevronRight className="h-3.5 w-3.5 text-white/35" />
+              </div>
+              <div className="space-y-1.5">
+                {[
+                  { time: "09:00", name: "Joao Silva", service: "Corte + Barba Signature", color: "bg-primary", meta: "VIP confirmado" },
+                  { time: "10:30", name: "Pedro Santos", service: "Corte premium", color: "bg-[hsl(268_72%_66%)]", meta: "Upsell aberto" },
+                  { time: "11:00", name: "Lucas Oliveira", service: "Barba executive", color: "bg-amber-300", meta: "Retorno em 21 dias" },
+                ].map((a) => (
+                  <div key={a.time} className="flex items-center gap-2.5 rounded-[16px] border border-white/[0.06] bg-white/[0.025] px-2.5 py-2">
+                    <div className={`h-9 w-1 rounded-full ${a.color}`} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[10px] font-medium text-white/88">{a.name}</p>
+                      <p className="text-[8px] text-white/42">{a.service}</p>
+                      <p className="text-[8px] text-white/28">{a.meta}</p>
+                    </div>
+                    <span className="font-mono text-[8px] text-white/40">{a.time}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-3 rounded-[18px] border border-white/[0.06] bg-white/[0.03] p-2.5">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-[10px] font-semibold text-white/92">Conversao e retencao</p>
+                <span className="text-[8px] font-medium text-primary">82%</span>
+              </div>
+              <div className="space-y-2">
+                {[
+                  { label: "Confirmacoes premium", value: "31", width: "82%", tone: "bg-primary" },
+                  { label: "Upsell executado", value: "12", width: "58%", tone: "bg-[hsl(268_72%_66%)]" },
+                  { label: "Retorno previsto", value: "18", width: "74%", tone: "bg-emerald-300" },
+                ].map((item) => (
+                  <div key={item.label}>
+                    <div className="mb-1 flex items-center justify-between text-[8px]">
+                      <span className="text-white/42">{item.label}</span>
+                      <span className="font-medium text-white/86">{item.value}</span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+                      <div className={`h-full rounded-full ${item.tone}`} style={{ width: item.width }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-/* ─── Agenda ─── */
+/* Agenda */
 function AgendaMockup() {
   const hours = ["08:00", "09:00", "10:00", "11:00", "12:00"];
   const apts: Record<string, { col: number; label: string; client: string }> = {
@@ -176,7 +481,7 @@ function AgendaMockup() {
   );
 }
 
-/* ─── Clients ─── */
+/* Clients */
 function ClientsMockup() {
   const clients = [
     { name: "João Silva", visits: 12, tag: "VIP", cls: "bg-amber-500/10 text-amber-500 border-amber-500/20" },
@@ -203,7 +508,7 @@ function ClientsMockup() {
   );
 }
 
-/* ─── CRM ─── */
+/* CRM */
 function CRMMockup() {
   return (
     <div className="p-4 space-y-3">
@@ -274,46 +579,53 @@ function CRMMockup() {
   );
 }
 
-/* ─── Reports with smooth chart ─── */
+/* Reports with smooth chart */
 function ReportsMockup() {
   const chartPath = "M 0 50 C 20 45, 30 25, 50 30 S 80 10, 100 15 S 130 5, 150 8 S 180 20, 200 14 S 225 10, 240 12";
   return (
-    <div className="p-4 space-y-3">
-      <p className="text-[11px] font-semibold text-foreground">Relatórios — Março 2026</p>
+    <div className="p-4 space-y-3 text-white">
+      <p className="text-[11px] font-semibold text-white/92">Relatórios — Março 2026</p>
       <div className="grid grid-cols-3 gap-2">
         {[
           { label: "Faturamento", value: "R$ 18.5k", change: "+12%" },
           { label: "Ticket médio", value: "R$ 65", change: "+R$ 5" },
           { label: "Retorno", value: "78%", change: "+3%" },
         ].map((m) => (
-          <div key={m.label} className="rounded-xl border border-border/50 dark:border-white/[0.06] bg-card dark:bg-white/[0.03] p-2.5">
-            <p className="text-[8px] text-muted-foreground mb-0.5">{m.label}</p>
-            <p className="text-sm font-bold text-foreground">{m.value}</p>
+          <div key={m.label} className="rounded-[22px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(13,17,24,0.96),rgba(8,11,18,0.88))] p-2.5 shadow-[0_16px_34px_rgba(2,6,23,0.28)]">
+            <p className="mb-0.5 text-[8px] uppercase tracking-[0.18em] text-white/34">{m.label}</p>
+            <p className="text-sm font-bold text-white">{m.value}</p>
             <span className="text-[8px] font-medium text-primary">{m.change}</span>
           </div>
         ))}
       </div>
-      <div className="rounded-xl border border-border/50 dark:border-white/[0.06] bg-card dark:bg-white/[0.03] p-3">
-        <p className="text-[10px] font-semibold text-foreground mb-2">Faturamento semanal</p>
+      <div className="rounded-[26px] border border-white/[0.08] bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.18),transparent_28%),linear-gradient(180deg,rgba(13,17,24,0.96),rgba(8,11,18,0.88))] p-3 shadow-[0_26px_56px_rgba(2,6,23,0.32)]">
+        <p className="mb-2 text-[10px] font-semibold text-white/92">Faturamento semanal</p>
         <div className="relative h-[70px]">
           <svg viewBox="0 0 240 55" className="w-full h-full" preserveAspectRatio="none">
             <defs>
               <linearGradient id="reportGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.15" />
-                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+                <stop offset="0%" stopColor="rgba(34,197,94,0.24)" />
+                <stop offset="70%" stopColor="rgba(139,92,246,0.1)" />
+                <stop offset="100%" stopColor="rgba(34,197,94,0)" />
+              </linearGradient>
+              <linearGradient id="reportLine" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="rgba(74,222,128,0.62)" />
+                <stop offset="55%" stopColor="rgba(34,197,94,1)" />
+                <stop offset="100%" stopColor="rgba(168,85,247,0.88)" />
               </linearGradient>
             </defs>
             {[14, 28, 42].map((y) => (
-              <line key={y} x1="0" y1={y} x2="240" y2={y} stroke="hsl(var(--border))" strokeWidth="0.3" strokeOpacity="0.3" />
+              <line key={y} x1="0" y1={y} x2="240" y2={y} stroke="rgba(255,255,255,0.08)" strokeWidth="0.3" />
             ))}
             <path d={`${chartPath} L 240 55 L 0 55 Z`} fill="url(#reportGrad)" />
-            <path d={chartPath} fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeLinecap="round" />
-            <circle cx="240" cy="12" r="2" fill="hsl(var(--primary))" />
-            <circle cx="240" cy="12" r="4.5" fill="hsl(var(--primary))" opacity="0.12" />
+            <path d={chartPath} fill="none" stroke="rgba(168,85,247,0.26)" strokeWidth="3" strokeLinecap="round" />
+            <path d={chartPath} fill="none" stroke="url(#reportLine)" strokeWidth="1.8" strokeLinecap="round" />
+            <circle cx="240" cy="12" r="2.5" fill="hsl(var(--primary))" />
+            <circle cx="240" cy="12" r="7" fill="rgba(34,197,94,0.14)" />
           </svg>
           <div className="absolute bottom-0 left-0 right-0 flex justify-between px-1">
             {["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((d) => (
-              <span key={d} className="text-[7px] text-muted-foreground/50">{d}</span>
+              <span key={d} className="text-[7px] text-white/28">{d}</span>
             ))}
           </div>
         </div>
@@ -322,46 +634,43 @@ function ReportsMockup() {
   );
 }
 
-/* ─── Finance with premium Stripe-style chart ─── */
+/* Finance with premium Stripe-style chart */
 function FinanceMockup() {
-  // SVG chart path for smooth curve
   const revenuePath = "M 0 55 C 15 50, 25 30, 40 35 S 65 15, 80 20 S 105 5, 120 10 S 145 25, 160 18 S 185 8, 200 12 S 225 20, 240 15";
   const appointmentsPath = "M 0 45 C 15 42, 25 38, 40 40 S 65 30, 80 28 S 105 22, 120 25 S 145 32, 160 28 S 185 18, 200 22 S 225 28, 240 24";
   const days = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
   return (
-    <div className="p-4 space-y-3">
+    <div className="p-4 space-y-3 text-white">
       <div className="flex items-center justify-between">
-        <p className="text-[11px] font-semibold text-foreground">Financeiro — Semana atual</p>
-        <span className="text-[9px] text-muted-foreground bg-muted dark:bg-white/[0.04] px-2 py-0.5 rounded-full border border-border/40 dark:border-white/[0.06]">Semanal</span>
+        <p className="text-[11px] font-semibold text-white/92">Financeiro — Semana atual</p>
+        <span className="rounded-full border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 text-[9px] text-white/45">Semanal</span>
       </div>
 
-      {/* Summary cards */}
       <div className="grid grid-cols-2 gap-2">
-        <div className="rounded-xl border border-border/50 dark:border-white/[0.06] bg-card dark:bg-white/[0.03] p-2.5">
-          <p className="text-[8px] text-muted-foreground mb-0.5">Receita semanal</p>
-          <p className="text-base font-extrabold text-foreground">R$ 4.820</p>
+        <div className="rounded-[22px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(13,17,24,0.96),rgba(8,11,18,0.88))] p-2.5 shadow-[0_18px_36px_rgba(2,6,23,0.28)]">
+          <p className="mb-0.5 text-[8px] uppercase tracking-[0.18em] text-white/34">Receita semanal</p>
+          <p className="text-base font-extrabold text-white">R$ 4.820</p>
           <span className="text-[8px] font-medium text-primary">+12% vs semana anterior</span>
         </div>
-        <div className="rounded-xl border border-border/50 dark:border-white/[0.06] bg-card dark:bg-white/[0.03] p-2.5">
-          <p className="text-[8px] text-muted-foreground mb-0.5">Atendimentos</p>
-          <p className="text-base font-extrabold text-foreground">87</p>
+        <div className="rounded-[22px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(13,17,24,0.96),rgba(8,11,18,0.88))] p-2.5 shadow-[0_18px_36px_rgba(2,6,23,0.28)]">
+          <p className="mb-0.5 text-[8px] uppercase tracking-[0.18em] text-white/34">Atendimentos</p>
+          <p className="text-base font-extrabold text-white">87</p>
           <span className="text-[8px] font-medium text-primary">+8 vs semana anterior</span>
         </div>
       </div>
 
-      {/* Stripe-style smooth curve chart */}
-      <div className="rounded-xl border border-border/50 dark:border-white/[0.06] bg-card dark:bg-white/[0.03] p-3">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-[10px] font-semibold text-foreground">Receita & Atendimentos</p>
+      <div className="rounded-[26px] border border-white/[0.08] bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.16),transparent_26%),linear-gradient(180deg,rgba(13,17,24,0.96),rgba(8,11,18,0.88))] p-3 shadow-[0_26px_56px_rgba(2,6,23,0.3)]">
+        <div className="mb-2 flex items-center justify-between">
+          <p className="text-[10px] font-semibold text-white/92">Receita & Atendimentos</p>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
               <div className="h-1.5 w-4 rounded-full bg-primary" />
-              <span className="text-[8px] text-muted-foreground">Receita</span>
+              <span className="text-[8px] text-white/42">Receita</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="h-1.5 w-4 rounded-full bg-purple-500/60" />
-              <span className="text-[8px] text-muted-foreground">Atend.</span>
+              <span className="text-[8px] text-white/42">Atend.</span>
             </div>
           </div>
         </div>
@@ -369,41 +678,35 @@ function FinanceMockup() {
           <svg viewBox="0 0 240 60" className="w-full h-full" preserveAspectRatio="none">
             <defs>
               <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.2" />
-                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+                <stop offset="0%" stopColor="rgba(34,197,94,0.24)" />
+                <stop offset="70%" stopColor="rgba(139,92,246,0.08)" />
+                <stop offset="100%" stopColor="rgba(34,197,94,0)" />
               </linearGradient>
               <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.6" />
-                <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="1" />
-                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.8" />
+                <stop offset="0%" stopColor="rgba(74,222,128,0.62)" />
+                <stop offset="50%" stopColor="rgba(34,197,94,1)" />
+                <stop offset="100%" stopColor="rgba(168,85,247,0.82)" />
               </linearGradient>
             </defs>
-            {/* Grid lines */}
             {[15, 30, 45].map((y) => (
-              <line key={y} x1="0" y1={y} x2="240" y2={y} stroke="hsl(var(--border))" strokeWidth="0.3" strokeOpacity="0.3" />
+              <line key={y} x1="0" y1={y} x2="240" y2={y} stroke="rgba(255,255,255,0.08)" strokeWidth="0.3" />
             ))}
-            {/* Revenue area fill */}
             <path d={`${revenuePath} L 240 60 L 0 60 Z`} fill="url(#revenueGrad)" />
-            {/* Revenue line */}
             <path d={revenuePath} fill="none" stroke="url(#lineGrad)" strokeWidth="1.5" strokeLinecap="round" />
-            {/* Appointments line */}
             <path d={appointmentsPath} fill="none" stroke="hsl(270, 50%, 60%)" strokeWidth="1" strokeLinecap="round" strokeOpacity="0.5" strokeDasharray="3 2" />
-            {/* Glow dot on latest point */}
             <circle cx="240" cy="15" r="2.5" fill="hsl(var(--primary))" />
             <circle cx="240" cy="15" r="5" fill="hsl(var(--primary))" opacity="0.15" />
           </svg>
-          {/* Day labels */}
           <div className="absolute bottom-0 left-0 right-0 flex justify-between px-1">
             {days.map((d) => (
-              <span key={d} className="text-[7px] text-muted-foreground/50">{d}</span>
+              <span key={d} className="text-[7px] text-white/28">{d}</span>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Professional ranking with real numbers */}
-      <div className="rounded-xl border border-border/50 dark:border-white/[0.06] bg-card dark:bg-white/[0.03] p-3">
-        <p className="text-[10px] font-semibold text-foreground mb-2">Ranking — Profissionais</p>
+      <div className="rounded-[24px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(13,17,24,0.96),rgba(8,11,18,0.88))] p-3 shadow-[0_20px_42px_rgba(2,6,23,0.3)]">
+        <p className="mb-2 text-[10px] font-semibold text-white/92">Ranking — Profissionais</p>
         <div className="space-y-2">
           {[
             { name: "Carlos", appointments: 72, revenue: "R$ 7.2k", pct: 39 },
@@ -411,17 +714,17 @@ function FinanceMockup() {
             { name: "André", appointments: 55, revenue: "R$ 5.5k", pct: 30 },
           ].map((p, i) => (
             <div key={p.name} className="flex items-center gap-2">
-              <span className="text-[8px] font-bold text-muted-foreground w-3">{i + 1}º</span>
-              <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center text-[7px] font-bold text-primary shrink-0">{p.name[0]}</div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-[9px] font-medium text-foreground">{p.name}</span>
+              <span className="w-3 text-[8px] font-bold text-white/35">{i + 1}º</span>
+              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[7px] font-bold text-primary">{p.name[0]}</div>
+              <div className="min-w-0 flex-1">
+                <div className="mb-0.5 flex items-center justify-between">
+                  <span className="text-[9px] font-medium text-white/88">{p.name}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-[7px] px-1.5 py-0.5 rounded-full bg-muted dark:bg-white/[0.04] text-muted-foreground border border-border/30 dark:border-white/[0.06]">{p.appointments} atend.</span>
+                    <span className="rounded-full border border-white/[0.06] bg-white/[0.04] px-1.5 py-0.5 text-[7px] text-white/42">{p.appointments} atend.</span>
                     <span className="text-[9px] font-semibold text-primary">{p.revenue}</span>
                   </div>
                 </div>
-                <div className="h-1 rounded-full bg-muted dark:bg-white/[0.06] overflow-hidden">
+                <div className="h-1 overflow-hidden rounded-full bg-white/[0.06]">
                   <div className="h-full rounded-full bg-primary" style={{ width: `${p.pct * 2.5}%` }} />
                 </div>
               </div>
@@ -442,7 +745,7 @@ const mockups: Record<string, () => JSX.Element> = {
   finance: FinanceMockup,
 };
 
-/* ─── Interactive 3D Phone ─── */
+/* Interactive 3D Phone */
 function InteractivePhone() {
   const phoneRef = useRef<HTMLDivElement>(null);
   const [rotation, setRotation] = useState({ x: 2, y: -4 });
@@ -487,7 +790,7 @@ function InteractivePhone() {
         <div className="absolute -inset-12 bg-[radial-gradient(ellipse_at_center,hsl(152,55%,30%,0.12),transparent_65%)] blur-3xl pointer-events-none" />
         <div className="absolute -inset-16 bg-[radial-gradient(ellipse_at_bottom,hsl(270,40%,25%,0.08),transparent_65%)] blur-3xl pointer-events-none" />
 
-        {/* Phone frame — titanium orange inspired */}
+        {/* Phone frame - titanium orange inspired */}
         <div className="relative w-[270px] sm:w-[300px] rounded-[2.5rem] overflow-hidden shadow-[0_30px_100px_-15px_rgba(0,0,0,0.7),0_10px_30px_-10px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.06)]">
           {/* Outer titanium bezel with warm metallic gradient */}
           <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-b from-[hsl(25,15%,22%)] via-[hsl(25,12%,14%)] to-[hsl(25,10%,9%)]" />
@@ -529,7 +832,7 @@ function InteractivePhone() {
   );
 }
 
-/* ─── Main Section ─── */
+/* Main Section */
 export function DemoSection() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -648,53 +951,65 @@ export function DemoSection() {
           </div>
         </div>
 
-        {/* ─── MacBook (TOP) ─── */}
-        <motion.div
+        {/* MacBook (TOP) */}
+                <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.15 }}
-          className="max-w-5xl mx-auto"
+          className="relative max-w-[72rem] mx-auto"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          <div className="rounded-2xl border-2 border-border/60 dark:border-white/[0.08] bg-card dark:bg-[hsl(240,18%,6%)] shadow-2xl overflow-hidden ring-1 ring-border/20 dark:ring-white/[0.04]">
-            {/* Browser chrome */}
-            <div className="flex items-center gap-3 px-4 sm:px-5 py-2.5 border-b border-border/40 dark:border-white/[0.06] bg-muted/20 dark:bg-white/[0.02]">
-              <div className="flex gap-1.5">
-                <div className="h-3 w-3 rounded-full bg-destructive/40" />
-                <div className="h-3 w-3 rounded-full bg-warning/40" />
-                <div className="h-3 w-3 rounded-full bg-primary/40" />
-              </div>
-              <div className="flex-1 flex justify-center">
-                <div className="text-[10px] text-muted-foreground bg-muted/40 dark:bg-white/[0.04] rounded-lg px-5 py-1.5 border border-border/30 dark:border-white/[0.06] font-mono">
-                  cutflow.app/dashboard
+          <div className="absolute left-1/2 top-[11%] h-[66%] w-[76%] -translate-x-1/2 rounded-[4rem] bg-[radial-gradient(ellipse_at_center,rgba(34,197,94,0.12),transparent_60%)] blur-[64px] pointer-events-none" />
+          <div className="absolute left-1/2 top-[21%] h-[48%] w-[50%] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(139,92,246,0.08),transparent_70%)] blur-[78px] pointer-events-none" />
+          <div className="relative mx-auto max-w-[67rem] px-2 sm:px-5">
+            <div className="relative rounded-[1.75rem] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(58,61,68,0.9),rgba(28,31,36,0.95)_14%,rgba(12,15,20,0.98)_40%,rgba(7,9,14,1))] p-2 shadow-[0_24px_68px_rgba(0,0,0,0.38),0_12px_28px_rgba(0,0,0,0.18)] ring-1 ring-white/[0.04] sm:rounded-[2.2rem] sm:p-2.5">
+              <div className="absolute inset-x-10 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.42),transparent)]" />
+              <div className="overflow-hidden rounded-[1.3rem] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(10,12,18,0.98),rgba(6,8,13,1))] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:rounded-[1.8rem]">
+                <div className="flex items-center gap-3 border-b border-white/[0.06] bg-[linear-gradient(180deg,rgba(17,20,28,0.94),rgba(12,15,21,0.88))] px-3.5 py-2">
+                  <div className="flex gap-1.5">
+                    <div className="h-2 w-2 rounded-full bg-[#ff5f57]/80" />
+                    <div className="h-2 w-2 rounded-full bg-[#febc2e]/80" />
+                    <div className="h-2 w-2 rounded-full bg-primary/85" />
+                  </div>
+                  <div className="flex flex-1 justify-center">
+                    <div className="rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-1 font-mono text-[9px] text-white/48 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                      cutflow.app/dashboard
+                    </div>
+                  </div>
+                </div>
+                <div className="flex min-h-[320px] bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.05),transparent_28%),radial-gradient(circle_at_top_right,rgba(34,197,94,0.06),transparent_24%),linear-gradient(180deg,rgba(9,12,18,1),rgba(6,8,13,1))] sm:min-h-[360px] lg:min-h-[404px]">
+                  <Sidebar activeTab={activeTab} />
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <TopBar />
+                    <div className="flex-1 overflow-hidden overflow-y-auto bg-transparent">
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={activeTab}
+                          initial={{ opacity: 0, y: 8, scale: 0.99 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -6, scale: 0.995 }}
+                          transition={{ duration: 0.24, ease: "easeOut" }}
+                        >
+                          <ActiveMockup />
+                        </motion.div>
+                      </AnimatePresence>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="flex min-h-[320px] sm:min-h-[380px] lg:min-h-[420px]">
-              <Sidebar activeTab={activeTab} />
-              <div className="flex-1 flex flex-col min-w-0">
-                <TopBar />
-                <div className="flex-1 bg-background dark:bg-[hsl(240,20%,4%)] overflow-hidden overflow-y-auto">
-                  <AnimatePresence mode="wait">
-                    <motion.div key={activeTab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2 }}>
-                      <ActiveMockup />
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
-              </div>
-            </div>
+            <div className="mx-auto h-3.5 w-[55%] rounded-b-[1.1rem] bg-[linear-gradient(180deg,rgba(115,120,130,0.88),rgba(66,70,78,0.66)_40%,rgba(30,34,40,0.32))] shadow-[0_8px_18px_rgba(0,0,0,0.18)]" />
+            <div className="mx-auto h-1.5 w-[69%] rounded-b-[2rem] bg-[linear-gradient(180deg,rgba(170,176,186,0.22),rgba(60,66,74,0.08))]" />
+            <div className="mx-auto -mt-1 h-8 w-[48%] rounded-[999px] bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.22),transparent_72%)] blur-xl" />
           </div>
-          {/* Laptop base */}
-          <div className="mx-auto w-[55%] h-3 sm:h-4 bg-gradient-to-b from-border/60 dark:from-white/[0.06] to-transparent rounded-b-xl" />
-          <div className="mx-auto w-[70%] h-1.5 sm:h-2 bg-border/20 dark:bg-white/[0.03] rounded-b-2xl" />
           <p className="text-center text-[11px] text-muted-foreground mt-3 font-medium">
-            Painel administrativo — Visão do dono
+            Painel administrativo - Visão do dono
           </p>
         </motion.div>
 
-        {/* ─── Cinematic iPhone Showcase ─── */}
+        {/* Cinematic iPhone Showcase */}
         <div className="relative mt-20 sm:mt-28 lg:mt-36">
           {/* Deep backdrop - theme aware */}
           <div className="absolute inset-0 -mx-5 sm:-mx-6 lg:-mx-8 -my-16 bg-[hsl(240,20%,3%)] dark:bg-[hsl(240,20%,3%)] rounded-3xl overflow-hidden">
@@ -731,7 +1046,7 @@ export function DemoSection() {
               transition={{ delay: 0.5 }}
               className="text-center text-[11px] text-white/25 mt-8 font-medium tracking-wide"
             >
-              Tela de bloqueio — Experiência do cliente
+              Tela de bloqueio - Experiência do cliente
             </motion.p>
           </div>
         </div>
@@ -739,3 +1054,5 @@ export function DemoSection() {
     </section>
   );
 }
+
+

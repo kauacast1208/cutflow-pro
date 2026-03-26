@@ -10,10 +10,9 @@ import { Plus, Trash2, Loader2, Search, UserCog, Save, Clock, Calendar, Coffee, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { motion } from "framer-motion";
-import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { ProfessionalAvatar } from "@/components/shared/ProfessionalAvatar";
 import { format } from "date-fns";
-
-const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 const BREAK_TYPES = [
   { value: "lunch", label: "Almoço", icon: "🍽", allDay: false },
@@ -21,6 +20,8 @@ const BREAK_TYPES = [
   { value: "unavailable", label: "Indisponível", icon: "🚫", allDay: false },
   { value: "vacation", label: "Férias / Folga", icon: "🏖", allDay: true },
 ] as const;
+
+const WEEKDAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "S\u00e1b"] as const;
 
 type BreakType = typeof BREAK_TYPES[number]["value"];
 
@@ -34,6 +35,63 @@ interface ScheduleBreak {
   recurring_days: number[];
   all_day: boolean;
   note?: string;
+}
+
+function normalizeSpecialties(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+        }
+      } catch {
+        // Fall back to comma-separated parsing below.
+      }
+    }
+
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+function normalizeWorkDays(value: unknown): number[] {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => (typeof item === "number" ? item : Number(item)))
+      .filter((item) => Number.isInteger(item) && item >= 0 && item <= 6)
+      .sort((a, b) => a - b);
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return [];
+
+    try {
+      return normalizeWorkDays(JSON.parse(trimmed));
+    } catch {
+      return trimmed
+        .split(",")
+        .map((item) => Number(item.trim()))
+        .filter((item) => Number.isInteger(item) && item >= 0 && item <= 6)
+        .sort((a, b) => a - b);
+    }
+  }
+
+  return [];
+}
+
+function isMissingBreakColumnError(message: string) {
+  return message.includes("break_start_time") || message.includes("break_end_time");
 }
 
 export default function ProfessionalsPage() {
@@ -50,6 +108,8 @@ export default function ProfessionalsPage() {
   const [specialties, setSpecialties] = useState("");
   const [workStart, setWorkStart] = useState("09:00");
   const [workEnd, setWorkEnd] = useState("19:00");
+  const [breakStartTime, setBreakStartTime] = useState("");
+  const [breakEndTime, setBreakEndTime] = useState("");
   const [workDays, setWorkDays] = useState<number[]>([1, 2, 3, 4, 5, 6]);
   const [saving, setSaving] = useState(false);
 
@@ -65,7 +125,13 @@ export default function ProfessionalsPage() {
   const load = async () => {
     if (!barbershop) return;
     setLoading(true);
-    const { data } = await supabase.from("professionals").select("*").eq("barbershop_id", barbershop.id).order("name");
+    const { data, error } = await supabase.from("professionals").select("*").eq("barbershop_id", barbershop.id).order("name");
+    if (error) {
+      toast({ title: "Erro ao carregar profissionais", description: error.message, variant: "destructive" });
+      setPros([]);
+      setLoading(false);
+      return;
+    }
     setPros(data || []);
     setLoading(false);
   };
@@ -75,12 +141,18 @@ export default function ProfessionalsPage() {
   const loadBreaks = useCallback(async (proId: string) => {
     if (!barbershop) return;
     setBreaksLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("blocked_times")
       .select("*")
       .eq("barbershop_id", barbershop.id)
       .eq("professional_id", proId)
       .eq("recurring", true);
+    if (error) {
+      toast({ title: "Erro ao carregar pausas", description: error.message, variant: "destructive" });
+      setBreaks([]);
+      setBreaksLoading(false);
+      return;
+    }
     const mapped: ScheduleBreak[] = (data || []).map((b: any) => ({
       id: b.id,
       reason: b.reason || "Pausa",
@@ -108,16 +180,19 @@ export default function ProfessionalsPage() {
     }
     setEditing(null); setName(""); setRole("Barbeiro"); setSpecialties("");
     setWorkStart("09:00"); setWorkEnd("19:00"); setWorkDays([1, 2, 3, 4, 5, 6]);
+    setBreakStartTime(""); setBreakEndTime("");
     setBreaks([]);
     setDialogOpen(true);
   };
 
   const openEdit = (p: any) => {
     setEditing(p); setName(p.name); setRole(p.role || "Barbeiro");
-    setSpecialties((p.specialties || []).join(", "));
+    setSpecialties(normalizeSpecialties(p.specialties).join(", "));
     setWorkStart(p.work_start?.slice(0, 5) || "09:00");
     setWorkEnd(p.work_end?.slice(0, 5) || "19:00");
-    setWorkDays(p.work_days || [1, 2, 3, 4, 5, 6]);
+    setBreakStartTime(p.break_start_time?.slice(0, 5) || "");
+    setBreakEndTime(p.break_end_time?.slice(0, 5) || "");
+    setWorkDays(normalizeWorkDays(p.work_days).length > 0 ? normalizeWorkDays(p.work_days) : [1, 2, 3, 4, 5, 6]);
     loadBreaks(p.id);
     setDialogOpen(true);
   };
@@ -130,6 +205,28 @@ export default function ProfessionalsPage() {
     const breakDef = BREAK_TYPES.find(b => b.value === newBreakType);
     const breakLabel = breakDef?.label || "Pausa";
     const isAllDay = breakDef?.allDay || false;
+    if (newBreakDays.length === 0) {
+      toast({ title: "Selecione os dias", description: "Escolha ao menos um dia para repetir a pausa.", variant: "destructive" });
+      return;
+    }
+
+    if (!isAllDay) {
+      if (!newBreakStart || !newBreakEnd) {
+        toast({ title: "Horario obrigatorio", description: "Informe inicio e fim da pausa.", variant: "destructive" });
+        return;
+      }
+
+      if (newBreakStart >= newBreakEnd) {
+        toast({ title: "Pausa invalida", description: "O fim da pausa deve ser depois do inicio.", variant: "destructive" });
+        return;
+      }
+
+      if (newBreakStart <= workStart || newBreakEnd >= workEnd) {
+        toast({ title: "Pausa fora do expediente", description: "A pausa precisa ficar dentro do horario de trabalho.", variant: "destructive" });
+        return;
+      }
+    }
+
     const reasonText = newBreakNote.trim() ? `${breakLabel} — ${newBreakNote.trim()}` : breakLabel;
     const { error } = await supabase.from("blocked_times").insert({
       barbershop_id: barbershop.id,
@@ -152,15 +249,142 @@ export default function ProfessionalsPage() {
   };
 
   const removeBreak = async (breakId: string) => {
-    await supabase.from("blocked_times").delete().eq("id", breakId);
+    const { error } = await supabase.from("blocked_times").delete().eq("id", breakId);
+    if (error) {
+      toast({ title: "Erro ao remover pausa", description: error.message, variant: "destructive" });
+      return;
+    }
     toast({ title: "Pausa removida." });
     if (editing) loadBreaks(editing.id);
   };
 
   const handleSave = async () => {
     if (!barbershop || !name.trim()) return;
+    const normalizedSpecialties = specialties
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const hasBreakStart = Boolean(breakStartTime);
+    const hasBreakEnd = Boolean(breakEndTime);
+
+    if (workStart >= workEnd) {
+      toast({
+        title: "Expediente invalido",
+        description: "O horario final precisa ser depois do horario inicial.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (workDays.length === 0) {
+      toast({
+        title: "Dias obrigatorios",
+        description: "Selecione ao menos um dia de trabalho para o profissional.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (hasBreakStart !== hasBreakEnd) {
+      toast({
+        title: "Intervalo incompleto",
+        description: "Preencha início e fim do intervalo ou deixe ambos vazios.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (hasBreakStart && hasBreakEnd) {
+      if (breakStartTime >= breakEndTime) {
+        toast({
+          title: "Intervalo inválido",
+          description: "O fim do intervalo deve ser depois do início.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (breakStartTime <= workStart || breakEndTime >= workEnd) {
+        toast({
+          title: "Intervalo fora do expediente",
+          description: "O intervalo precisa começar depois do início e terminar antes do fim do expediente.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     setSaving(true);
-    const payload = { name, role, specialties: specialties.split(",").map((s) => s.trim()).filter(Boolean), work_start: workStart, work_end: workEnd, work_days: workDays };
+    const payload = {
+      name,
+      role,
+      specialties: normalizedSpecialties.length > 0 ? normalizedSpecialties : null,
+      work_start: workStart,
+      work_end: workEnd,
+      work_days: workDays,
+    };
+    const payloadWithoutBreaks = {
+      name,
+      role,
+      specialties: normalizedSpecialties.length > 0 ? normalizedSpecialties : null,
+      work_start: workStart,
+      work_end: workEnd,
+      work_days: workDays,
+    };
+    let saveError: { message: string } | null = null;
+    let savedWithoutBreakColumns = false;
+
+    if (editing) {
+      const primaryResult = await supabase.from("professionals").update(payload).eq("id", editing.id);
+      saveError = primaryResult.error;
+
+      if (saveError && isMissingBreakColumnError(saveError.message)) {
+        const fallbackResult = await supabase.from("professionals").update(payloadWithoutBreaks).eq("id", editing.id);
+        saveError = fallbackResult.error;
+        savedWithoutBreakColumns = !fallbackResult.error;
+      }
+
+      if (!saveError) {
+        toast({
+          title: "Profissional atualizado!",
+          description: savedWithoutBreakColumns ? "Intervalo fixo nao foi salvo porque as colunas de pausa ainda nao existem no banco." : undefined,
+        });
+      }
+    } else {
+      const primaryResult = await supabase.from("professionals").insert({ ...payload, barbershop_id: barbershop.id });
+      saveError = primaryResult.error;
+
+      if (saveError && isMissingBreakColumnError(saveError.message)) {
+        const fallbackResult = await supabase.from("professionals").insert({ ...payloadWithoutBreaks, barbershop_id: barbershop.id });
+        saveError = fallbackResult.error;
+        savedWithoutBreakColumns = !fallbackResult.error;
+      }
+
+      if (!saveError) {
+        toast({
+          title: "Profissional adicionado!",
+          description: savedWithoutBreakColumns ? "Intervalo fixo nao foi salvo porque as colunas de pausa ainda nao existem no banco." : undefined,
+        });
+      }
+    }
+
+    if (saveError) {
+      const isLimitError = saveError.message.includes("plano") || saveError.message.includes("profissional");
+      toast({
+        title: editing ? "Erro ao atualizar" : (isLimitError ? "Limite do plano atingido" : "Erro ao adicionar"),
+        description: isLimitError
+          ? `${saveError.message} FaÃ§a upgrade para continuar.`
+          : saveError.message,
+        variant: "destructive",
+      });
+      if (isLimitError) showUpgrade("agenda");
+      setSaving(false);
+      return;
+    }
+
+    setSaving(false); setDialogOpen(false); load();
+    return;
+    /* unreachable legacy save path retained below */
     if (editing) {
       const { error } = await supabase.from("professionals").update(payload).eq("id", editing.id);
       if (error) {
@@ -190,12 +414,21 @@ export default function ProfessionalsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    await supabase.from("professionals").delete().eq("id", id);
+    const { error } = await supabase.from("professionals").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Erro ao remover profissional", description: error.message, variant: "destructive" });
+      return;
+    }
     toast({ title: "Profissional removido." }); load();
   };
 
   const toggleActive = async (id: string, isActive: boolean) => {
-    await supabase.from("professionals").update({ active: !isActive }).eq("id", id); load();
+    const { error } = await supabase.from("professionals").update({ active: !isActive }).eq("id", id);
+    if (error) {
+      toast({ title: "Erro ao atualizar profissional", description: error.message, variant: "destructive" });
+      return;
+    }
+    load();
   };
 
   const filtered = pros.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
@@ -258,9 +491,13 @@ export default function ProfessionalsPage() {
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center text-primary font-bold text-sm shrink-0 transition-transform group-hover:scale-105">
-                    {p.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
-                  </div>
+                  <ProfessionalAvatar
+                    name={p.name}
+                    avatarUrl={p.avatar_url}
+                    className="h-12 w-12 rounded-xl border border-border/60 shadow-sm shrink-0 transition-transform group-hover:scale-105"
+                    fallbackClassName="rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 text-sm"
+                    imageClassName="object-cover"
+                  />
                   <div>
                     <p className="font-semibold text-sm text-foreground">{p.name}</p>
                     <p className="text-xs text-muted-foreground">{p.role || "Barbeiro"}</p>
@@ -271,9 +508,9 @@ export default function ProfessionalsPage() {
                 </div>
               </div>
 
-              {p.specialties && p.specialties.length > 0 && (
+              {normalizeSpecialties(p.specialties).length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mb-3">
-                  {p.specialties.slice(0, 3).map((s: string) => (
+                  {normalizeSpecialties(p.specialties).slice(0, 3).map((s: string) => (
                     <span key={s} className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-accent-foreground font-medium">{s}</span>
                   ))}
                 </div>
@@ -283,6 +520,12 @@ export default function ProfessionalsPage() {
                 <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{p.work_start?.slice(0, 5) || "09:00"} - {p.work_end?.slice(0, 5) || "19:00"}</span>
                 <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{(p.work_days || []).length} dias</span>
               </div>
+              {(p.break_start_time || p.break_end_time) && (
+                <div className="mt-2 flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <Coffee className="h-3 w-3" />
+                  <span>Intervalo {p.break_start_time?.slice(0, 5)} - {p.break_end_time?.slice(0, 5)}</span>
+                </div>
+              )}
             </motion.div>
           ))}
         </div>
@@ -309,28 +552,70 @@ export default function ProfessionalsPage() {
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Especialidades</Label>
               <Input value={specialties} onChange={(e) => setSpecialties(e.target.value)} placeholder="Corte, Barba, Pigmentação" className="bg-card" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Início</Label>
-                <Input type="time" value={workStart} onChange={(e) => setWorkStart(e.target.value)} className="bg-card" />
+            <div className="rounded-xl border border-border/60 bg-card p-4 space-y-3">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold text-foreground">Working hours</h3>
+                </div>
+                <p className="text-[11px] text-muted-foreground">Set when this professional is available to take appointments.</p>
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Fim</Label>
-                <Input type="time" value={workEnd} onChange={(e) => setWorkEnd(e.target.value)} className="bg-card" />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Start</Label>
+                  <Input type="time" value={workStart} onChange={(e) => setWorkStart(e.target.value)} className="bg-card" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">End</Label>
+                  <Input type="time" value={workEnd} onChange={(e) => setWorkEnd(e.target.value)} className="bg-card" />
+                </div>
               </div>
             </div>
             <div className="space-y-2">
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Dias de trabalho</Label>
               <div className="flex gap-1.5">
-                {WEEKDAYS.map((d, i) => (
+                {WEEKDAY_LABELS.map((d, i) => (
                   <button key={i} type="button" onClick={() => toggleDay(i)}
                     className={`flex-1 py-2.5 rounded-lg text-xs font-medium transition-all ${workDays.includes(i) ? "bg-primary text-primary-foreground shadow-sm" : "bg-secondary/60 text-muted-foreground hover:bg-secondary"}`}
                   >{d}</button>
                 ))}
               </div>
             </div>
+            <Separator className="bg-border/70" />
 
-            {/* ── Schedule Breaks Section ── */}
+            <div className="rounded-xl border border-dashed border-border/70 bg-accent/20 p-4 space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Coffee className="h-4 w-4 text-primary" />
+                    <h3 className="text-sm font-semibold text-foreground">Break time (optional)</h3>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">This period will be excluded from the available booking slots.</p>
+                </div>
+                {(breakStartTime || breakEndTime) && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 text-xs"
+                    onClick={() => { setBreakStartTime(""); setBreakEndTime(""); }}
+                  >
+                    Limpar
+                  </Button>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Break start</Label>
+                  <Input type="time" value={breakStartTime} onChange={(e) => setBreakStartTime(e.target.value)} className="bg-card" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Break end</Label>
+                  <Input type="time" value={breakEndTime} onChange={(e) => setBreakEndTime(e.target.value)} className="bg-card" />
+                </div>
+              </div>
+            </div>
+
             {editing && (
               <div className="space-y-3 pt-3 border-t border-border">
                 <div className="flex items-center gap-2">
@@ -352,7 +637,7 @@ export default function ProfessionalsPage() {
                           <div className="min-w-0">
                             <p className="text-xs font-medium text-foreground">{b.reason}</p>
                             <p className="text-[11px] text-muted-foreground">
-                              {b.all_day ? "Dia inteiro" : `${b.start_time} - ${b.end_time}`} · {b.recurring_days.map(d => WEEKDAYS[d]).join(", ")}
+                              {b.all_day ? "Dia inteiro" : `${b.start_time} - ${b.end_time}`} · {b.recurring_days.map(d => WEEKDAY_LABELS[d]).join(", ")}
                             </p>
                           </div>
                         </div>
@@ -403,7 +688,7 @@ export default function ProfessionalsPage() {
                   <div className="space-y-1">
                     <Label className="text-[10px] text-muted-foreground">Dias</Label>
                     <div className="flex gap-1">
-                      {WEEKDAYS.map((d, i) => (
+                      {WEEKDAY_LABELS.map((d, i) => (
                         <button key={i} type="button" onClick={() => toggleBreakDay(i)}
                           className={`flex-1 py-1.5 rounded-md text-[10px] font-medium transition-all ${newBreakDays.includes(i) ? "bg-primary text-primary-foreground" : "bg-secondary/60 text-muted-foreground hover:bg-secondary"}`}
                         >{d}</button>

@@ -20,6 +20,7 @@ import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import type { PlanFeature } from "@/lib/plans";
 import { Badge } from "@/components/ui/badge";
 import { STRIPE_PLANS } from "@/lib/stripe";
+import { BarbershopLogo } from "@/components/shared/BarbershopLogo";
 
 interface MenuItem {
   title: string;
@@ -147,17 +148,12 @@ export default function AdminSidebar() {
     <Sidebar collapsible="icon" className="border-r border-sidebar-border/60 bg-sidebar-background">
       {/* Brand */}
       <div className="flex h-16 items-center gap-3 px-4 border-b border-sidebar-border">
-        {barbershop?.logo_url ? (
-          <img
-            src={barbershop.logo_url}
-            alt={barbershop.name || "Logo"}
-            className="h-9 w-9 rounded-xl object-cover border border-sidebar-border/40 shadow-sm shrink-0"
-          />
-        ) : (
-          <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm">
-            <Scissors className="h-4 w-4 text-primary-foreground" />
-          </div>
-        )}
+        <BarbershopLogo
+          name={barbershop?.name}
+          logoUrl={barbershop?.logo_url}
+          className="h-9 w-9 shrink-0 rounded-full border border-sidebar-border/40 shadow-sm"
+          fallbackClassName="border-sidebar-border/40 bg-primary/10 text-sm text-primary"
+        />
         {!collapsed && (
           <span className="font-bold text-lg tracking-tight text-sidebar-foreground truncate" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             {barbershop?.name || "CutFlow"}

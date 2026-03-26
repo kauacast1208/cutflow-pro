@@ -6,7 +6,10 @@ import "./index.css";
 
 // Supabase config debug
 const sbUrl = import.meta.env.VITE_SUPABASE_URL ?? "(missing)";
-const sbKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "(missing)";
+const sbKey =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
+  import.meta.env.VITE_SUPABASE_ANON_KEY ??
+  "(missing)";
 console.info("[Boot] SUPABASE_URL:", sbUrl);
 console.info("[Boot] PUBLISHABLE_KEY exists:", sbKey !== "(missing)", "| first12:", sbKey.substring(0, 12));
 

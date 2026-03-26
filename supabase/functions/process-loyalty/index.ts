@@ -27,8 +27,21 @@ serve(async (req) => {
     let earned = 0;
     let notified = 0;
 
+    const normalizeServiceIds = (program: any) => {
+      if (Array.isArray(program?.service_ids)) {
+        return program.service_ids.filter((item: unknown): item is string => typeof item === "string");
+      }
+
+      if (typeof program?.specific_service_id === "string" && program.specific_service_id) {
+        return [program.specific_service_id];
+      }
+
+      return [];
+    };
+
     for (const program of programs || []) {
       const shopName = (program as any).barbershops?.name || "Barbearia";
+      const selectedServiceIds = normalizeServiceIds(program);
 
       // Get all clients for this barbershop
       const { data: clients } = await supabase
@@ -58,13 +71,13 @@ serve(async (req) => {
             .eq("status", "completed");
           totalSpent = (appts || []).reduce((sum: number, a: any) => sum + (Number(a.price) || 0), 0);
           progress = Math.floor(totalSpent / program.target);
-        } else if (program.type === "specific_service" && program.specific_service_id) {
+        } else if (program.type === "specific_service" && selectedServiceIds.length > 0) {
           const { count } = await supabase
             .from("appointments")
             .select("id", { count: "exact", head: true })
             .eq("barbershop_id", program.barbershop_id)
             .eq("client_name", client.name)
-            .eq("service_id", program.specific_service_id)
+            .in("service_id", selectedServiceIds)
             .eq("status", "completed");
           progress = count || 0;
         }

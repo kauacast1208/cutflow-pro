@@ -1,5 +1,6 @@
-import { User, Star, CheckCircle2, Shuffle } from "lucide-react";
-import { getInitials } from "@/lib/format";
+import { motion } from "framer-motion";
+import { User, CheckCircle2, Shuffle, Star, Clock3 } from "lucide-react";
+import { ProfessionalAvatar } from "@/components/shared/ProfessionalAvatar";
 
 interface ProfessionalStepProps {
   professionals: any[];
@@ -9,84 +10,117 @@ interface ProfessionalStepProps {
 
 const ANY_PRO_ID = "__any__";
 
+function getRatingLabel(professional: any) {
+  const raw = professional?.rating_average ?? professional?.rating ?? professional?.avg_rating;
+  const parsed = typeof raw === "number" ? raw : typeof raw === "string" ? Number(raw) : Number.NaN;
+  return Number.isFinite(parsed) ? `${parsed.toFixed(1)} avaliacao` : "Avaliacao em breve";
+}
+
 export function ProfessionalStep({ professionals, selectedPro, onSelect }: ProfessionalStepProps) {
   return (
-    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-      <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-1.5">Escolha o profissional</h2>
-      <p className="text-muted-foreground text-sm mb-7">Com quem voce quer ser atendido?</p>
-    {professionals.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground rounded-2xl border border-dashed border-border bg-muted/20">
-          <User className="h-8 w-8 mx-auto mb-3 opacity-25" />
-          <p className="font-semibold text-sm">Nenhum profissional disponível no momento.</p>
-          <p className="text-xs mt-1 text-muted-foreground/70">Entre em contato com a barbearia para mais informações.</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {/* Any professional option */}
-          {professionals.length > 1 && (
-            <button
-              onClick={() => onSelect(ANY_PRO_ID)}
-              className={`w-full flex items-center gap-4 rounded-2xl border p-5 text-left transition-all duration-200 ${
-                selectedPro === ANY_PRO_ID
-                  ? "border-primary bg-primary/5 ring-2 ring-primary/20 shadow-sm"
-                  : "border-border bg-card hover:border-primary/30 hover:shadow-sm"
-              }`}
-            >
-              <div className={`h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-200 ${
-                selectedPro === ANY_PRO_ID
-                  ? "bg-primary text-primary-foreground shadow-glow"
-                  : "bg-gradient-to-br from-primary/15 to-primary/5 text-primary"
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">Escolha seu profissional</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Se preferir, o sistema pode selecionar o primeiro horario livre para acelerar a reserva.
+        </p>
+      </div>
+
+      <div className="grid gap-3">
+        {professionals.length > 1 ? (
+          <motion.button
+            type="button"
+            whileTap={{ scale: 0.99 }}
+            onClick={() => onSelect(ANY_PRO_ID)}
+            className={`w-full rounded-[24px] border p-5 text-left transition-all duration-200 sm:p-6 ${
+              selectedPro === ANY_PRO_ID
+                ? "border-primary/30 bg-primary/[0.06] ring-2 ring-primary/15 shadow-[0_12px_30px_rgba(34,197,94,0.10)]"
+                : "border-border/70 bg-background hover:border-primary/20 hover:bg-accent/20 hover:shadow-sm"
+            }`}
+          >
+            <div className="flex items-center gap-4">
+              <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${
+                selectedPro === ANY_PRO_ID ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
               }`}>
                 {selectedPro === ANY_PRO_ID ? <CheckCircle2 className="h-6 w-6" /> : <Shuffle className="h-6 w-6" />}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-bold text-[15px]">Qualquer profissional</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Primeiro horario disponivel</p>
-              </div>
-            </button>
-          )}
 
-          {professionals.map((p) => {
-            const isSelected = selectedPro === p.id;
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-base font-bold tracking-tight text-foreground">Primeiro disponivel</p>
+                  <span className="rounded-full border border-primary/15 bg-primary/[0.06] px-2.5 py-1 text-[11px] font-semibold text-primary">
+                    Mais rapido
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  O sistema escolhe quem tiver o melhor horario para sua reserva.
+                </p>
+              </div>
+            </div>
+          </motion.button>
+        ) : null}
+
+        {professionals.length === 0 ? (
+          <div className="rounded-[24px] border border-dashed border-border bg-muted/20 px-6 py-16 text-center text-muted-foreground">
+            <User className="mx-auto mb-4 h-10 w-10 opacity-25" />
+            <p className="text-base font-semibold text-foreground">Nenhum profissional disponivel online</p>
+            <p className="mt-2 text-sm">Esta agenda ainda nao publicou profissionais. Entre em contato com a barbearia para concluir a reserva.</p>
+          </div>
+        ) : (
+          professionals.map((professional) => {
+            const isSelected = selectedPro === professional.id;
+            const specialty = professional.role || professional.specialties?.[0] || "Especialista da casa";
+
             return (
-              <button
-                key={p.id}
-                onClick={() => onSelect(p.id)}
-                className={`w-full flex items-center gap-4 rounded-2xl border p-5 text-left transition-all duration-200 ${
+              <motion.button
+                key={professional.id}
+                type="button"
+                whileTap={{ scale: 0.99 }}
+                onClick={() => onSelect(professional.id)}
+                className={`w-full rounded-[24px] border p-5 text-left transition-all duration-200 sm:p-6 ${
                   isSelected
-                    ? "border-primary bg-primary/5 ring-2 ring-primary/20 shadow-sm"
-                    : "border-border bg-card hover:border-primary/30 hover:shadow-sm"
+                    ? "border-primary/30 bg-primary/[0.06] ring-2 ring-primary/15 shadow-[0_12px_30px_rgba(34,197,94,0.10)]"
+                    : "border-border/70 bg-background hover:border-primary/20 hover:bg-accent/20 hover:shadow-sm"
                 }`}
               >
-                {p.avatar_url ? (
-                  <img src={p.avatar_url} className={`h-14 w-14 rounded-2xl object-cover border shrink-0 ${isSelected ? "border-primary" : "border-border"}`} alt="" />
-                ) : (
-                  <div className={`h-14 w-14 rounded-2xl flex items-center justify-center font-bold text-lg shrink-0 transition-all duration-200 ${
-                    isSelected
-                      ? "bg-primary text-primary-foreground shadow-glow"
-                      : "bg-gradient-to-br from-primary/15 to-primary/5 text-primary"
-                  }`}>
-                    {isSelected ? <CheckCircle2 className="h-6 w-6" /> : getInitials(p.name)}
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-[15px]">{p.name}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{p.role}</p>
-                  {p.specialties && p.specialties.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {p.specialties.slice(0, 3).map((sp: string) => (
-                        <span key={sp} className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground font-medium">
-                          {sp}
+                <div className="flex items-start gap-4">
+                  <ProfessionalAvatar
+                    name={professional.name}
+                    avatarUrl={professional.avatar_url}
+                    className={`h-16 w-16 rounded-[20px] border shadow-sm ${isSelected ? "border-primary/30" : "border-border/70"}`}
+                    fallbackClassName={`rounded-[20px] text-lg ${isSelected ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"}`}
+                    imageClassName="object-cover"
+                  />
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-base font-bold tracking-tight text-foreground">{professional.name}</p>
+                      {professional.specialties?.length > 0 ? (
+                        <span className="rounded-full border border-border/70 bg-background px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                          {professional.specialties[0]}
                         </span>
-                      ))}
+                      ) : null}
                     </div>
-                  )}
+
+                    <p className="mt-1 text-sm text-muted-foreground">{specialty}</p>
+
+                    <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary/70 px-2.5 py-1 font-medium text-secondary-foreground">
+                        <Star className="h-3.5 w-3.5" />
+                        {getRatingLabel(professional)}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary/70 px-2.5 py-1 font-medium text-secondary-foreground">
+                        <Clock3 className="h-3.5 w-3.5" />
+                        Agenda online
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </button>
+              </motion.button>
             );
-          })}
-        </div>
-      )}
+          })
+        )}
+      </div>
     </div>
   );
 }

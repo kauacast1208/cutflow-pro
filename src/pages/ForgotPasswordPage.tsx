@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Loader2, Mail, ArrowLeft, Scissors, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { mapPasswordRecoveryRequestError } from "@/lib/authErrors";
+import { getAppBaseUrl } from "@/lib/appUrl";
 import { cn } from "@/lib/utils";
 
 function AuthError({ message }: { message: string }) {
@@ -34,7 +35,7 @@ export default function ForgotPasswordPage() {
 
     try {
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${getAppBaseUrl()}/reset-password`,
       });
 
       if (resetError) {

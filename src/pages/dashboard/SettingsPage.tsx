@@ -18,6 +18,7 @@ import GoogleCalendarSettings from "@/components/settings/GoogleCalendarSettings
 import LogoUpload from "@/components/settings/LogoUpload";
 import { barbershopSettingsSchema, buildBarbershopUpdate, getBarbershopErrorMessage } from "@/lib/barbershop";
 import { buildPublicBookingUrl } from "@/lib/publicBooking";
+import { getBlockedTimeDate } from "@/lib/agenda";
 
 const fadeUp = (i: number) => ({
   initial: { opacity: 0, y: 14 },
@@ -201,16 +202,51 @@ export default function SettingsPage() {
   };
 
   const addService = async () => {
-    if (!barbershop || !newServiceName.trim()) return;
-    const { error } = await supabase.from("services").insert({
-      barbershop_id: barbershop.id, name: newServiceName,
-      duration_minutes: newServiceDuration, price: parseFloat(newServicePrice) || 0,
-      category: newServiceCategory || null,
-    });
-    if (!error) {
-      setShowNewService(false); setNewServiceName(""); setNewServicePrice(""); setNewServiceCategory("");
-      loadServices(); toast({ title: "Serviço adicionado!" });
+    if (!barbershop) return;
+
+    const trimmedName = newServiceName.trim();
+    const parsedPrice = Number(newServicePrice);
+    const parsedDuration = Number(newServiceDuration);
+
+    if (!trimmedName) {
+      toast({ title: "Nome obrigatório", description: "Informe o nome do serviço.", variant: "destructive" });
+      return;
     }
+
+    if (!newServicePrice.trim() || !Number.isFinite(parsedPrice) || parsedPrice < 0) {
+      toast({ title: "Preço inválido", description: "Informe um preço válido para o serviço.", variant: "destructive" });
+      return;
+    }
+
+    if (!Number.isFinite(parsedDuration) || parsedDuration <= 0) {
+      toast({ title: "Duração inválida", description: "Informe uma duração maior que zero.", variant: "destructive" });
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("services")
+      .insert({
+        barbershop_id: barbershop.id,
+        name: trimmedName,
+        price: parsedPrice,
+        duration_minutes: parsedDuration,
+        category: newServiceCategory.trim() || null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      toast({ title: "Erro ao adicionar serviço", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    setServices((current) => [...current, data].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)));
+    setShowNewService(false);
+    setNewServiceName("");
+    setNewServiceDuration(30);
+    setNewServicePrice("");
+    setNewServiceCategory("");
+    toast({ title: "Serviço adicionado!", description: "O serviço foi salvo com sucesso." });
   };
   const deleteService = async (id: string) => {
     await supabase.from("services").delete().eq("id", id);
@@ -223,7 +259,10 @@ export default function SettingsPage() {
   const addProfessional = async () => {
     if (!barbershop || !newProName.trim()) return;
     const { error } = await supabase.from("professionals").insert({
-      barbershop_id: barbershop.id, name: newProName, role: newProRole,
+      barbershop_id: barbershop.id,
+      name: newProName,
+      role: newProRole,
+      specialties: null,
     });
     if (!error) {
       setShowNewPro(false); setNewProName(""); setNewProRole("Barbeiro");
@@ -565,7 +604,7 @@ export default function SettingsPage() {
                       <div key={b.id} className="flex items-center justify-between p-4 rounded-xl border border-border hover:border-primary/20 transition-colors">
                         <div>
                           <p className="text-sm font-medium text-foreground">
-                            {b.date} {b.all_day ? "(dia inteiro)" : `${b.start_time?.slice(0, 5)} - ${b.end_time?.slice(0, 5)}`}
+                            {getBlockedTimeDate(b)} {b.all_day ? "(dia inteiro)" : `${b.start_time?.slice(0, 5)} - ${b.end_time?.slice(0, 5)}`}
                           </p>
                           <p className="text-xs text-muted-foreground mt-0.5">
                             {b.reason || "Sem motivo"} {b.professional_id ? `· ${professionals.find((p) => p.id === b.professional_id)?.name || ""}` : "· Todos"}

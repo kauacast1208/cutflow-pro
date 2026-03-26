@@ -23,6 +23,10 @@ export interface BlockedTime {
   all_day: boolean;
   start_time: string | null;
   end_time: string | null;
+  date?: string | null;
+  blocked_date?: string | null;
+  block_date?: string | null;
+  start_date?: string | null;
   recurring?: boolean;
   recurring_days?: number[] | null;
 }
@@ -32,6 +36,16 @@ export interface ProfessionalAvailability {
   weekday: number;
   start_time: string;
   end_time: string;
+}
+
+export interface ProfessionalSchedule {
+  id?: string;
+  professional_id?: string;
+  work_days?: number[] | null;
+  work_start?: string | null;
+  work_end?: string | null;
+  break_start_time?: string | null;
+  break_end_time?: string | null;
 }
 
 export type DayStatus = "available" | "few" | "full" | "closed";
@@ -58,15 +72,51 @@ export function isTimeBlocked(
   date?: Date
 ): boolean {
   const dayOfWeek = date ? getDay(date) : undefined;
+  const dateKey = date ? format(date, "yyyy-MM-dd") : null;
   return blockedTimes.some((b) => {
     if (b.professional_id && b.professional_id !== professionalId) return false;
-    // For recurring blocks, check if the day of week matches
-    if (b.recurring && b.recurring_days && dayOfWeek !== undefined) {
-      if (!b.recurring_days.includes(dayOfWeek)) return false;
+
+    if (b.recurring) {
+      if (dayOfWeek === undefined || !Array.isArray(b.recurring_days) || !b.recurring_days.includes(dayOfWeek)) {
+        return false;
+      }
+    } else if (dateKey) {
+      const blockedDate = b.date || b.blocked_date || b.block_date || b.start_date || null;
+      if (blockedDate && blockedDate !== dateKey) return false;
     }
+
     if (b.all_day) return true;
-    return timeStr < (b.end_time || "") && endTime > (b.start_time || "");
+    if (!b.start_time || !b.end_time) return false;
+    return timeStr < b.end_time && endTime > b.start_time;
   });
+}
+
+function normalizeTimeValue(value: string | null | undefined) {
+  return value?.slice(0, 5) || null;
+}
+
+function isWithinProfessionalWorkDays(date: Date, professional?: ProfessionalSchedule | null) {
+  const workDays = professional?.work_days;
+  if (!workDays || workDays.length === 0) {
+    return true;
+  }
+
+  return workDays.includes(getDay(date));
+}
+
+function hasProfessionalBreakConflict(
+  timeStr: string,
+  endTime: string,
+  professional?: ProfessionalSchedule | null
+) {
+  const breakStart = normalizeTimeValue(professional?.break_start_time);
+  const breakEnd = normalizeTimeValue(professional?.break_end_time);
+
+  if (!breakStart || !breakEnd) {
+    return false;
+  }
+
+  return timeStr < breakEnd && endTime > breakStart;
 }
 
 /** Get the availability window for a professional on a given date */
@@ -75,7 +125,8 @@ export function getAvailabilityForDate(
   professionalId: string,
   availability: ProfessionalAvailability[],
   fallbackOpen: string,
-  fallbackClose: string
+  fallbackClose: string,
+  professional?: ProfessionalSchedule | null
 ): { start: string; end: string } | null {
   const weekday = getDay(date); // 0=Sun, 1=Mon...
   const match = availability.find(
@@ -84,8 +135,15 @@ export function getAvailabilityForDate(
   if (match) {
     return { start: match.start_time.slice(0, 5), end: match.end_time.slice(0, 5) };
   }
-  // No availability record = professional doesn't work this day
-  return null;
+
+  if (!isWithinProfessionalWorkDays(date, professional)) {
+    return null;
+  }
+
+  const start = normalizeTimeValue(professional?.work_start) || fallbackOpen;
+  const end = normalizeTimeValue(professional?.work_end) || fallbackClose;
+
+  return { start, end };
 }
 
 /** Generate available time slots for a given date, professional, and config */
@@ -95,12 +153,13 @@ export function generateTimeSlots(
   config: SlotConfig,
   appointments: Appointment[],
   blockedTimes: BlockedTime[],
-  availability: ProfessionalAvailability[] = []
+  availability: ProfessionalAvailability[] = [],
+  professional?: ProfessionalSchedule | null
 ): string[] {
   // Determine the working window
   const avail = availability.length > 0
-    ? getAvailabilityForDate(date, professionalId, availability, config.openingTime, config.closingTime)
-    : { start: config.openingTime.slice(0, 5), end: config.closingTime.slice(0, 5) };
+    ? getAvailabilityForDate(date, professionalId, availability, config.openingTime, config.closingTime, professional)
+    : getAvailabilityForDate(date, professionalId, [], config.openingTime, config.closingTime, professional);
 
   if (!avail) return []; // Professional doesn't work this day
 
@@ -124,8 +183,9 @@ export function generateTimeSlots(
     if (!isBefore(current, minTime)) {
       const conflict = hasAppointmentConflict(timeStr, endTimeWithBuffer, professionalId, appointments);
       const blocked = isTimeBlocked(timeStr, endTime, professionalId, blockedTimes, date);
+      const onBreak = hasProfessionalBreakConflict(timeStr, endTime, professional);
 
-      if (!conflict && !blocked) {
+      if (!conflict && !blocked && !onBreak) {
         slots.push(timeStr);
       }
     }
@@ -144,7 +204,8 @@ export function computeDayStatus(
   appointments: Appointment[],
   blockedTimes: BlockedTime[],
   availability: ProfessionalAvailability[],
-  closedDays: number[]
+  closedDays: number[],
+  professional?: ProfessionalSchedule | null
 ): DayStatus {
   const weekday = getDay(date);
   const today = new Date();
@@ -152,7 +213,7 @@ export function computeDayStatus(
 
   if (date < today || closedDays.includes(weekday)) return "closed";
 
-  const slots = generateTimeSlots(date, professionalId, config, appointments, blockedTimes, availability);
+  const slots = generateTimeSlots(date, professionalId, config, appointments, blockedTimes, availability, professional);
 
   if (slots.length === 0) return "full";
   if (slots.length <= 3) return "few";

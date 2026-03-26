@@ -24,6 +24,7 @@ import { useNavigate } from "react-router-dom";
 import WeeklySchedule from "@/components/admin/WeeklySchedule";
 import { motion } from "framer-motion";
 import { computeDashboardBusinessMetrics } from "@/lib/clientAnalytics";
+import { BarbershopLogo } from "@/components/shared/BarbershopLogo";
 
 const PIE_COLORS = [
   "hsl(var(--primary))",
@@ -480,17 +481,13 @@ export default function DashboardHome() {
       {/* ── Header with barbershop identity ── */}
       <div className="flex flex-col gap-5 rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,_rgba(15,23,42,0.84),_rgba(8,15,28,0.92))] p-5 shadow-[0_24px_70px_-30px_rgba(0,0,0,0.98)] sm:gap-5 sm:p-7">
         <div className="flex items-start gap-3 sm:gap-3.5">
-          {barbershop?.logo_url ? (
-            <img
-              src={barbershop.logo_url}
-              alt={barbershop.name || ""}
-              className="h-11 w-11 shrink-0 rounded-xl border border-white/10 object-cover shadow-[0_14px_32px_-18px_rgba(0,0,0,0.95)] sm:h-14 sm:w-14 sm:rounded-2xl"
-            />
-          ) : (
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-emerald-400/15 bg-emerald-400/10 sm:h-14 sm:w-14 sm:rounded-2xl">
-              <Scissors className="h-5 w-5 text-emerald-300 sm:h-6 sm:w-6" />
-            </div>
-          )}
+          <BarbershopLogo
+            name={barbershop?.name}
+            logoUrl={barbershop?.logo_url}
+            className="h-11 w-11 shrink-0 rounded-xl border border-white/10 shadow-[0_14px_32px_-18px_rgba(0,0,0,0.95)] sm:h-14 sm:w-14 sm:rounded-2xl"
+            fallbackClassName="rounded-xl sm:rounded-2xl border-emerald-400/15 bg-emerald-400/10 text-emerald-300"
+            imageClassName="object-cover"
+          />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="inline-flex items-center rounded-full border border-emerald-400/15 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-300">

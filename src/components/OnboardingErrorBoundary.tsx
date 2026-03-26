@@ -37,7 +37,7 @@ export class OnboardingErrorBoundary extends React.Component<Props, State> {
       errorMessage: error.message,
       componentStack: errorInfo.componentStack?.slice(0, 500),
       userAgent: navigator.userAgent,
-      sessionExists: !!localStorage.getItem("sb-qftpdrmiwdsqkfrpakbw-auth-token"),
+      sessionExists: !!localStorage.getItem(`sb-${import.meta.env.VITE_SUPABASE_PROJECT_ID}-auth-token`),
     };
 
     console.error("[OnboardingErrorBoundary] Crash captured:", diagnostics);

@@ -14,6 +14,7 @@ export default function ServicesPage() {
   const { toast } = useToast();
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
   const [showNew, setShowNew] = useState(false);
   const [name, setName] = useState("");
@@ -24,7 +25,14 @@ export default function ServicesPage() {
   const load = async () => {
     if (!barbershop) return;
     setLoading(true);
-    const { data } = await supabase.from("services").select("*").eq("barbershop_id", barbershop.id).order("sort_order");
+    const { data, error } = await supabase.from("services").select("*").eq("barbershop_id", barbershop.id).order("sort_order");
+    if (error) {
+      setSaving(false);
+      toast({ title: "Erro ao carregar serviços", description: error.message, variant: "destructive" });
+      setServices([]);
+      setLoading(false);
+      return;
+    }
     setServices(data || []);
     setLoading(false);
   };
@@ -32,24 +40,72 @@ export default function ServicesPage() {
   useEffect(() => { load(); }, [barbershop]);
 
   const addService = async () => {
-    if (!barbershop || !name.trim()) return;
-    const { error } = await supabase.from("services").insert({
-      barbershop_id: barbershop.id, name, duration_minutes: duration,
-      price: parseFloat(price) || 0, category: category || null,
-    });
-    if (!error) {
-      setShowNew(false); setName(""); setPrice(""); setCategory("");
-      load(); toast({ title: "Serviço adicionado!" });
+    if (!barbershop) return;
+
+    const trimmedName = name.trim();
+    const parsedPrice = Number(price);
+    const parsedDuration = Number(duration);
+
+    if (!trimmedName) {
+      toast({ title: "Nome obrigatório", description: "Informe o nome do serviço.", variant: "destructive" });
+      return;
     }
+
+    if (!price.trim() || !Number.isFinite(parsedPrice) || parsedPrice < 0) {
+      toast({ title: "Preço inválido", description: "Informe um preço válido para o serviço.", variant: "destructive" });
+      return;
+    }
+
+    if (!Number.isFinite(parsedDuration) || parsedDuration <= 0) {
+      toast({ title: "Duração inválida", description: "Informe uma duração maior que zero.", variant: "destructive" });
+      return;
+    }
+
+    setSaving(true);
+    const { data, error } = await supabase
+      .from("services")
+      .insert({
+        barbershop_id: barbershop.id,
+        name: trimmedName,
+        duration_minutes: parsedDuration,
+        price: parsedPrice,
+        category: category.trim() || null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      toast({ title: "Erro ao adicionar serviço", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    setServices((current) => [...current, data].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)));
+    await load();
+    setShowNew(false);
+    setName("");
+    setDuration(30);
+    setPrice("");
+    setCategory("");
+    setSaving(false);
+    toast({ title: "Serviço adicionado!", description: "O serviço foi salvo com sucesso." });
   };
 
   const deleteService = async (id: string) => {
-    await supabase.from("services").delete().eq("id", id);
+    const { error } = await supabase.from("services").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Erro ao remover serviÃ§o", description: error.message, variant: "destructive" });
+      return;
+    }
     load(); toast({ title: "Serviço removido." });
   };
 
   const toggleService = async (id: string, active: boolean) => {
-    await supabase.from("services").update({ active: !active }).eq("id", id); load();
+    const { error } = await supabase.from("services").update({ active: !active }).eq("id", id);
+    if (error) {
+      toast({ title: "Erro ao atualizar serviÃ§o", description: error.message, variant: "destructive" });
+      return;
+    }
+    load();
   };
 
   const filtered = services.filter((s) => s.name.toLowerCase().includes(search.toLowerCase()));

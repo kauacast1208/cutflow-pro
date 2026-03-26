@@ -12,6 +12,19 @@ const logStep = (step: string, details?: any) => {
   console.log(`[PUBLIC-BOOKING] ${step}${detailsStr}`);
 };
 
+const toMinutes = (time: string) => {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+};
+
+const overlaps = (startA: number, endA: number, startB: number, endB: number) =>
+  startA < endB && endA > startB;
+
+const getWeekday = (date: string) => {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day, 12, 0, 0)).getUTCDay();
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -35,6 +48,7 @@ serve(async (req) => {
     const {
       barbershop_id,
       services,
+      service_id,
       professional_id,
       client_name,
       client_phone,
@@ -74,7 +88,13 @@ serve(async (req) => {
       });
     }
 
-    if (!Array.isArray(services) || services.length === 0) {
+    const normalizedServices = Array.isArray(services)
+      ? services
+      : typeof service_id === "string" && service_id
+        ? [{ id: service_id }]
+        : [];
+
+    if (!Array.isArray(normalizedServices) || normalizedServices.length === 0) {
       return new Response(JSON.stringify({ error: "Pelo menos um serviço é obrigatório" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -121,7 +141,7 @@ serve(async (req) => {
     // Verify professional exists and belongs to barbershop
     const { data: professional, error: proError } = await supabase
       .from("professionals")
-      .select("id")
+      .select("id, work_days, work_start, work_end, break_start_time, break_end_time")
       .eq("id", professional_id)
       .eq("barbershop_id", barbershop_id)
       .eq("active", true)
@@ -135,7 +155,9 @@ serve(async (req) => {
     }
 
     // Verify all services exist and belong to barbershop
-    const serviceIds = services.map((s: any) => s.id);
+    const serviceIds = normalizedServices
+      .map((s: any) => s.id)
+      .filter((id: unknown): id is string => typeof id === "string" && id.length > 0);
     const { data: validServices, error: svcError } = await supabase
       .from("services")
       .select("id, duration_minutes, price")
@@ -184,12 +206,85 @@ serve(async (req) => {
     // Build a map of valid services by ID for quick lookup
     const svcMap = new Map(validServices.map((s) => [s.id, s]));
 
+    const weekday = getWeekday(sanitizedDate);
+    const { data: availabilityRows, error: availabilityError } = await supabase
+      .from("professional_availability")
+      .select("start_time, end_time")
+      .eq("professional_id", professional_id)
+      .eq("weekday", weekday)
+      .order("start_time", { ascending: true });
+
+    if (availabilityError) {
+      return new Response(JSON.stringify({ error: "Erro ao validar disponibilidade do profissional" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: existingAppointments, error: appointmentsError } = await supabase
+      .from("appointments")
+      .select("start_time, end_time, status")
+      .eq("barbershop_id", barbershop_id)
+      .eq("professional_id", professional_id)
+      .eq("date", sanitizedDate)
+      .in("status", ["scheduled", "confirmed"]);
+
+    if (appointmentsError) {
+      return new Response(JSON.stringify({ error: "Erro ao validar conflitos de agenda" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const [datedBlockedRes, recurringBlockedRes] = await Promise.all([
+      supabase
+        .from("blocked_times")
+        .select("all_day, start_time, end_time, recurring, recurring_days, date, professional_id")
+        .eq("barbershop_id", barbershop_id)
+        .eq("recurring", false)
+        .eq("date", sanitizedDate),
+      supabase
+        .from("blocked_times")
+        .select("all_day, start_time, end_time, recurring, recurring_days, date, professional_id")
+        .eq("barbershop_id", barbershop_id)
+        .eq("recurring", true)
+        .contains("recurring_days", [weekday]),
+    ]);
+
+    if (datedBlockedRes.error || recurringBlockedRes.error) {
+      return new Response(JSON.stringify({ error: "Erro ao validar bloqueios da agenda" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const relevantBlockedTimes = [...(datedBlockedRes.data || []), ...(recurringBlockedRes.data || [])]
+      .filter((blocked) => !blocked.professional_id || blocked.professional_id === professional_id);
+
+    const professionalWorkDays = Array.isArray(professional.work_days) ? professional.work_days : [];
+    if (professionalWorkDays.length > 0 && !professionalWorkDays.includes(weekday) && (!availabilityRows || availabilityRows.length === 0)) {
+      return new Response(JSON.stringify({ error: "Profissional indisponível neste dia" }), {
+        status: 409,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const workingWindows = availabilityRows && availabilityRows.length > 0
+      ? availabilityRows.map((item) => ({ start: item.start_time.slice(0, 5), end: item.end_time.slice(0, 5) }))
+      : [{
+          start: professional.work_start?.slice(0, 5) || "09:00",
+          end: professional.work_end?.slice(0, 5) || "19:00",
+        }];
+
+    const professionalBreakStart = professional.break_start_time?.slice(0, 5) || null;
+    const professionalBreakEnd = professional.break_end_time?.slice(0, 5) || null;
+
     // Create appointments chaining times
     let currentTime = start_time;
     let firstAppointmentId: string | null = null;
     const status = auto_confirm ? "confirmed" : "scheduled";
 
-    for (const svcInput of services) {
+    for (const svcInput of normalizedServices) {
       const svc = svcMap.get(svcInput.id);
       if (!svc) continue;
 
@@ -199,6 +294,55 @@ serve(async (req) => {
       const endHours = Math.floor(totalMinutes / 60).toString().padStart(2, "0");
       const endMins = (totalMinutes % 60).toString().padStart(2, "0");
       const endTime = `${endHours}:${endMins}`;
+      const startMinutes = toMinutes(currentTime);
+      const endMinutes = toMinutes(endTime);
+
+      const fitsWorkingWindow = workingWindows.some((window) =>
+        startMinutes >= toMinutes(window.start) &&
+        endMinutes <= toMinutes(window.end)
+      );
+
+      if (!fitsWorkingWindow) {
+        return new Response(JSON.stringify({ error: "O horário escolhido está fora do expediente do profissional" }), {
+          status: 409,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      if (
+        professionalBreakStart &&
+        professionalBreakEnd &&
+        overlaps(startMinutes, endMinutes, toMinutes(professionalBreakStart), toMinutes(professionalBreakEnd))
+      ) {
+        return new Response(JSON.stringify({ error: "O horário escolhido conflita com o intervalo do profissional" }), {
+          status: 409,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const hasAppointmentConflict = (existingAppointments || []).some((appointment) =>
+        overlaps(startMinutes, endMinutes, toMinutes(appointment.start_time.slice(0, 5)), toMinutes(appointment.end_time.slice(0, 5)))
+      );
+
+      if (hasAppointmentConflict) {
+        return new Response(JSON.stringify({ error: "O horário escolhido acabou de ser reservado" }), {
+          status: 409,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const hasBlockedConflict = relevantBlockedTimes.some((blocked) => {
+        if (blocked.all_day) return true;
+        if (!blocked.start_time || !blocked.end_time) return false;
+        return overlaps(startMinutes, endMinutes, toMinutes(blocked.start_time.slice(0, 5)), toMinutes(blocked.end_time.slice(0, 5)));
+      });
+
+      if (hasBlockedConflict) {
+        return new Response(JSON.stringify({ error: "O horário escolhido está bloqueado" }), {
+          status: 409,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
 
       const { data, error } = await supabase
         .from("appointments")
@@ -230,6 +374,12 @@ serve(async (req) => {
       if (data && !firstAppointmentId) {
         firstAppointmentId = data.id;
       }
+
+      existingAppointments?.push({
+        start_time: currentTime,
+        end_time: endTime,
+        status,
+      });
 
       currentTime = endTime;
     }

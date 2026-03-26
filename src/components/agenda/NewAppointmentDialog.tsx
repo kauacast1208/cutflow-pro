@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+﻿import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -196,7 +196,7 @@ export default function NewAppointmentDialog({
               <SelectContent>
                 {services.map((s: any) => (
                   <SelectItem key={s.id} value={s.id}>
-                    {s.name} — {s.duration_minutes}min · R${Number(s.price).toFixed(0)}
+                    {s.name} - {s.duration_minutes}min · R${Number(s.price).toFixed(0)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -282,3 +282,5 @@ export default function NewAppointmentDialog({
     </Dialog>
   );
 }
+
+

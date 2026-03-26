@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   ChevronLeft, ChevronRight, CalendarDays, MessageCircle,
   Clock, User, Scissors, DollarSign, XCircle, CheckCircle2, Star,
-  LayoutGrid, CalendarRange, Users, AlertCircle, Phone, FileText,
-  Plus, Ban, CalendarOff, TrendingUp, UserX,
+  CalendarRange, Users, AlertCircle, Phone, FileText,
+  Plus, Ban, CalendarOff, TrendingUp, UserX, Search,
 } from "lucide-react";
 import { useBarbershop } from "@/hooks/useBarbershop";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -19,25 +20,68 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import NewAppointmentDialog from "@/components/agenda/NewAppointmentDialog";
+import { computeAgendaMetrics, formatRelativeVisitDay, getBlockedTimeDate, normalizeAgendaAppointment } from "@/lib/agenda";
+import { ProfessionalAvatar } from "@/components/shared/ProfessionalAvatar";
+import { buildClientAggregates, getClientKeyFromAppointment } from "@/lib/clientAnalytics";
 
 type ViewMode = "day" | "week" | "professional";
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; border: string; dot: string }> = {
-  scheduled: { label: "Agendado", color: "text-amber-700 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/10", border: "border-amber-200 dark:border-amber-500/20", dot: "bg-amber-500" },
-  confirmed: { label: "Confirmado", color: "text-primary", bg: "bg-primary/5", border: "border-primary/20", dot: "bg-primary" },
-  completed: { label: "Concluído", color: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10", border: "border-emerald-200 dark:border-emerald-500/20", dot: "bg-emerald-500" },
-  rescheduled: { label: "Remarcado", color: "text-blue-700 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10", border: "border-blue-200 dark:border-blue-500/20", dot: "bg-blue-500" },
+  scheduled: { label: "Pendente", color: "text-amber-700 dark:text-amber-300", bg: "bg-amber-500/10", border: "border-amber-500/25", dot: "bg-amber-400" },
+  confirmed: { label: "Confirmado", color: "text-emerald-700 dark:text-emerald-300", bg: "bg-emerald-500/10", border: "border-emerald-500/25", dot: "bg-emerald-400" },
+  completed: { label: "Concluído", color: "text-primary", bg: "bg-primary/10", border: "border-primary/20", dot: "bg-primary" },
+  rescheduled: { label: "Remarcado", color: "text-sky-700 dark:text-sky-300", bg: "bg-sky-500/10", border: "border-sky-500/25", dot: "bg-sky-400" },
   cancelled: { label: "Cancelado", color: "text-destructive", bg: "bg-destructive/5", border: "border-destructive/20", dot: "bg-destructive" },
+  no_show: { label: "Risco de no-show", color: "text-rose-700 dark:text-rose-300", bg: "bg-rose-500/10", border: "border-rose-500/25", dot: "bg-rose-400" },
 };
 
+const getBlockTone = (reason?: string) => {
+  const lowerReason = String(reason || "").toLowerCase();
+
+  if (lowerReason.includes("almoço")) {
+    return {
+      cellBg: "bg-amber-500/[0.05]",
+      chipClass: "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+      icon: "🍽️",
+    };
+  }
+
+  if (lowerReason.includes("pausa")) {
+    return {
+      cellBg: "bg-sky-500/[0.05]",
+      chipClass: "border-sky-500/25 bg-sky-500/10 text-sky-700 dark:text-sky-300",
+      icon: "☕",
+    };
+  }
+
+  return {
+    cellBg: "bg-muted/[0.06]",
+    chipClass: "border-border/60 bg-muted/35 text-muted-foreground",
+    icon: "🚫",
+  };
+};
+
+const isVipAppointment = (event: any) => {
+  const vipSignals = [
+    event.clientName,
+    event.client_name,
+    event.serviceName,
+    event.services?.name,
+    event.notes,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  return vipSignals.includes("vip") || vipSignals.includes("premium") || vipSignals.includes("signature") || Number(event.price || 0) >= 140;
+};
 export default function AgendaPage() {
   const { barbershop } = useBarbershop();
   const { user } = useAuth();
@@ -55,6 +99,9 @@ export default function AgendaPage() {
   const [cancelReason, setCancelReason] = useState("");
   const [myProfessionalId, setMyProfessionalId] = useState<string | null>(null);
   const [selectedPro, setSelectedPro] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
   const [showBlockDialog, setShowBlockDialog] = useState(false);
   const [blockForm, setBlockForm] = useState<{ date: string; start_time: string; end_time: string; reason: string; professional_id: string; all_day: boolean; recurring: boolean; recurring_days: number[] }>({ date: "", start_time: "", end_time: "", reason: "", professional_id: "all", all_day: false, recurring: false, recurring_days: [] });
   const [showNewAppt, setShowNewAppt] = useState(false);
@@ -87,12 +134,18 @@ export default function AgendaPage() {
   useEffect(() => {
     if (!isProfessional || !user || !barbershop) return;
     supabase.from("professionals").select("id").eq("barbershop_id", barbershop.id).eq("user_id", user.id).maybeSingle()
-      .then(({ data }) => { if (data) setMyProfessionalId(data.id); });
+      .then(({ data }) => {
+        if (data) {
+          setMyProfessionalId(data.id);
+          setSelectedPro(data.id);
+        }
+      });
   }, [isProfessional, user, barbershop]);
 
   const fetchData = useCallback(async () => {
     if (!barbershop) return;
     if (isProfessional && !myProfessionalId) return;
+    setIsLoading(true);
     const start = format(days[0], "yyyy-MM-dd");
     const end = format(days[days.length - 1], "yyyy-MM-dd");
 
@@ -107,15 +160,20 @@ export default function AgendaPage() {
 
     const [appRes, blockRes, recurringBlockRes, proRes, svcRes] = await Promise.all([
       apptQuery,
-      supabase.from("blocked_times").select("*").eq("barbershop_id", barbershop.id).eq("recurring", false).gte("date", start).lte("date", end),
+      supabase.from("blocked_times").select("*").eq("barbershop_id", barbershop.id).eq("recurring", false),
       supabase.from("blocked_times").select("*").eq("barbershop_id", barbershop.id).eq("recurring", true),
       supabase.from("professionals").select("*").eq("barbershop_id", barbershop.id).eq("active", true),
       supabase.from("services").select("*").eq("barbershop_id", barbershop.id).eq("active", true),
     ]);
+    const datedBlocks = (blockRes.data || []).filter((block: any) => {
+      const blockDate = getBlockedTimeDate(block);
+      return blockDate && blockDate >= start && blockDate <= end;
+    });
     setAppointments(appRes.data || []);
-    setBlockedTimes([...(blockRes.data || []), ...(recurringBlockRes.data || [])]);
+    setBlockedTimes([...datedBlocks, ...(recurringBlockRes.data || [])]);
     setProfessionals(proRes.data || []);
     setServices(svcRes.data || []);
+    setIsLoading(false);
   }, [barbershop, days, isProfessional, myProfessionalId]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
@@ -131,10 +189,11 @@ export default function AgendaPage() {
     return () => { supabase.removeChannel(channel); };
   }, [barbershop, fetchData]);
 
-  const handleAction = async (id: string, status: string, message: string) => {
-    await supabase.from("appointments").update({ status: status as any }).eq("id", id);
+  const handleAction = async (id: string, status: string, message: string, extra?: Record<string, unknown>) => {
+    await supabase.from("appointments").update({ status: status as any, ...(extra || {}) }).eq("id", id);
     toast({ title: message });
     setSelectedAppt(null);
+    setCancelReason("");
     await fetchData();
   };
 
@@ -142,6 +201,22 @@ export default function AgendaPage() {
     if (!selectedAppt) return;
     await supabase.from("appointments").update({ status: "cancelled" as const, cancellation_reason: cancelReason || null }).eq("id", selectedAppt.id);
     toast({ title: "Agendamento cancelado." });
+    setSelectedAppt(null);
+    setCancelReason("");
+    await fetchData();
+  };
+
+  const handleNoShow = async () => {
+    if (!selectedAppt) return;
+    // no-show é um status próprio, semanticamente diferente de cancelamento
+    await supabase.from("appointments").update({
+      status: "no_show" as const,
+      cancellation_reason: cancelReason || "No-show",
+    }).eq("id", selectedAppt.id);
+    toast({
+      title: "No-show registrado",
+      description: `${selectedAppt.client_name} marcado como não compareceu.`,
+    });
     setSelectedAppt(null);
     setCancelReason("");
     await fetchData();
@@ -176,29 +251,70 @@ export default function AgendaPage() {
     await fetchData();
   };
 
-  // Filtered appointments
-  const filteredAppts = useMemo(() => {
-    if (selectedPro === "all") return appointments;
-    return appointments.filter(a => a.professional_id === selectedPro);
-  }, [appointments, selectedPro]);
+  const normalizedAppts = useMemo(
+    () => appointments.map((appointment) => normalizeAgendaAppointment(appointment)),
+    [appointments]
+  );
 
-  // Stats for today
-  const todayAppts = useMemo(() => filteredAppts.filter(a => a.date === today && a.status !== "cancelled"), [filteredAppts, today]);
-  const totalRevenue = useMemo(() => todayAppts.reduce((s, a) => s + Number(a.price || 0), 0), [todayAppts]);
-  const freeSlots = useMemo(() => {
-    const booked = todayAppts.length;
-    return Math.max(0, hours.length - booked);
-  }, [todayAppts, hours]);
+  // Agregados de cliente para enriquecer os cards com visit count e histórico
+  const clientAggregates = useMemo(() => buildClientAggregates(appointments), [appointments]);
+
+  const filteredAppts = useMemo(() => {
+    return normalizedAppts.filter((appointment) => {
+      if (selectedPro !== "all" && appointment.professionalId !== selectedPro) return false;
+      if (selectedStatus !== "all" && appointment.displayStatus !== selectedStatus) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.trim().toLowerCase();
+        if (!appointment.clientName?.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+  }, [normalizedAppts, selectedPro, selectedStatus, searchQuery]);
+
+  const scopedProfessionals = useMemo(() => {
+    if (isProfessional && myProfessionalId) {
+      return professionals.filter((professional) => professional.id === myProfessionalId);
+    }
+    if (selectedPro === "all") return professionals;
+    return professionals.filter((professional) => professional.id === selectedPro);
+  }, [isProfessional, myProfessionalId, professionals, selectedPro]);
+
+  const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
+
+  const agendaMetrics = useMemo(() => computeAgendaMetrics({
+    appointments: filteredAppts,
+    blockedTimes,
+    selectedDate: selectedDateStr,
+    hours,
+    professionals: scopedProfessionals,
+  }), [filteredAppts, blockedTimes, selectedDateStr, hours, scopedProfessionals]);
+
+  const dayAppts = useMemo(
+    () => filteredAppts.filter((appointment) => appointment.date === selectedDateStr),
+    [filteredAppts, selectedDateStr]
+  );
+
+  const dayStatusCounts = useMemo(() => {
+    const counts: Record<string, number> = { scheduled: 0, confirmed: 0, completed: 0, cancelled: 0, no_show: 0 };
+    dayAppts.forEach((appointment) => {
+      counts[appointment.displayStatus] = (counts[appointment.displayStatus] || 0) + 1;
+    });
+    return counts;
+  }, [dayAppts]);
 
   const topPro = useMemo(() => {
     if (professionals.length === 0) return null;
     const counts: Record<string, number> = {};
-    todayAppts.forEach(a => { counts[a.professional_id] = (counts[a.professional_id] || 0) + 1; });
+    dayAppts.forEach((appointment) => {
+      if (["cancelled", "no_show", "rescheduled"].includes(appointment.displayStatus)) return;
+      if (!appointment.professionalId) return;
+      counts[appointment.professionalId] = (counts[appointment.professionalId] || 0) + 1;
+    });
     const topId = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
     if (!topId) return null;
-    const pro = professionals.find(p => p.id === topId[0]);
-    return pro ? { name: pro.name, count: topId[1] } : null;
-  }, [todayAppts, professionals]);
+    const professional = professionals.find((item) => item.id === topId[0]);
+    return professional ? { name: professional.name, count: topId[1] } : null;
+  }, [dayAppts, professionals]);
 
   // Navigate
   const goToday = () => {
@@ -206,11 +322,11 @@ export default function AgendaPage() {
     setWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
   };
   const goPrev = () => {
-    if (viewMode === "day") setSelectedDate(d => subDays(d, 1));
+    if (viewMode === "day" || viewMode === "professional") setSelectedDate(d => subDays(d, 1));
     else setWeekStart(w => subWeeks(w, 1));
   };
   const goNext = () => {
-    if (viewMode === "day") setSelectedDate(d => addDays(d, 1));
+    if (viewMode === "day" || viewMode === "professional") setSelectedDate(d => addDays(d, 1));
     else setWeekStart(w => addWeeks(w, 1));
   };
 
@@ -222,17 +338,11 @@ export default function AgendaPage() {
   const getApptsForSlot = (dateStr: string, hour: number, proId?: string) => {
     return filteredAppts.filter(a => {
       if (a.date !== dateStr) return false;
-      if (a.status === "cancelled") return false;
-      const startH = parseInt(a.start_time);
-      const startM = parseInt(a.start_time?.split(":")[1] || "0");
-      const endH = parseInt(a.end_time);
-      const endM = parseInt(a.end_time?.split(":")[1] || "0");
+      if (["cancelled", "no_show", "rescheduled"].includes(a.displayStatus)) return false;
       const slotStart = hour * 60;
       const slotEnd = slotStart + 60;
-      const apptStart = startH * 60 + startM;
-      const apptEnd = endH * 60 + endM;
-      if (apptStart >= slotEnd || apptEnd <= slotStart) return false;
-      if (proId && a.professional_id !== proId) return false;
+      if (a.startMinutes >= slotEnd || a.endMinutes <= slotStart) return false;
+      if (proId && a.professionalId !== proId) return false;
       return true;
     });
   };
@@ -245,7 +355,7 @@ export default function AgendaPage() {
       // Check date match: exact date or recurring weekday
       const dateMatch = b.recurring
         ? (b.recurring_days || []).includes(dayOfWeek)
-        : b.date === dateStr;
+        : getBlockedTimeDate(b) === dateStr;
       if (!dateMatch) return false;
       if (b.all_day) return true;
       if (!b.start_time || !b.end_time) return false;
@@ -257,37 +367,105 @@ export default function AgendaPage() {
 
   // Card renderer
   const AppointmentCard = ({ event, compact = false }: { event: any; compact?: boolean }) => {
-    const sc = statusConfig[event.status] || statusConfig.scheduled;
+    const sc = statusConfig[event.displayStatus] || statusConfig.scheduled;
+    const timeBucketLabel = event.isCurrent ? "Agora" : formatRelativeVisitDay(event.date);
+    const isVip = isVipAppointment(event);
+    const duration = `${event.durationMinutes || event.services?.duration_minutes || 30} min`;
+
+    // Revenue intelligence: enriquecer o card com dados do cliente
+    const clientKey = getClientKeyFromAppointment(event);
+    const aggregate = clientAggregates.get(clientKey);
+    const visitCount = aggregate?.appointmentCount ?? null;
+    const totalSpent = aggregate?.totalSpent ?? null;
+    const hadNoShow = aggregate?.cancelledAppointments?.some(
+      (a: any) => String(a.cancellation_reason || "").toLowerCase().includes("no-show") ||
+                  String(a.cancellation_reason || "").toLowerCase().includes("não compareceu") ||
+                  a.status === "no_show"
+    ) ?? false;
+    const price = Number(event.price || event.services?.price || 0);
+
     return (
       <div
         onClick={(e) => { e.stopPropagation(); setSelectedAppt(event); }}
-        className={`rounded-lg border ${sc.border} ${sc.bg} p-2 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.015] active:scale-[0.985] overflow-hidden group`}
+        className={`group relative overflow-hidden rounded-xl border ${sc.border} ${sc.bg} cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(10,14,18,0.16)] hover:border-primary/25 active:scale-[0.99]`}
       >
-        <div className="flex items-start gap-2">
-          <div className={`h-2 w-[3px] rounded-full ${sc.dot} mt-0.5 shrink-0`} />
-          <div className="flex-1 min-w-0">
-            <p className={`text-[11px] font-bold truncate ${sc.color}`}>{event.client_name}</p>
-            {!compact && (
-              <>
-                <p className="text-[10px] text-muted-foreground/80 truncate mt-0.5">
-                  {event.services?.name}
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/18 to-transparent opacity-60" />
+        <div className="flex items-start gap-2.5 p-2.5 sm:p-3">
+          <div className={`mt-0.5 h-10 w-1 rounded-full ${isVip ? "bg-sky-400" : sc.dot} shadow-[0_0_14px_rgba(34,197,94,0.2)]`} />
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
+                  {event.serviceName}
                 </p>
-                <div className="flex items-center gap-2.5 mt-1.5">
-                  <span className="text-[10px] text-muted-foreground/60 flex items-center gap-0.5 font-medium tabular-nums">
-                    <Clock className="h-2.5 w-2.5" />
-                    {event.start_time?.slice(0, 5)}–{event.end_time?.slice(0, 5)}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground/60 flex items-center gap-0.5">
-                    <User className="h-2.5 w-2.5" />
-                    {event.professionals?.name?.split(" ")[0]}
-                  </span>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {event.clientName}
+                  </p>
+                  {hadNoShow && (
+                    <span title="Cliente teve no-show anteriormente" className="shrink-0 inline-flex h-4 w-4 items-center justify-center rounded-full bg-rose-500/15">
+                      <UserX className="h-2.5 w-2.5 text-rose-500" />
+                    </span>
+                  )}
                 </div>
-              </>
+              </div>
+              <div className="flex flex-col items-end gap-1">
+                <Badge variant="secondary" className={`rounded-full border px-2 py-0.5 text-[9px] font-semibold ${isVip ? "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300" : `${sc.border} ${sc.bg} ${sc.color}`}`}>
+                  <span className={`mr-1 inline-block h-1.5 w-1.5 rounded-full ${isVip ? "bg-sky-400" : sc.dot}`} />
+                  {isVip ? "VIP" : sc.label}
+                </Badge>
+                <span className="whitespace-nowrap text-[10px] font-medium text-muted-foreground/75">{timeBucketLabel}</span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/55 px-2 py-1 text-[10px] font-medium text-foreground/85 backdrop-blur-sm">
+                <Clock className="h-3 w-3 text-primary/80" />
+                <span className="tabular-nums">{event.start_time?.slice(0, 5)}-{event.end_time?.slice(0, 5)}</span>
+              </span>
+              {price > 0 && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/8 px-2 py-1 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
+                  <DollarSign className="h-3 w-3" />
+                  R$ {price.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}
+                </span>
+              )}
+              {!compact && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/45 px-2 py-1 text-[10px] font-medium text-muted-foreground/85">
+                  <User className="h-3 w-3" />
+                  {event.professionalName?.split(" ")[0]}
+                </span>
+              )}
+            </div>
+
+            {/* Revenue intelligence row */}
+            {!compact && (visitCount !== null || totalSpent !== null) && (
+              <div className="flex items-center gap-2 pt-0.5">
+                {visitCount !== null && visitCount > 0 && (
+                  <span className="text-[10px] text-muted-foreground/55 font-medium">
+                    #{visitCount}ª visita
+                  </span>
+                )}
+                {totalSpent !== null && totalSpent > 0 && (
+                  <span className="text-[10px] text-muted-foreground/45">
+                    · LTV R$ {totalSpent.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}
+                  </span>
+                )}
+              </div>
             )}
+
+            {!compact && event.notes && (
+              <p className="truncate text-[10px] text-muted-foreground/72">{event.notes}</p>
+            )}
+
             {compact && (
-              <p className="text-[9px] text-muted-foreground/60 truncate mt-0.5 tabular-nums font-medium">
-                {event.start_time?.slice(0, 5)} · {event.services?.name?.split(" ")[0]}
-              </p>
+              <div className="flex items-center justify-between gap-2 text-[10px] text-muted-foreground/72">
+                <span className="truncate">{event.professionalName?.split(" ")[0]}</span>
+                {price > 0 ? (
+                  <span className="tabular-nums font-semibold text-emerald-600 dark:text-emerald-400">R$ {price.toLocaleString("pt-BR")}</span>
+                ) : (
+                  <span className="tabular-nums">{duration}</span>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -295,8 +473,15 @@ export default function AgendaPage() {
     );
   };
 
+  const statsCards = [
+    { label: selectedDateStr === today ? "Agendamentos hoje" : "Agendamentos no dia", value: String(agendaMetrics.appointmentsToday), sub: `${agendaMetrics.appointmentsThisWeek} na semana`, icon: CalendarDays },
+    { label: "Receita estimada", value: `R$${agendaMetrics.estimatedRevenueToday.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`, sub: selectedDateStr === today ? "considera agenda de hoje" : "considera data selecionada", icon: DollarSign },
+    { label: "HorÃ¡rios livres", value: String(agendaMetrics.freeSlots), sub: "janela estimada disponÃ­vel", icon: Clock },
+    { label: "Cancelamentos", value: String(agendaMetrics.cancellationsToday), sub: agendaMetrics.noShowToday > 0 ? `${agendaMetrics.noShowToday} no-show` : topPro ? `${topPro.count} atend.` : "sem dados", icon: TrendingUp },
+  ];
+
   return (
-    <div className="space-y-4 sm:space-y-5 pb-28 sm:pb-6 px-0.5 sm:px-0">
+    <div className="space-y-4 sm:space-y-6 pb-28 sm:pb-8 px-0.5 sm:px-0">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
         className="flex flex-col gap-3 sm:gap-4"
@@ -316,7 +501,7 @@ export default function AgendaPage() {
               <p className="text-[11px] sm:text-sm text-muted-foreground">
                 {viewMode === "day"
                   ? format(selectedDate, "EEEE, dd 'de' MMMM", { locale: ptBR })
-                  : `${format(days[0], "dd MMM", { locale: ptBR })} – ${format(days[days.length - 1], "dd MMM yyyy", { locale: ptBR })}`
+                  : `${format(days[0], "dd MMM", { locale: ptBR })} - ${format(days[days.length - 1], "dd MMM yyyy", { locale: ptBR })}`
                 }
               </p>
             </div>
@@ -351,9 +536,9 @@ export default function AgendaPage() {
         </div>
 
         {/* Controls row */}
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 overflow-x-auto -mx-0.5 px-0.5 sm:mx-0 sm:px-0">
+        <div className="flex flex-wrap items-center gap-2 overflow-x-auto rounded-2xl border border-border/50 bg-card/80 p-2 shadow-sm backdrop-blur-sm sm:gap-2.5">
           {/* View mode toggle */}
-          <div className="flex items-center bg-muted/50 rounded-xl p-0.5">
+          <div className="flex items-center rounded-xl border border-border/50 bg-muted/35 p-0.5">
             {([
               { key: "day" as const, icon: CalendarDays, label: "Dia" },
               { key: "week" as const, icon: CalendarRange, label: "Semana" },
@@ -364,8 +549,8 @@ export default function AgendaPage() {
                 onClick={() => setViewMode(v.key)}
                 className={`flex items-center gap-1 px-2.5 sm:px-3 py-2 text-[11px] sm:text-xs font-medium rounded-lg transition-all min-h-[40px] sm:min-h-[36px] ${
                   viewMode === v.key
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "border border-border/60 bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:bg-background/60 hover:text-foreground"
                 }`}
               >
                 <v.icon className="h-3.5 w-3.5" />
@@ -375,7 +560,7 @@ export default function AgendaPage() {
           </div>
 
           {/* Professional filter */}
-          {!isProfessional && viewMode !== "professional" && (
+          {!isProfessional && (
             <Select value={selectedPro} onValueChange={setSelectedPro}>
               <SelectTrigger className="h-9 w-auto min-w-[160px] rounded-xl text-xs bg-card">
                 <SelectValue placeholder="Profissional" />
@@ -389,8 +574,44 @@ export default function AgendaPage() {
             </Select>
           )}
 
+          <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+            <SelectTrigger className="h-9 w-auto min-w-[148px] rounded-xl text-xs bg-card">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os status</SelectItem>
+              <SelectItem value="scheduled">Agendado</SelectItem>
+              <SelectItem value="confirmed">Confirmado</SelectItem>
+              <SelectItem value="completed">Concluído</SelectItem>
+              <SelectItem value="cancelled">Cancelado</SelectItem>
+              <SelectItem value="no_show">No-show</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Busca por nome de cliente */}
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50 pointer-events-none" />
+            <Input
+              placeholder="Buscar cliente..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-9 w-auto min-w-[160px] pl-8 rounded-xl text-xs bg-card"
+            />
+          </div>
+
+          <Input
+            type="date"
+            value={selectedDateStr}
+            onChange={(e) => {
+              const nextDate = new Date(`${e.target.value}T12:00:00`);
+              setSelectedDate(nextDate);
+              setWeekStart(startOfWeek(nextDate, { weekStartsOn: 1 }));
+            }}
+            className="h-9 w-auto min-w-[160px] rounded-xl text-xs bg-card"
+          />
+
           {/* Date navigation */}
-          <div className="flex items-center bg-muted/50 rounded-xl p-0.5 ml-auto">
+          <div className="ml-auto flex items-center rounded-xl border border-border/50 bg-muted/35 p-0.5">
             <Button variant="ghost" size="sm" className="rounded-lg h-9 w-9 p-0" onClick={goPrev}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -431,17 +652,31 @@ export default function AgendaPage() {
         </div>
       </motion.div>
 
+      {isLoading && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }}
+          className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3"
+        >
+          {Array.from({ length: 4 }, (_, i) => (
+            <div key={i} className="rounded-2xl border border-border/50 bg-card/92 p-3 sm:p-4 shadow-[0_10px_30px_rgba(2,8,23,0.06)]">
+              <Skeleton className="h-3 w-24 rounded-full" />
+              <Skeleton className="mt-3 h-7 w-20 rounded-xl" />
+              <Skeleton className="mt-2 h-3 w-28 rounded-full" />
+            </div>
+          ))}
+        </motion.div>
+      )}
+
       {/* Quick stats */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }}
-        className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3"
+        className={`${isLoading ? "hidden" : "grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3"}`}
       >
         {[
-          { label: "Agendamentos", value: String(todayAppts.length), sub: "hoje", icon: CalendarDays },
-          { label: "Faturamento", value: `R$${totalRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`, sub: "previsto hoje", icon: DollarSign },
-          { label: "Horários livres", value: String(freeSlots), sub: "disponíveis", icon: Clock },
-          { label: "Destaque", value: topPro?.name?.split(" ")[0] || "--", sub: topPro ? `${topPro.count} atend.` : "sem dados", icon: TrendingUp },
+          { label: selectedDateStr === today ? "Agendamentos hoje" : "Agendamentos no dia", value: String(agendaMetrics.appointmentsToday), sub: `${agendaMetrics.appointmentsThisWeek} na semana`, icon: CalendarDays },
+          { label: "Receita estimada", value: `R$${agendaMetrics.estimatedRevenueToday.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`, sub: selectedDateStr === today ? "considera agenda de hoje" : "considera data selecionada", icon: DollarSign },
+          { label: "Horários livres", value: String(agendaMetrics.freeSlots), sub: "janela estimada disponível", icon: Clock },
+          { label: "Cancelamentos", value: String(agendaMetrics.cancellationsToday), sub: agendaMetrics.noShowToday > 0 ? `${agendaMetrics.noShowToday} no-show` : topPro ? `${topPro.count} atend.` : "sem dados", icon: TrendingUp },
         ].map((s, i) => (
-          <div key={i} className="rounded-xl border border-border/50 bg-card p-3 sm:p-4 hover:border-border/80 hover:shadow-md transition-all duration-200 group active:scale-[0.98]">
+          <div key={i} className="group rounded-2xl border border-border/50 bg-card/92 p-3 sm:p-4 shadow-[0_10px_30px_rgba(2,8,23,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-[0_16px_40px_rgba(2,8,23,0.12)] active:scale-[0.99]">
             <div className="flex items-center justify-between mb-1 sm:mb-2">
               <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-muted-foreground/60 font-bold leading-tight">{s.label}</p>
               <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg bg-primary/8 flex items-center justify-center group-hover:bg-primary/12 transition-colors">
@@ -464,19 +699,68 @@ export default function AgendaPage() {
         ))}
       </div>
 
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+        {[
+          { key: "scheduled", label: "Agendados", value: dayStatusCounts.scheduled },
+          { key: "confirmed", label: "Confirmados", value: dayStatusCounts.confirmed },
+          { key: "completed", label: "Concluídos", value: dayStatusCounts.completed },
+          { key: "cancelled", label: "Cancelados", value: dayStatusCounts.cancelled },
+          { key: "no_show", label: "No-show", value: dayStatusCounts.no_show },
+        ].map((item) => {
+          const cfg = statusConfig[item.key];
+          return (
+            <div key={item.key} className={`rounded-2xl border ${cfg.border} ${cfg.bg} px-3 py-2.5 shadow-sm`}>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{item.label}</p>
+              <p className={`text-lg font-bold ${cfg.color}`}>{item.value}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {[
+          { label: "Passados", value: agendaMetrics.pastCount },
+          { label: "Em andamento", value: agendaMetrics.currentCount },
+          { label: "Futuros", value: agendaMetrics.futureCount },
+          { label: "Concluídos na semana", value: agendaMetrics.completedThisWeek },
+        ].map((item) => (
+          <Badge key={item.label} variant="secondary" className="rounded-full px-3 py-1 text-[11px]">
+            {item.label}: {item.value}
+          </Badge>
+        ))}
+      </div>
+
       {/* Calendar Grid */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}
-        className="rounded-2xl border border-border/50 bg-card overflow-hidden shadow-card"
+        className="overflow-hidden rounded-[1.4rem] border border-border/50 bg-card/95 shadow-[0_28px_80px_rgba(2,8,23,0.16)]"
       >
+        {isLoading && (
+          <div className="space-y-0">
+            <div className="border-b border-border/40 bg-muted/20 p-4">
+              <Skeleton className="h-5 w-48 rounded-full" />
+            </div>
+            {Array.from({ length: 6 }, (_, i) => (
+              <div key={i} className="grid border-b border-border/30 last:border-b-0" style={{ gridTemplateColumns: `84px minmax(0, 1fr)` }}>
+                <div className="border-r border-border/35 bg-muted/15 p-3">
+                  <Skeleton className="ml-auto h-4 w-12 rounded-full" />
+                </div>
+                <div className="p-2">
+                  <Skeleton className="h-[58px] w-full rounded-xl" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Mobile day list (for day view on small screens) */}
-        {viewMode === "day" && (
+        {!isLoading && viewMode === "day" && (
           <div className="block sm:hidden">
             {/* Day header */}
             <div className="p-4 border-b border-border/40 bg-muted/20">
               <p className="text-sm font-semibold text-foreground capitalize">
                 {format(selectedDate, "EEEE, dd 'de' MMMM", { locale: ptBR })}
               </p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">{todayAppts.length} agendamentos</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">{dayAppts.length} agendamentos</p>
             </div>
 
             {/* Mobile card list */}
@@ -489,10 +773,10 @@ export default function AgendaPage() {
 
                 return (
                   <div key={hour} className="flex group/row hover:bg-accent/10 transition-colors">
-                    <div className="w-[52px] shrink-0 py-3.5 sm:py-3.5 pr-2.5 text-right">
-                      <span className="text-[11px] font-bold text-muted-foreground/70 tabular-nums">{hour}</span>
+                    <div className="w-[60px] shrink-0 border-r border-border/40 bg-muted/20 py-3.5 pr-3 text-right">
+                      <span className="text-[11px] font-semibold text-muted-foreground/80 tabular-nums">{hour}</span>
                     </div>
-                    <div className={`flex-1 py-2.5 px-3 min-h-[68px] border-l border-border/50 ${
+                    <div className={`flex-1 min-h-[72px] px-3 py-2.5 ${
                       slotBlocks.length > 0 && slotAppts.length === 0
                         ? (slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "bg-amber-500/5" :
                           (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "bg-blue-500/5" :
@@ -500,13 +784,13 @@ export default function AgendaPage() {
                         : ""
                     }`}>
                       {slotAppts.length > 0 ? (
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           {slotAppts.map(event => (
                             <AppointmentCard key={event.id} event={event} />
                           ))}
                         </div>
                       ) : slotBlocks.length > 0 ? (
-                        <div className="flex items-center gap-2 py-2.5 min-h-[48px]">
+                        <div className="flex min-h-[52px] items-center gap-2 rounded-xl border border-border/50 bg-background/40 px-3 py-2.5">
                           <span className="text-xs">
                             {(slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "🍽️" :
                              (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "☕" : "🚫"}
@@ -529,7 +813,7 @@ export default function AgendaPage() {
             </div>
 
             {/* Empty state */}
-            {todayAppts.length === 0 && (
+            {dayAppts.length === 0 && (
               <div className="p-8 text-center">
                 <CalendarOff className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
                 <p className="text-sm font-medium text-muted-foreground">Nenhum agendamento</p>
@@ -542,25 +826,26 @@ export default function AgendaPage() {
         )}
 
         {/* Desktop grid (day, week, professional views) */}
-        <div className={`${viewMode === "day" ? "hidden sm:block" : ""} overflow-x-auto`}>
+        {!isLoading && (
+          <div className={`${viewMode === "day" ? "hidden sm:block" : ""} overflow-x-auto`}>
           <div className="min-w-[720px]">
             {viewMode === "professional" ? (
               <>
                 {/* Professional columns header */}
                 <div className="border-b border-border/50 bg-muted/30"
-                  style={{ display: "grid", gridTemplateColumns: `72px repeat(${proColumns.length}, 1fr)` }}
+                  style={{ display: "grid", gridTemplateColumns: `84px repeat(${proColumns.length}, minmax(220px, 1fr))` }}
                 >
-                  <div className="p-3 text-[10px] text-muted-foreground/50 font-bold uppercase tracking-widest">Hora</div>
+                  <div className="border-r border-border/40 bg-muted/20 p-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground/60">Hora</div>
                   {proColumns.map(p => (
                     <div key={p.id} className="p-3 text-center border-l border-border/30">
                       <div className="flex items-center justify-center gap-2">
-                        {p.avatar_url ? (
-                          <img src={p.avatar_url} alt={p.name} className="h-8 w-8 rounded-xl object-cover" />
-                        ) : (
-                          <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-                            {p.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
-                          </div>
-                        )}
+                        <ProfessionalAvatar
+                          name={p.name}
+                          avatarUrl={p.avatar_url}
+                          className="h-8 w-8 rounded-xl border border-border/60"
+                          fallbackClassName="rounded-xl text-xs"
+                          imageClassName="object-cover"
+                        />
                         <div className="text-left">
                           <span className="text-sm font-medium text-foreground block">{p.name}</span>
                           <span className="text-[10px] text-muted-foreground">{p.role || "Barbeiro"}</span>
@@ -575,14 +860,14 @@ export default function AgendaPage() {
                   const h = parseInt(hour);
                   return (
                     <div key={hour} className="border-b border-border/30 last:border-b-0 hover:bg-accent/8 transition-colors"
-                      style={{ display: "grid", gridTemplateColumns: `72px repeat(${proColumns.length}, 1fr)` }}
+                      style={{ display: "grid", gridTemplateColumns: `84px repeat(${proColumns.length}, minmax(220px, 1fr))` }}
                     >
-                      <div className="p-2.5 text-xs text-muted-foreground/70 font-bold text-right pr-3 pt-3 tabular-nums">{hour}</div>
+                      <div className="border-r border-border/35 bg-muted/15 p-3 text-right text-xs font-semibold tabular-nums text-muted-foreground/75">{hour}</div>
                       {proColumns.map(pro => {
                         const dateStr = format(selectedDate, "yyyy-MM-dd");
                         const proAppts = getApptsForSlot(dateStr, h, pro.id);
                         return (
-                          <div key={pro.id} className="border-l border-border/30 p-1.5 min-h-[68px] hover:bg-accent/15 transition-colors">
+                          <div key={pro.id} className="min-h-[76px] border-l border-border/30 p-2 transition-colors hover:bg-accent/10">
                             {proAppts.map(event => (
                               <AppointmentCard key={event.id} event={event} compact />
                             ))}
@@ -603,13 +888,13 @@ export default function AgendaPage() {
             ) : (
               <>
                 {/* Day/Week headers */}
-                <div style={{ display: "grid", gridTemplateColumns: `72px repeat(${days.length}, 1fr)` }}
+                <div style={{ display: "grid", gridTemplateColumns: `84px repeat(${days.length}, minmax(190px, 1fr))` }}
                   className="border-b border-border/50 bg-muted/30"
                 >
-                  <div className="p-3" />
+                  <div className="border-r border-border/35 bg-muted/15 p-3" />
                   {days.map((d, i) => {
                     const isToday = format(d, "yyyy-MM-dd") === today;
-                    const dayApptCount = filteredAppts.filter(a => a.date === format(d, "yyyy-MM-dd") && a.status !== "cancelled").length;
+                    const dayApptCount = filteredAppts.filter(a => a.date === format(d, "yyyy-MM-dd") && !["cancelled", "no_show", "rescheduled"].includes(a.displayStatus)).length;
                     return (
                       <div
                         key={i}
@@ -637,9 +922,9 @@ export default function AgendaPage() {
                   const h = parseInt(hour);
                   return (
                     <div key={hour} className={`border-b border-border/30 last:border-b-0 ${parseInt(hour) % 2 === 0 ? '' : 'bg-muted/[0.03]'}`}
-                      style={{ display: "grid", gridTemplateColumns: `72px repeat(${days.length}, 1fr)` }}
+                      style={{ display: "grid", gridTemplateColumns: `84px repeat(${days.length}, minmax(190px, 1fr))` }}
                     >
-                      <div className="p-2.5 text-xs text-muted-foreground/70 font-bold text-right pr-4 pt-3 tabular-nums select-none">
+                      <div className="select-none border-r border-border/35 bg-muted/15 p-3 pr-4 text-right text-xs font-semibold tabular-nums text-muted-foreground/75">
                         {hour}
                       </div>
                       {days.map((day, dayIdx) => {
@@ -649,7 +934,7 @@ export default function AgendaPage() {
                         const isToday = dateStr === today;
 
                         // Conflict detection
-                        const proIds = slotAppts.map(a => a.professional_id);
+                        const proIds = slotAppts.map(a => a.professionalId);
                         const hasConflict = proIds.length !== new Set(proIds).size;
 
                         const showTimeLine = isToday && currentMinute >= h * 60 && currentMinute < (h + 1) * 60;
@@ -657,7 +942,7 @@ export default function AgendaPage() {
 
                         return (
                           <div key={dayIdx}
-                            className={`border-l border-border/30 p-1.5 min-h-[72px] relative transition-all duration-150 group/cell cursor-pointer ${
+                            className={`group/cell relative min-h-[78px] border-l border-border/30 px-2 py-2 transition-all duration-150 cursor-pointer ${
                               slotAppts.length === 0 && slotBlocks.length === 0 ? 'hover:bg-primary/[0.04]' : 'hover:bg-accent/10'
                             } ${
                               slotBlocks.length > 0
@@ -696,7 +981,7 @@ export default function AgendaPage() {
                               ))}
                             </div>
                             {slotBlocks.length > 0 && slotAppts.length === 0 && (
-                              <div className="flex items-center justify-center h-full opacity-50">
+                              <div className={`flex h-full items-center justify-center rounded-xl border px-3 py-2 text-center ${getBlockTone(slotBlocks[0]?.reason).chipClass}`}>
                                 <span className="text-xs mr-1">
                                   {(slotBlocks[0]?.reason || "").toLowerCase().includes("almoço") ? "🍽️" :
                                    (slotBlocks[0]?.reason || "").toLowerCase().includes("pausa") ? "☕" : "🚫"}
@@ -721,28 +1006,29 @@ export default function AgendaPage() {
               </>
             )}
           </div>
-        </div>
+          </div>
+        )}
       </motion.div>
 
       {/* Blocked times summary for the day */}
-      {viewMode === "day" && (() => {
+      {!isLoading && viewMode === "day" && (() => {
         const dateStr = format(selectedDate, "yyyy-MM-dd");
         const dayOfWeek = selectedDate.getDay();
         const dayBlocks = blockedTimes.filter(b =>
           b.recurring
             ? (b.recurring_days || []).includes(dayOfWeek)
-            : b.date === dateStr
+            : getBlockedTimeDate(b) === dateStr
         );
         if (dayBlocks.length === 0) return null;
         return (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="hidden sm:block">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Horários bloqueados</p>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground/70">Horários bloqueados</p>
             <div className="flex flex-wrap gap-2">
               {dayBlocks.map(b => {
                 const isLunch = (b.reason || "").toLowerCase().includes("almoço");
                 const isPause = (b.reason || "").toLowerCase().includes("pausa");
                 return (
-                  <div key={b.id} className={`flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs ${
+                  <div key={b.id} className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs ${
                     isLunch ? "border-amber-500/30 bg-amber-500/5 text-amber-700 dark:text-amber-400" :
                     isPause ? "border-blue-500/30 bg-blue-500/5 text-blue-700 dark:text-blue-400" :
                     "border-border/50 bg-muted/30 text-muted-foreground"
@@ -776,8 +1062,8 @@ export default function AgendaPage() {
             <DialogTitle className="text-lg flex items-center gap-2">
               Detalhes do agendamento
               {selectedAppt && (
-                <Badge className={`${statusConfig[selectedAppt.status]?.bg} ${statusConfig[selectedAppt.status]?.color} border-0 text-[10px]`}>
-                  {statusConfig[selectedAppt.status]?.label}
+                <Badge className={`${statusConfig[selectedAppt.displayStatus]?.bg} ${statusConfig[selectedAppt.displayStatus]?.color} border-0 text-[10px]`}>
+                  {statusConfig[selectedAppt.displayStatus]?.label}
                 </Badge>
               )}
             </DialogTitle>
@@ -818,9 +1104,9 @@ export default function AgendaPage() {
               )}
 
               {/* Action buttons */}
-              {(canViewFullAgenda || !isProfessional) && selectedAppt.status !== "cancelled" && selectedAppt.status !== "completed" && (
+              {(canViewFullAgenda || !isProfessional) && !["cancelled", "completed", "no_show"].includes(selectedAppt.displayStatus) && (
                 <div className="flex flex-wrap gap-2">
-                  {selectedAppt.status === "scheduled" && (
+                  {selectedAppt.displayStatus === "scheduled" && (
                     <>
                       <Button size="sm" className="gap-1.5 rounded-xl flex-1" onClick={() => handleAction(selectedAppt.id, "confirmed", "Agendamento confirmado!")}>
                         <CheckCircle2 className="h-3.5 w-3.5" /> Confirmar
@@ -830,7 +1116,7 @@ export default function AgendaPage() {
                       </Button>
                     </>
                   )}
-                  {selectedAppt.status === "confirmed" && (
+                  {selectedAppt.displayStatus === "confirmed" && (
                     <>
                       <Button size="sm" className="gap-1.5 rounded-xl flex-1" onClick={() => handleAction(selectedAppt.id, "completed", "Atendimento concluído!")}>
                         <CheckCircle2 className="h-3.5 w-3.5" /> Concluir
@@ -839,7 +1125,7 @@ export default function AgendaPage() {
                         size="sm"
                         variant="outline"
                         className="gap-1.5 rounded-xl border-amber-500/30 text-amber-600 hover:bg-amber-500/10"
-                        onClick={() => handleAction(selectedAppt.id, "cancelled", "Marcado como não compareceu")}
+                        onClick={handleNoShow}
                       >
                         <UserX className="h-3.5 w-3.5" /> No-show
                       </Button>
@@ -864,7 +1150,7 @@ export default function AgendaPage() {
               )}
 
               {/* Cancel */}
-              {canViewFullAgenda && selectedAppt.status !== "cancelled" && selectedAppt.status !== "completed" && (
+              {canViewFullAgenda && !["cancelled", "completed", "no_show"].includes(selectedAppt.displayStatus) && (
                 <div className="border-t border-border/40 pt-4 space-y-3">
                   <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Cancelar agendamento</Label>
                   <Input placeholder="Motivo (opcional)" value={cancelReason} onChange={e => setCancelReason(e.target.value)} className="bg-card rounded-xl" />
@@ -1045,3 +1331,5 @@ export default function AgendaPage() {
     </div>
   );
 }
+
+

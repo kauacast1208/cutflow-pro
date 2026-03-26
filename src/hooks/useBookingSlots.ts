@@ -6,6 +6,7 @@ import {
   type Appointment,
   type BlockedTime,
   type ProfessionalAvailability,
+  type ProfessionalSchedule,
   type DayStatus,
 } from "@/lib/booking";
 
@@ -17,6 +18,7 @@ interface UseBookingSlotsParams {
   appointments: Appointment[];
   blockedTimes: BlockedTime[];
   availability: ProfessionalAvailability[];
+  professionals?: ProfessionalSchedule[];
   weekDays?: Date[];
 }
 
@@ -28,6 +30,7 @@ export function useBookingSlots({
   appointments,
   blockedTimes,
   availability,
+  professionals = [],
   weekDays = [],
 }: UseBookingSlotsParams) {
   const config = useMemo(() => {
@@ -44,8 +47,9 @@ export function useBookingSlots({
 
   const timeSlots = useMemo(() => {
     if (!config || !selectedDate || !selectedPro) return [];
-    return generateTimeSlots(selectedDate, selectedPro, config, appointments, blockedTimes, availability);
-  }, [config, selectedDate, selectedPro, appointments, blockedTimes, availability]);
+    const selectedProfessional = professionals.find((professional) => professional.id === selectedPro || professional.professional_id === selectedPro);
+    return generateTimeSlots(selectedDate, selectedPro, config, appointments, blockedTimes, availability, selectedProfessional);
+  }, [config, selectedDate, selectedPro, appointments, blockedTimes, availability, professionals]);
 
   const groupedSlots = useMemo(() => groupSlotsByPeriod(timeSlots), [timeSlots]);
 
@@ -57,11 +61,12 @@ export function useBookingSlots({
 
     weekDays.forEach((day) => {
       const key = day.toISOString().split("T")[0];
-      map.set(key, computeDayStatus(day, selectedPro, config, appointments, blockedTimes, availability, closedDays));
+      const selectedProfessional = professionals.find((professional) => professional.id === selectedPro || professional.professional_id === selectedPro);
+      map.set(key, computeDayStatus(day, selectedPro, config, appointments, blockedTimes, availability, closedDays, selectedProfessional));
     });
 
     return map;
-  }, [config, selectedPro, weekDays, appointments, blockedTimes, availability, barbershop]);
+  }, [config, selectedPro, weekDays, appointments, blockedTimes, availability, professionals, barbershop]);
 
   return { timeSlots, groupedSlots, dayStatusMap };
 }

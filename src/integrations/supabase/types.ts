@@ -572,6 +572,7 @@ export type Database = {
           notification_near_message: string | null
           reward_description: string
           reward_validity_days: number
+          service_ids: string[] | null
           specific_service_id: string | null
           target: number
           type: Database["public"]["Enums"]["loyalty_type"]
@@ -587,6 +588,7 @@ export type Database = {
           notification_near_message?: string | null
           reward_description?: string
           reward_validity_days?: number
+          service_ids?: string[] | null
           specific_service_id?: string | null
           target?: number
           type?: Database["public"]["Enums"]["loyalty_type"]
@@ -602,6 +604,7 @@ export type Database = {
           notification_near_message?: string | null
           reward_description?: string
           reward_validity_days?: number
+          service_ids?: string[] | null
           specific_service_id?: string | null
           target?: number
           type?: Database["public"]["Enums"]["loyalty_type"]
@@ -990,6 +993,8 @@ export type Database = {
           active: boolean
           avatar_url: string | null
           barbershop_id: string
+          break_end_time: string | null
+          break_start_time: string | null
           created_at: string
           id: string
           name: string
@@ -1005,6 +1010,8 @@ export type Database = {
           active?: boolean
           avatar_url?: string | null
           barbershop_id: string
+          break_end_time?: string | null
+          break_start_time?: string | null
           created_at?: string
           id?: string
           name: string
@@ -1020,6 +1027,8 @@ export type Database = {
           active?: boolean
           avatar_url?: string | null
           barbershop_id?: string
+          break_end_time?: string | null
+          break_start_time?: string | null
           created_at?: string
           id?: string
           name?: string
@@ -1542,6 +1551,8 @@ export type Database = {
           active: boolean | null
           avatar_url: string | null
           barbershop_id: string | null
+          break_end_time: string | null
+          break_start_time: string | null
           created_at: string | null
           id: string | null
           name: string | null
@@ -1556,6 +1567,8 @@ export type Database = {
           active?: boolean | null
           avatar_url?: string | null
           barbershop_id?: string | null
+          break_end_time?: string | null
+          break_start_time?: string | null
           created_at?: string | null
           id?: string | null
           name?: string | null
@@ -1570,6 +1583,8 @@ export type Database = {
           active?: boolean | null
           avatar_url?: string | null
           barbershop_id?: string | null
+          break_end_time?: string | null
+          break_start_time?: string | null
           created_at?: string | null
           id?: string | null
           name?: string | null
